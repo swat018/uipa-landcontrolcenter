@@ -1,0 +1,282 @@
+@use "variable.scss" as v;
+
+$appBarHeight : 65px;
+$serchHeight : 105px;
+$paddingHeight: 8px;
+$filterHeight : 45px;
+$marginHeight : 16px;
+$cardTitleHeight : 65px;
+$tabTitleHeight : 48px;
+$colPaddingHeight : 12px;
+$dxGridHeaderHeight : 35px;
+$chartCardTitleHeight : 52px;
+$chartLabelHeight : 45px;
+$shipFilterHeight : 48px;
+
+/**
+* 레이아웃 
+*/
+.v-card.cardContainer{
+  padding: 4px;
+}
+
+.content-title{
+  font-size: 1.2em;
+}
+
+// 스크롤바
+::-webkit-scrollbar {
+  width: 5px !important;
+  height: 5px;;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #5c5c5c !important;
+  border-radius: 2px !important;
+}
+
+
+.pointer-cursor{
+  cursor: default;
+}
+
+input[type="date"]{
+  cursor : cursor;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator{
+  cursor: pointer;
+}
+
+.shipSummary {
+  background-image: url('../images/black-shape-background.png');
+  background-position: 87% 64%;
+  border-radius: 5px;
+}
+
+.v-data-table .v-data-table__wrapper::-webkit-scrollbar {
+  width: 5px !important;
+}
+
+ .v-data-table .v-data-table__wrapper::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.v-data-table .v-data-table__wrapper::-webkit-scrollbar-thumb {
+  background: #5c5c5c !important;
+  border-radius: 2px !important;
+}
+
+.area-container{
+  background: #3c3c3f;
+  padding: 4px;
+  border-radius: 5px !important;
+  border: 0.5px solid #ffffff1f;
+} 
+
+.area-container.content{
+  background : #2b2b2d;
+}
+
+#cii-rating-grid{
+  height: calc(100% - 44px - 32px);
+}
+
+/*
+* 페이지 높이
+*/
+
+.container-height {
+  height: 100vh;
+  max-height: calc(100vh - #{$appBarHeight});
+}
+
+.container-height1 {
+  height: 100vh;
+  max-height: calc(100vh - (#{$appBarHeight} + 60px + (#{$paddingHeight} * 2) + 55px) );
+}
+
+.container-include-filter {
+  height: 100vh;
+  max-height: calc(100vh - (#{$appBarHeight} + #{$serchHeight} +  #{$marginHeight} + (#{$paddingHeight} * 3)));
+}
+
+// 사용자 그룹 관리
+.management-container {
+  height: 100vh;
+  max-height: calc(100vh - (#{$appBarHeight} + 72px + 80px));
+}
+
+// 사용자 접속 기록
+.accesslog-container {
+  height: 100vh;
+  max-height: calc(100vh - (#{$appBarHeight} + #{$serchHeight} + #{$filterHeight} + (#{$paddingHeight} * 3)));
+}
+
+/*
+* 선사 정보 관리
+*/
+.tab-container {
+  height: 100vh;
+  max-height: calc(100vh - (#{$appBarHeight} + #{$tabTitleHeight} + #{$marginHeight} + (#{$paddingHeight} * 6) + (#{$dxGridHeaderHeight}) + (#{$colPaddingHeight} * 2)))
+}
+
+.tab-container2 {
+  height: 100vh;
+  max-height: calc(100vh - (#{$appBarHeight} + #{$tabTitleHeight} + #{$marginHeight} + (#{$paddingHeight} * 6)))
+  
+}
+
+.chart-container {
+  height: calc(100% - 52px);
+}
+
+// 팝업 줄 높이
+.popupLineHeight {
+  line-height: 1.8;
+}
+
+@media(min-height : 700px){
+  .cii-container {
+      // height: calc(100vh - (#{$appBarHeight} + #{$shipFilterHeight} - (#{$paddingHeight} * 4) - #{$marginHeight}));
+      height: calc(100vh - 65px - 32px);
+      // background-color: blue;
+    }
+  
+    .cii-tab-container {
+      height: calc(100% - #{$tabTitleHeight});
+    }
+}
+
+@media (max-height : 860px) {
+  .tab-container {
+    max-height: 100vh;
+    /* height: 100% !important; */
+    /* height: calc(100% + 80px) !important;
+    max-height: calc(100% + 80px) !important;
+     */
+  }
+}
+
+/**
+* 헤더
+*/
+// .header .selectBox {
+//   min-width: 195px;
+// }
+
+.operation-info .v-card-title+.v-card-text,
+.v-card-title+.v-card-actions {
+  padding-top: inherit;
+}
+
+/**
+* 로그인 - 아이디 찾기 
+*/
+.idFindModal-subTitle{
+  font-size : 1.0rem;
+}
+
+.idFindModal-info{
+  padding: 20px;
+  background-color: #121111;
+  color : white;
+}
+
+.inFindModal-infoText{
+  color : #B8B8B8;
+}
+
+
+
+/**
+* 계정 정보
+*/
+.accountInfo >  .v-card {
+  height: calc(100% - 48px);
+}
+
+
+
+.v-table.accountInfo{
+    th {
+      &:first-child{
+        border-right: 1px solid #49494E;
+        width : 20%;
+      }
+    }  
+}
+
+.roleName {
+  font-size: 1.2em;
+}
+
+
+/**
+* 사용자 접속 기록
+*/
+
+.accessLog_title {
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+/*
+* 소속된 그룹 / 선단 표시
+*/
+.groupName {
+  /* background: #4E83FF; */
+  border-radius: 10px;
+  padding: 2px 4px;
+}
+
+.groupName.primary {
+  background: #4E83FF;
+}
+
+.groupName.gray {
+  background: #959595;
+  border-radius: 10px;
+  padding: 2px 4px;
+}
+
+
+/**
+*
+**/
+.tagList .v-select {
+  max-width: 270px;
+}
+
+
+/**
+* 캐로셀 이전 버튼 
+*/
+button.v-btn.v-btn--elevated.v-btn--icon.v-theme--customBlackTheme.v-btn--density-default.v-btn--size-default.v-btn--variant-elevated.v-window__left {
+  background: transparent;
+}
+
+button.v-btn.v-btn--elevated.v-btn--icon.v-theme--customBlackTheme.v-btn--density-default.v-btn--size-default.v-btn--variant-elevated.v-window__left:hover{
+  background: #000000cf;
+}
+/**
+* 캐로셀 다음 버튼 
+*/
+button.v-btn.v-btn--elevated.v-btn--icon.v-theme--customBlackTheme.v-btn--density-default.v-btn--size-default.v-btn--variant-elevated.v-window__right {
+  background: transparent;
+}
+
+button.v-btn.v-btn--elevated.v-btn--icon.v-theme--customBlackTheme.v-btn--density-default.v-btn--size-default.v-btn--variant-elevated.v-window__right:hover {
+  background: #000000cf;
+}
+
+/**
+* 월드맵
+*/
+// .v-sheet.popup-container{
+//   background-color: #16615e;
+// }
