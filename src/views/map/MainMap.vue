@@ -1,7 +1,8 @@
 <template>
   <div class="map-container">
-    <div>
+    <div class="map" ref="map">
         <!-- 지도 컴포넌트 -->
+        <OlMap></OlMap>
     </div>
     <PopupLayout ref="popupLayout" v-model="isShow" :isShow="isShow" @closePopup="isShow = false"></PopupLayout>
     <PopupMenu class="popMenu" ref="popupMenu"></PopupMenu>
@@ -19,12 +20,14 @@ import { useMapStore } from '@/stores/mapStore'
 import { changeShipByImoNumber } from '@/api/worldMap.js'
 import emitter from '@/composables/eventbus.js'
 
+import OlMap from "@/components/map/OlMap.vue";
+const olMap = ref(null);
+
 /**
  * 팝업 레이아웃 import
  */
 import PopupLayout from "@/views/map/popup/PopupLayout.vue";
 import PopupMenu from '@/views/map/popup/PopupMenu.vue'
-
 
 const authStore = useAuthStore()
 const { userInfo } = storeToRefs(authStore)
@@ -34,7 +37,6 @@ const { clickedShipInfo } = storeToRefs(mapStore)
 const popupLayout = ref(null);
 const popupMenu = ref(null)
 const isShow = ref(false)
-
 
 const openPopup = () => {
   isShow.value = true;
@@ -76,9 +78,8 @@ const clickShip = async (imoNumber) => {
       changeShipByImoNumber(uuid, imoNumber)
     }
   }
-
-
 }
+
 
 </script>
 
