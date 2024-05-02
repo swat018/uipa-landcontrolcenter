@@ -1,9 +1,13 @@
+// eslint-disable-next-line no-undef
 var wfsSource = new ol.source.Vector();
 var wfs_layer;
+// eslint-disable-next-line no-undef
 var shipSource = new ol.source.Vector();
+// eslint-disable-next-line no-undef
 var shipDetailSource = new ol.source.Vector();
 var ship_layer;
 var shipDetail_layer;
+
 function vectorInit(){
 	//항로계획
 	const plan_p = new ol.layer.Vector({
@@ -27,7 +31,7 @@ function vectorInit(){
       	zIndex : 9999
     });
 	map.addLayer(plan_p);
-    
+
 	const plan_l = new ol.layer.Vector({
         id: "route_l",
         source: new ol.source.Vector(),
@@ -42,7 +46,7 @@ function vectorInit(){
       	})
     });
 	map.addLayer(plan_l);
-    
+
     //선박 벡터레이어
     ship_layer = new ol.layer.Vector({
     	id: "shipLayer",
@@ -59,21 +63,21 @@ function vectorInit(){
         zIndex : 9999
 	});
 	map.addLayer(ship_layer);
-	
+
 	//선박선택 벡터레이어
     shipDetail_layer = new ol.layer.Vector({
     	id: "shipDetailLayer",
 		source: shipDetailSource,
 		style: new ol.style.Style({
             image: new ol.style.Icon({
-		          	src: 'images/emap/shipIconSelect.png',
-		          	anchor: [0.8, 0.8],				          	
+		          	src: 'asserts/images/shipicons/shipIcon_red.png',
+		          	anchor: [0.8, 0.8],
         		})
         }),
         zIndex : 9999
 	});
     map.addLayer(shipDetail_layer);
-    
+
     //항적 벡터레이어
     wfs_layer = new ol.layer.Vector({
     	id: "shipMoveLayer",
@@ -90,8 +94,8 @@ function vectorInit(){
         zIndex : 9999
 	});
 	map.addLayer(wfs_layer);
-    
-    
+
+
 	//항로범위
     const mapSearch2 = new ol.layer.Vector({
         id: "mapSearch2",
@@ -114,17 +118,17 @@ function vectorInit(){
         id: "mapSearch1",
         source: new ol.source.Vector(),
         style: new ol.style.Style({
-            fill: new ol.style.Fill({                
+            fill: new ol.style.Fill({
                 color: '#FF000000'
             }),
-            stroke: new ol.style.Stroke({                
+            stroke: new ol.style.Stroke({
                 color: '#ff0000ff',
                 width: 2
             })
       	})
     });
-    map.addLayer(mapSearch1);    
-    
+    map.addLayer(mapSearch1);
+
     //항적 벡터레이어
     wfs_layer = new ol.layer.Vector({
     	id: "shipMoveLayer",
@@ -140,8 +144,8 @@ function vectorInit(){
         }),
         zIndex : 9999
 	});
-    map.addLayer(wfs_layer);    
-    
+    map.addLayer(wfs_layer);
+
     //선박상세 벡터레이어
     shipDetail_layer = new ol.layer.Vector({
     	id: "shipDetailLayer",
@@ -149,7 +153,7 @@ function vectorInit(){
 		style: new ol.style.Style({
             image: new ol.style.Icon({
 		          	src: 'images/emap/shipIconSelect.png',
-		          	anchor: [0.8, 0.8],				          	
+		          	anchor: [0.8, 0.8],
         		})
         }),
         zIndex : 9999
@@ -162,16 +166,16 @@ function vectorInit(){
 function testFeat1(){
 	var pointFeature = new ol.Feature({
 		geometry: new ol.geom.Point([Number(129.3005359),Number(35.5468629)])
-	});				
+	});
 	let c_geometry = pointFeature.getGeometry().transform( 'EPSG:4326',  'EPSG:3857');
-	
+
 	pointFeature.setStyle(
-		new ol.style.Style({		            
+		new ol.style.Style({
             image: new ol.style.Icon({
 	          	src: 'images/emap/shipIcon.png',
-	          	anchor: [0.8, 0.8],	
+	          	anchor: [0.8, 0.8],
 	          	rotateWithView: true,
-				rotation: 0,			          	
+				rotation: 0,
     		}),
             text: new ol.style.Text({
                 textAlign: 'center',
@@ -184,6 +188,6 @@ function testFeat1(){
                 overflow:true,
             })
       	})
-	);	
-	ship_layer.getSource().addFeature(pointFeature);	
+	);
+	ship_layer.getSource().addFeature(pointFeature);
 }

@@ -33,9 +33,17 @@ import { Map, View } from "ol";
 import TileLayer from 'ol/layer/Tile'
 import XYZ from 'ol/source/XYZ'
 import LayerGroup from 'ol/layer/Group'
+import VectorSource from 'ol/source/Vector'
 import { defaults as defaultControls } from "ol/control";
 import { transform } from 'ol/proj'
-import Options from './options'
+import VectorLayer from 'ol/layer/Vector'
+import { Style, Icon } from 'ol/style'
+import Feature from 'ol/Feature'
+import Point from 'ol/geom/Point.js';
+import { GeoJSON } from 'ol/format'
+import Select from 'ol/interaction/Select'
+import emitter from '@/composables/eventbus'
+
 
 const urlBefore = 'http://navioncorp.asuscomm.com:8080/TileMap/';
 const urlAfter = '/{z}/{x}/{-y}.png';
@@ -48,6 +56,8 @@ export default {
   },
   data: () => ({
     baselayers: LayerGroup,
+    shipSource: VectorSource,
+    shipLayer: VectorLayer,
     layerBright: String,
     layerMode: String,
     mapTypeId: String,
@@ -88,7 +98,9 @@ export default {
         visible: true
       })
     this.initMap();
+    this.setShipLayer();
     this.$emit('init', this.map);
+    this.shipSelectEvent();
   },
   methods: {
     initMap: function() {
@@ -106,7 +118,7 @@ export default {
       });
       return this.map;
     },
-    setMapType(mapBright, mapMode) {
+    setMapType: function(mapBright, mapMode) {
       this.mapTypeId = mapBright + '_' + mapMode;
       this.map.getLayers().clear();
       this.map.addLayer(
@@ -118,8 +130,50 @@ export default {
           visible: true,
         })
       );
-      }
-  }
+      this.setShipLayer();
+    },
+    setShipLayer: function() {
+      var pointFeature = new Feature({
+        geometry: new Point([Number(129.47939163245047),Number(35.343702931513434)])
+      });
+      pointFeature.getGeometry().transform( 'EPSG:4326',  'EPSG:3857');
+
+      this.shipLayer = new VectorLayer({
+        source: new VectorSource({
+          // features: [pointFeature]
+          url: 'src/assets/mockup/sship.geojson',
+          format: new GeoJSON()
+        }),
+        style: new Style({
+          image: new Icon({
+            src: 'src/assets/images/shipicons/shipIcon_green.png',
+            scale: 0.3,
+            anchor: [0.5, 0.5],
+            rotateWithView: true,
+            rotation: 0
+          })
+        })
+      });
+      this.map.addLayer(this.shipLayer);
+    },
+    shipSelectEvent: function() {
+      var select = new Select();
+      this.map.addInteraction(select);
+      select.on('select', function(e) {
+        e.selected[0].setStyle(new Style({
+          image: new Icon({
+            src: 'src/assets/images/shipicons/shipIcon_red.png',
+            scale: 0.3,
+            anchor: [0.5, 0.5],
+            rotateWithView: true,
+            rotation: 0
+          })
+        }));
+        emitter.emit('clickShipName', '3242311');
+      });
+    }
+
+  },
 };
 </script>
 

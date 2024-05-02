@@ -2,7 +2,8 @@
   <div class="map-container">
     <div class="map" ref="map">
         <!-- 지도 컴포넌트 -->
-        <OlMap></OlMap>
+        <OlMap
+        ></OlMap>
     </div>
     <PopupLayout ref="popupLayout" v-model="isShow" :isShow="isShow" @closePopup="isShow = false"></PopupLayout>
     <PopupMenu class="popMenu" ref="popupMenu"></PopupMenu>
@@ -49,7 +50,6 @@ const openPopup = () => {
 emitter.on('selectedShip', (imoNumbers) => {
 
   alert(imoNumbers)
-
   // 지도에 선박 표시하는 함수 호출
 })
 
