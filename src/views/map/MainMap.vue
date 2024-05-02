@@ -13,7 +13,6 @@
 /* eslint-disable */
 import { ref, inject } from "vue";
 import { onBeforeMount } from "vue";
-import { onMounted, onUnmounted } from "vue";
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from "@/stores/authStore";
 import { useMapStore } from '@/stores/mapStore'
