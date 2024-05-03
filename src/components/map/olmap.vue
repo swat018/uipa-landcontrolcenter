@@ -43,6 +43,7 @@ import Point from 'ol/geom/Point.js';
 import { GeoJSON } from 'ol/format'
 import Select from 'ol/interaction/Select'
 import emitter from '@/composables/eventbus'
+import { TileWMS } from 'ol/source'
 
 
 const urlBefore = 'http://navioncorp.asuscomm.com:8080/TileMap/';
@@ -119,17 +120,62 @@ export default {
       return this.map;
     },
     setMapType: function(mapBright, mapMode) {
-      this.mapTypeId = mapBright + '_' + mapMode;
-      this.map.getLayers().clear();
-      this.map.addLayer(
-        new TileLayer({
-          source: new XYZ({
-            url: urlBefore + this.mapTypeId + urlAfter
-          }),
-          name: this.mapTypeId,
-          visible: true,
-        })
-      );
+      var geoserverWmsUrl = "http://navioncorp.asuscomm.com:8089/geoserver/wms";
+
+      if (mapBright !== 'Black') {
+        this.map.getLayers().clear();
+        this.map.addLayer(
+          new TileLayer({
+            source: new XYZ({
+              url: urlBefore + mapBright + '_' + mapMode + urlAfter
+            }),
+            name: mapBright + '_' + mapMode,
+            visible: true,
+          })
+        );
+      }
+      else if (mapBright === 'Black') {
+        this.map.getLayers().clear();
+        this.map.addLayer(
+          new TileLayer({
+            id : 'ocean',
+            title: 'ocean',
+            opacity: 1,
+            zIndex: -1,
+            source: new TileWMS({
+              url: geoserverWmsUrl,
+              serverType: 'geoserver',
+              crossOrigin: 'anonymous',
+              params: {
+                'VERSION': '1.1.0' ,
+                'LAYERS': 'emap:ocean',
+                'CRS' : 'EPSG:3857',
+                //'CRS' : 'EPSG:404000',
+              },
+            })
+          })
+        );
+        this.makeSld("ocean", "Polygon1_1", "17284F", null);
+        this.map.addLayer(
+          new TileLayer({
+            id : 'worldcountries',
+            title: 'worldcountries',
+            opacity: 1,
+            zIndex: -1,
+            source: new TileWMS({
+              url: geoserverWmsUrl,
+              serverType: 'geoserver',
+              crossOrigin: 'anonymous',
+              params: {
+                'VERSION': '1.1.0' ,
+                'LAYERS': 'emap:worldcountries',
+                'CRS' : 'EPSG:3857',
+              },
+            })
+          })
+        );
+        this.makeSld("worldcountries", "Polygon1_2", "1E1E1E", null);
+      }
       this.setShipLayer();
     },
     setShipLayer: function() {
@@ -141,12 +187,12 @@ export default {
       this.shipLayer = new VectorLayer({
         source: new VectorSource({
           // features: [pointFeature]
-          url: 'src/assets/mockup/sship.geojson',
+          url:  import.meta.env.MODE === 'development' ? 'src/assets/mockup/sship.geojson' : '/assets/mockup/sship.geojson',
           format: new GeoJSON()
         }),
         style: new Style({
           image: new Icon({
-            src: 'src/assets/images/shipicons/shipIcon_green.png',
+            src: import.meta.env.MODE === 'development' ? 'src/assets/images/shipicons/shipIcon_green.png' : '/assets/images/shipicons/shipIcon_green.png',
             scale: 0.3,
             anchor: [0.5, 0.5],
             rotateWithView: true,
@@ -162,7 +208,7 @@ export default {
       select.on('select', function(e) {
         e.selected[0].setStyle(new Style({
           image: new Icon({
-            src: 'src/assets/images/shipicons/shipIcon_red.png',
+            src: import.meta.env.MODE === 'development' ? 'src/assets/images/shipicons/shipIcon_red.png' : '/assets/images/shipicons/shipIcon_green.png',
             scale: 0.3,
             anchor: [0.5, 0.5],
             rotateWithView: true,
@@ -171,8 +217,163 @@ export default {
         }));
         emitter.emit('clickShipName', '3242311');
       });
-    }
+    },
+    makeSld: function(lynm, type, color1, color2) {
+      var text_SLD = "\
+					<?xml version='1.0' encoding='UTF-8'?>\
+					<StyledLayerDescriptor version='1.0.0' \
+					 xsi:schemaLocation='http://www.opengis.net/sld StyledLayerDescriptor.xsd' \
+					 xmlns='http://www.opengis.net/sld' \
+					 xmlns:ogc='http://www.opengis.net/ogc' \
+					 xmlns:xlink='http://www.w3.org/1999/xlink' \
+					 xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>\
+					  <NamedLayer>\
+					    <Name>emap:" + lynm + "</Name>\
+					    <UserStyle>\
+					      <Title>Default Polygon</Title>\
+					      <Abstract>A sample style that draws a polygon</Abstract>\
+					      <FeatureTypeStyle>\
+					        <Rule>\
+					"
 
+      if(type == "Polygon1") {
+        text_SLD += "\
+					          <PolygonSymbolizer>\
+            					<Fill>\
+					              <CssParameter name='fill'>#" + color1 + "</CssParameter>\
+					            </Fill>\
+					          </PolygonSymbolizer>\
+					"
+      } else if(type == "Polygon1_1") { // 경도 경계에 흰색 선 생기는 것 방지 : 테두리를 최소화하고 색상 동일화
+        text_SLD += "\
+					          <PolygonSymbolizer>\
+            					<Fill>\
+					              <CssParameter name='fill'>#" + color1 + "</CssParameter>\
+					            </Fill>\
+					            <Stroke>\
+					              <CssParameter name='stroke'>#" + color1 + "</CssParameter>\
+					              <CssParameter name='stroke-width'>1</CssParameter>\
+					            </Stroke>\
+					          </PolygonSymbolizer>\
+					"
+      } else if(type == "Polygon1_2") { // 경도 경계에 흰색 선 생기는 것 방지 : 테두리를 최소화하고 색상 동일화
+        text_SLD += "\
+					          <PolygonSymbolizer>\
+            					<Fill>\
+					              <CssParameter name='fill'>#" + color1 + "</CssParameter>\
+					            </Fill>\
+					            <Stroke>\
+					              <CssParameter name='stroke'>#6689CA</CssParameter>\
+					              <CssParameter name='stroke-width'>1</CssParameter>\
+					            </Stroke>\
+					          </PolygonSymbolizer>\
+					"
+      } else if(type == "Polygon2") {
+        text_SLD += "\
+					          <PolygonSymbolizer>\
+					            <Fill>\
+					              <CssParameter name='fill'>#" + color1 + "</CssParameter>\
+					            </Fill>\
+					            <Stroke>\
+					              <CssParameter name='stroke'>#" + color1 + "</CssParameter>\
+					              <CssParameter name='stroke-width'>0</CssParameter>\
+					            </Stroke>\
+					          </PolygonSymbolizer>\
+					        </Rule>\
+							<Rule>\
+					          <Title>0to20</Title>\
+					          <ogc:Filter>\
+					            <ogc:And>\
+					              <ogc:PropertyIsGreaterThanOrEqualTo>\
+					                <ogc:PropertyName>DRVAL1</ogc:PropertyName>\
+					                <ogc:Literal>0</ogc:Literal>\
+					              </ogc:PropertyIsGreaterThanOrEqualTo>\
+					              <ogc:PropertyIsLessThan>\
+					                <ogc:PropertyName>DRVAL1</ogc:PropertyName>\
+					                <ogc:Literal>20</ogc:Literal>\
+					              </ogc:PropertyIsLessThan>\
+					            </ogc:And>\
+					          </ogc:Filter>\
+					          <PolygonSymbolizer>\
+					            <Fill>\
+					              <CssParameter name='fill'>#" + color1 + "</CssParameter>\
+					            </Fill>\
+					            <Stroke>\
+					              <CssParameter name='stroke'>#" + color1 + "</CssParameter>\
+					              <CssParameter name='stroke-width'>1</CssParameter>\
+					            </Stroke>\
+					          </PolygonSymbolizer>\
+					        </Rule>\
+					        <Rule>\
+					          <Title>20to100</Title>\
+					          <ogc:Filter>\
+					            <ogc:And>\
+					              <ogc:PropertyIsGreaterThanOrEqualTo>\
+					                <ogc:PropertyName>DRVAL1</ogc:PropertyName>\
+					                <ogc:Literal>20</ogc:Literal>\
+					              </ogc:PropertyIsGreaterThanOrEqualTo>\
+					              <ogc:PropertyIsLessThan>\
+					                <ogc:PropertyName>DRVAL1</ogc:PropertyName>\
+					                <ogc:Literal>100</ogc:Literal>\
+					              </ogc:PropertyIsLessThan>\
+					            </ogc:And>\
+					          </ogc:Filter>\
+					          <PolygonSymbolizer>\
+					            <Fill>\
+					              <CssParameter name='fill'>#" + color2 + "</CssParameter>\
+					            </Fill>\
+					            <Stroke>\
+					              <CssParameter name='stroke'>#" + color2 + "</CssParameter>\
+					              <CssParameter name='stroke-width'>1</CssParameter>\
+					            </Stroke>\
+					          </PolygonSymbolizer>\
+					        </Rule>\
+					        <Rule>\
+					          <Title>100great</Title>\
+					          <ogc:Filter>\
+					              <ogc:PropertyIsGreaterThanOrEqualTo>\
+					                <ogc:PropertyName>DRVAL1</ogc:PropertyName>\
+					                <ogc:Literal>100</ogc:Literal>\
+					              </ogc:PropertyIsGreaterThanOrEqualTo>\
+					          </ogc:Filter>\
+					          <PolygonSymbolizer>\
+					            <Fill>\
+					              <CssParameter name='fill'>#" + color2 + "</CssParameter>\
+					            </Fill>\
+					            <Stroke>\
+					              <CssParameter name='stroke'>#" + color2 + "</CssParameter>\
+					              <CssParameter name='stroke-width'>1</CssParameter>\
+					            </Stroke>\
+					          </PolygonSymbolizer>\
+					"
+      }
+
+      text_SLD += "\
+				        </Rule>\
+				      </FeatureTypeStyle>\
+				    </UserStyle>\
+				  </NamedLayer>\
+				</StyledLayerDescriptor>\
+				"
+
+      var source = this.getLayer(lynm).getSource();
+      //var source = getLayerGroup(lynm).getSource();
+      source.updateParams({ 'STYLES': '' ,'SLD_BODY': text_SLD });
+    },
+    getLayer: function(id) {
+      let lyr=null;
+      var layers = this.map.getLayers().getArray();
+      for(let i in layers) {
+        const l = layers[i];
+        const thisLayerId = layers[i].get('id');
+
+        if(id === thisLayerId) {
+          lyr = l;
+          break;
+        }
+      }
+      return lyr;
+    },
   },
 };
 </script>
