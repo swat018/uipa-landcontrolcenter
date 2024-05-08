@@ -2,8 +2,7 @@
   <div class="map-container">
     <div class="map" ref="map">
         <!-- 지도 컴포넌트 -->
-        <OlMap
-        ></OlMap>
+        <OlMap />
     </div>
     <PopupLayout ref="popupLayout" v-model="isShow" :isShow="isShow" @closePopup="isShow = false"></PopupLayout>
     <PopupMenu class="popMenu" ref="popupMenu"></PopupMenu>
@@ -48,9 +47,9 @@ const openPopup = () => {
  * @param {} imoNumbers imoNumber 목록
  */
 emitter.on('selectedShip', (imoNumbers) => {
-
   alert(imoNumbers)
   // 지도에 선박 표시하는 함수 호출
+  console.log(imoNumbers);
 })
 
 
@@ -74,7 +73,7 @@ const clickShip = async (imoNumber) => {
 
       // 백엔드에 Ship이 변경되었다고 알려주는 함수
       let uuid = userInfo.value.uuid
-      changeShipByImoNumber(uuid, imoNumber)
+      // changeShipByImoNumber(uuid, imoNumber)
     }
   }
 }

@@ -27,6 +27,7 @@
 </template>
 
 <script>
+import { getShipData } from '@/api/worldMap.js'
 import "ol/ol.css";
 import "ol-ext/dist/ol-ext.css";
 import { Map, View } from "ol";
@@ -34,7 +35,7 @@ import TileLayer from 'ol/layer/Tile'
 import XYZ from 'ol/source/XYZ'
 import LayerGroup from 'ol/layer/Group'
 import VectorSource from 'ol/source/Vector'
-import { defaults as defaultControls } from "ol/control";
+import { defaults as defaultControls } from 'ol/control'
 import { transform } from 'ol/proj'
 import VectorLayer from 'ol/layer/Vector'
 import { Style, Icon } from 'ol/style'
@@ -53,8 +54,6 @@ export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: "olmap",
   components: {},
-  props: {
-  },
   data: () => ({
     baselayers: LayerGroup,
     shipSource: VectorSource,
@@ -84,7 +83,7 @@ export default {
       get() {
         return this.layerMode;
       }
-    }
+    },
   },
   mounted() {
     this.layerBright = 'Day';
@@ -115,7 +114,11 @@ export default {
           minZoom: 2, // 최소 줌 설정
           constrainResolution: true,
         }),
-        controls: defaultControls(),
+        controls: defaultControls({
+          attribution: false,
+          zoom: false,
+          rotate: false,
+        }),
       });
       return this.map;
     },
@@ -187,12 +190,12 @@ export default {
       this.shipLayer = new VectorLayer({
         source: new VectorSource({
           // features: [pointFeature]
-          url:  import.meta.env.MODE === 'development' ? 'src/assets/mockup/sship.geojson' : '/assets/mockup/sship.geojson',
+          url:  import.meta.env.DEV ? 'src/assets/mockup/sship.geojson' : '/assets/mockup/sship.geojson',
           format: new GeoJSON()
         }),
         style: new Style({
           image: new Icon({
-            src: import.meta.env.MODE === 'development' ? 'src/assets/images/shipicons/shipIcon_green.png' : '/assets/images/shipicons/shipIcon_green.png',
+            src:import.meta.env.DEV ? 'src/assets/images/shipicons/shipIcon_green.png' : '/assets/images/shipicons/shipIcon_green.png',
             scale: 0.3,
             anchor: [0.5, 0.5],
             rotateWithView: true,
@@ -208,7 +211,7 @@ export default {
       select.on('select', function(e) {
         e.selected[0].setStyle(new Style({
           image: new Icon({
-            src: import.meta.env.MODE === 'development' ? 'src/assets/images/shipicons/shipIcon_red.png' : '/assets/images/shipicons/shipIcon_green.png',
+            src: import.meta.env.DEV ? 'src/assets/images/shipicons/shipIcon_red.png' : '/assets/images/shipicons/shipIcon_green.png',
             scale: 0.3,
             anchor: [0.5, 0.5],
             rotateWithView: true,
@@ -386,10 +389,24 @@ export default {
 }
 .menuBar {
    width: 100%;
-   height: 30px;
-   background: #24281c;
+   height: 25px;
+   background: #82837f96;
 }
 .menuBar select {
   -webkit-appearance: auto;
+  border-style: solid;
+  background: #82837f96;
+}
+.menuBar select option {
+  background: #82837f96;
+}
+
+.ol-zoom-in {
+  width: 2em;
+  height: 2em;
+}
+.ol-zoom-out {
+  width: 2em;
+  height: 2em;
 }
 </style>
