@@ -59,7 +59,7 @@ emitter.on('clickShipName', (imoNumber) => {
 
 const clickShip = async (imoNumber) => {
 
-  // await mapStore.fetchShipSummary(imoNumber);
+  await mapStore.fetchShipSummary(imoNumber);
 
   console.log(!clickedShipInfo.value)
 
@@ -73,7 +73,7 @@ const clickShip = async (imoNumber) => {
 
       // 백엔드에 Ship이 변경되었다고 알려주는 함수
       let uuid = userInfo.value.uuid
-      // changeShipByImoNumber(uuid, imoNumber)
+      changeShipByImoNumber(uuid, imoNumber)
     }
   }
 }

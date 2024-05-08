@@ -51,7 +51,6 @@ const urlBefore = 'http://navioncorp.asuscomm.com:8080/TileMap/';
 const urlAfter = '/{z}/{x}/{-y}.png';
 
 export default {
-  // eslint-disable-next-line vue/multi-word-component-names
   name: "olmap",
   components: {},
   data: () => ({
@@ -218,7 +217,7 @@ export default {
             rotation: 0
           })
         }));
-        emitter.emit('clickShipName', '3242311');
+        emitter.emit('clickShipName', '9876543');
       });
     },
     makeSld: function(lynm, type, color1, color2) {
