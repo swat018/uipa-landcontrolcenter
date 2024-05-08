@@ -1,6 +1,6 @@
 <template>
   <div class="menuBar">
-    <table>
+    <table class="menuTable">
       <tr>
         <td width="20px"></td>
         <td>
@@ -388,25 +388,21 @@ export default {
   height: 100%;
 }
 .menuBar {
-   width: 100%;
-   height: 25px;
-   background: #82837f96;
+  width: 100%;
+  height: 25px;
+  background: #82837f96;
 }
 .menuBar select {
-  -webkit-appearance: auto;
+  -webkit-appearance: listbox;
   border-style: solid;
   background: #82837f96;
 }
 .menuBar select option {
   background: #82837f96;
 }
-
-.ol-zoom-in {
-  width: 2em;
-  height: 2em;
-}
-.ol-zoom-out {
-  width: 2em;
-  height: 2em;
+.menuTable {
+  display: inline-block;
+  float: right;
+  margin-right: 1em;
 }
 </style>
