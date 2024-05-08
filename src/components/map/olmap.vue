@@ -4,7 +4,7 @@
       <tr>
         <td width="20px"></td>
         <td>
-          <select id="brightSelect" v-model="brightSelected">
+          <select id="brightSelect" v-model="brightSelected" style='background-color: black; color: white'>
             <option value='Day' selected>Day</option>
             <option value='Dusk'>Dusk</option>
             <option value='Night'>Night</option>
@@ -14,7 +14,7 @@
         <td width="5px">
         </td>
         <td>
-          <select id="modeSelect" v-model="modeSelected">
+          <select id="modeSelect" v-model="modeSelected" style='background-color: black; color: white'>
             <option value='Base' selected>Base</option>
             <option value='Standard'>Standard</option>
             <option value='Full'>Full</option>
