@@ -2,7 +2,7 @@
   <div class="map-container">
     <div class="map" ref="map">
         <!-- 지도 컴포넌트 -->
-        <OlMap />
+        <OlMap v-bind:propsdata="imoNumberList"  />
     </div>
     <PopupLayout ref="popupLayout" v-model="isShow" :isShow="isShow" @closePopup="isShow = false"></PopupLayout>
     <PopupMenu class="popMenu" ref="popupMenu"></PopupMenu>
@@ -12,15 +12,13 @@
 <script setup>
 /* eslint-disable */
 import { ref, inject } from "vue";
-import { onBeforeMount } from "vue";
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from "@/stores/authStore";
 import { useMapStore } from '@/stores/mapStore'
 import { changeShipByImoNumber } from '@/api/worldMap.js'
 import emitter from '@/composables/eventbus.js'
-
 import OlMap from "@/components/map/OlMap.vue";
-const olMap = ref(null);
+
 
 /**
  * 팝업 레이아웃 import
@@ -31,7 +29,7 @@ import PopupMenu from '@/views/map/popup/PopupMenu.vue'
 const authStore = useAuthStore()
 const { userInfo } = storeToRefs(authStore)
 const mapStore = useMapStore()
-const { clickedShipInfo } = storeToRefs(mapStore)
+const { clickedShipInfo, imoNumberList } = storeToRefs(mapStore)
 
 const popupLayout = ref(null);
 const popupMenu = ref(null)
@@ -42,16 +40,22 @@ const openPopup = () => {
   return isShow.value;
 }
 
+
 /**
  * 좌측 사이드바에서 선박 선택했을 때, 선박 imoNumber 전달받는 함수
  * @param {} imoNumbers imoNumber 목록
  */
 emitter.on('selectedShip', (imoNumbers) => {
-  alert(imoNumbers)
+  // alert(imoNumbers)
   // 지도에 선박 표시하는 함수 호출
-  console.log(imoNumbers);
+  imoNumberList.value = imoNumbers;
+  emitter.emit('imoNumberList', imoNumbers);
+  // shipData(imoNumbers);
 })
 
+const shipData = async (imoNumbers) => {
+  await mapStore.fetchShipData(imoNumbers);
+}
 
 emitter.on('clickShipName', (imoNumber) => {
   clickShip(imoNumber)

@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { getShipInfo, getShipAisInfo } from '@/api/shipApi.js'
-import { getVoyageList } from '@/api/worldMap.js'
+import { getVoyageList, getShipData } from '@/api/worldMap.js'
 import { useToast } from '@/composables/useToast'
 import {convertNumberFormat, convertDateType, convertDateTimeType } from '@/composables/util'
 import { resetObject } from '@/composables/util'
@@ -36,8 +36,11 @@ export const useMapStore = defineStore('mapManagement', () => {
     speed: 0,
     draft: 0
   })
-  
-    const voyageList = ref([])
+
+  const voyageList = ref([])
+
+  const imoNumberList = ref([])
+
   /**
    * 지도 위 클릭한 선박 정보 조회
    * @returns
@@ -77,44 +80,59 @@ export const useMapStore = defineStore('mapManagement', () => {
       data.process = data.process.toFixed(1)
 
       console.log(data.speed)
-      
+
       aisInfo.value = data;
     }catch(error){
       console.error(error)
     }
   }
 
-    const fetchVoyageList = async (imoNumber) => {
-      try {
-        const response = await getVoyageList(imoNumber)
-        let {
-          data: { data }
-        } = response
+  const fetchVoyageList = async (imoNumber) => {
+    try {
+      const response = await getVoyageList(imoNumber)
+      let {
+        data: { data }
+      } = response
 
-        voyageList.value = data
-      } catch (error) {
-        console.error(error)
-      }
+      voyageList.value = data
+    } catch (error) {
+      console.error(error)
     }
+  }
 
-    const $reset = ()=>{
-      resetObject(clickedShipInfo.value)
-      resetObject(selectedPopMenu)
-      selectedPopMenu.value = null
-      voyageList.value = []
+  const fetchShipData = async (imoNumberList) => {
+    try {
+      const response = await getShipData(imoNumberList)
+      let {
+        data: { data }
+      } = response
+
+      console.log(data)
+    } catch (error) {
+      console.error(error)
     }
+  }
+
+  const $reset = ()=>{
+    resetObject(clickedShipInfo.value)
+    resetObject(selectedPopMenu)
+    selectedPopMenu.value = null
+    voyageList.value = []
+  }
 
   return {
     aisInfo,
     voyageList,
+    imoNumberList,
     clickedShipInfo,
     selectedPopMenu,
     fetchShipSummary,
     fetchShipAisInfo,
     fetchVoyageList,
+    fetchShipData,
     $reset
   }
- }, 
+ },
 //{
 //   persist : true
 // }

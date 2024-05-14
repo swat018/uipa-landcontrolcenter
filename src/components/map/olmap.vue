@@ -1,5 +1,5 @@
 <template>
-  <div class="menuBar">
+  <div class="menuBar" style="background-color:#b1b1b180">
     <table class="menuTable">
       <tr>
         <td width="20px"></td>
@@ -27,7 +27,6 @@
 </template>
 
 <script>
-import { getShipData } from '@/api/worldMap.js'
 import "ol/ol.css";
 import "ol-ext/dist/ol-ext.css";
 import { Map, View } from "ol";
@@ -45,14 +44,15 @@ import { GeoJSON } from 'ol/format'
 import Select from 'ol/interaction/Select'
 import emitter from '@/composables/eventbus'
 import { TileWMS } from 'ol/source'
+import { useMapStore } from '@/stores/mapStore'
 
 
 const urlBefore = 'http://navioncorp.asuscomm.com:8080/TileMap/';
 const urlAfter = '/{z}/{x}/{-y}.png';
 
+
 export default {
   name: "olmap",
-  components: {},
   data: () => ({
     baselayers: LayerGroup,
     shipSource: VectorSource,
@@ -61,7 +61,10 @@ export default {
     layerMode: String,
     mapTypeId: String,
     map: null,
+    imoNumbers: [],
+    isClick: false
   }),
+  props: ['propsdata'],
   computed: {
     brightSelected: {
       set(value) {
@@ -84,7 +87,13 @@ export default {
       }
     },
   },
-  mounted() {
+  watch: {
+    propsdata: function() {
+      this.imoNumbers = this.propsdata;
+      this.setShipLayer();
+    }
+  },
+  mounted: async function() {
     this.layerBright = 'Day';
     this.layerMode = 'Base';
     this.mapTypeId = 'Day_Base';
@@ -97,7 +106,6 @@ export default {
         visible: true
       })
     this.initMap();
-    this.setShipLayer();
     this.$emit('init', this.map);
     this.shipSelectEvent();
   },
@@ -135,12 +143,11 @@ export default {
             visible: true,
           })
         );
-      }
-      else if (mapBright === 'Black') {
+      } else if (mapBright === 'Black') {
         this.map.getLayers().clear();
         this.map.addLayer(
           new TileLayer({
-            id : 'ocean',
+            id: 'ocean',
             title: 'ocean',
             opacity: 1,
             zIndex: -1,
@@ -149,9 +156,9 @@ export default {
               serverType: 'geoserver',
               crossOrigin: 'anonymous',
               params: {
-                'VERSION': '1.1.0' ,
+                'VERSION': '1.1.0',
                 'LAYERS': 'emap:ocean',
-                'CRS' : 'EPSG:3857',
+                'CRS': 'EPSG:3857',
                 //'CRS' : 'EPSG:404000',
               },
             })
@@ -160,7 +167,7 @@ export default {
         this.makeSld("ocean", "Polygon1_1", "17284F", null);
         this.map.addLayer(
           new TileLayer({
-            id : 'worldcountries',
+            id: 'worldcountries',
             title: 'worldcountries',
             opacity: 1,
             zIndex: -1,
@@ -169,9 +176,9 @@ export default {
               serverType: 'geoserver',
               crossOrigin: 'anonymous',
               params: {
-                'VERSION': '1.1.0' ,
+                'VERSION': '1.1.0',
                 'LAYERS': 'emap:worldcountries',
-                'CRS' : 'EPSG:3857',
+                'CRS': 'EPSG:3857',
               },
             })
           })
@@ -182,19 +189,29 @@ export default {
     },
     setShipLayer: function() {
       var pointFeature = new Feature({
-        geometry: new Point([Number(129.47939163245047),Number(35.343702931513434)])
+        geometry: new Point([Number(129.47939163245047), Number(35.343702931513434)])
       });
-      pointFeature.getGeometry().transform( 'EPSG:4326',  'EPSG:3857');
+      pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+
+      var temp;
+      this.propsdata.forEach((imoNumber) => {
+        if (temp !== undefined) temp = temp + ',' +imoNumber;
+        else temp = imoNumber;
+      });
+
+      console.log(temp)
+
+      this.shipData(temp);
 
       this.shipLayer = new VectorLayer({
         source: new VectorSource({
           // features: [pointFeature]
-          url:  import.meta.env.DEV ? 'src/assets/mockup/sship.geojson' : '/assets/mockup/sship.geojson',
+          url: import.meta.env.DEV ? 'src/assets/mockup/sship.geojson' : '/assets/mockup/sship.geojson',
           format: new GeoJSON()
         }),
         style: new Style({
           image: new Icon({
-            src:import.meta.env.DEV ? 'src/assets/images/shipicons/shipIcon_green.png' : '/assets/images/shipicons/shipIcon_green.png',
+            src: import.meta.env.DEV ? 'src/assets/images/shipicons/shipIcon_green.png' : '/assets/images/shipicons/shipIcon_green.png',
             scale: 0.3,
             anchor: [0.5, 0.5],
             rotateWithView: true,
@@ -205,20 +222,23 @@ export default {
       this.map.addLayer(this.shipLayer);
     },
     shipSelectEvent: function() {
-      var select = new Select();
-      this.map.addInteraction(select);
-      select.on('select', function(e) {
-        e.selected[0].setStyle(new Style({
-          image: new Icon({
-            src: import.meta.env.DEV ? 'src/assets/images/shipicons/shipIcon_red.png' : '/assets/images/shipicons/shipIcon_green.png',
-            scale: 0.3,
-            anchor: [0.5, 0.5],
-            rotateWithView: true,
-            rotation: 0
-          })
-        }));
-        emitter.emit('clickShipName', '9876543');
-      });
+      this.isClick = !this.isClick;
+      if (this.isClick) {
+        var select = new Select();
+        this.map.addInteraction(select);
+        select.on('select', function(e) {
+          e.selected[0].setStyle(new Style({
+            image: new Icon({
+              src: import.meta.env.DEV ? 'src/assets/images/shipicons/shipIcon_red.png' : '/assets/images/shipicons/shipIcon_red.png',
+              scale: 0.3,
+              anchor: [0.5, 0.5],
+              rotateWithView: true,
+              rotation: 0
+            })
+          }));
+          emitter.emit('clickShipName', '9876543');
+        });
+      }
     },
     makeSld: function(lynm, type, color1, color2) {
       var text_SLD = "\
@@ -238,7 +258,7 @@ export default {
 					        <Rule>\
 					"
 
-      if(type == "Polygon1") {
+      if (type == "Polygon1") {
         text_SLD += "\
 					          <PolygonSymbolizer>\
             					<Fill>\
@@ -246,7 +266,7 @@ export default {
 					            </Fill>\
 					          </PolygonSymbolizer>\
 					"
-      } else if(type == "Polygon1_1") { // 경도 경계에 흰색 선 생기는 것 방지 : 테두리를 최소화하고 색상 동일화
+      } else if (type == "Polygon1_1") { // 경도 경계에 흰색 선 생기는 것 방지 : 테두리를 최소화하고 색상 동일화
         text_SLD += "\
 					          <PolygonSymbolizer>\
             					<Fill>\
@@ -258,7 +278,7 @@ export default {
 					            </Stroke>\
 					          </PolygonSymbolizer>\
 					"
-      } else if(type == "Polygon1_2") { // 경도 경계에 흰색 선 생기는 것 방지 : 테두리를 최소화하고 색상 동일화
+      } else if (type == "Polygon1_2") { // 경도 경계에 흰색 선 생기는 것 방지 : 테두리를 최소화하고 색상 동일화
         text_SLD += "\
 					          <PolygonSymbolizer>\
             					<Fill>\
@@ -270,7 +290,7 @@ export default {
 					            </Stroke>\
 					          </PolygonSymbolizer>\
 					"
-      } else if(type == "Polygon2") {
+      } else if (type == "Polygon2") {
         text_SLD += "\
 					          <PolygonSymbolizer>\
 					            <Fill>\
@@ -360,24 +380,28 @@ export default {
 
       var source = this.getLayer(lynm).getSource();
       //var source = getLayerGroup(lynm).getSource();
-      source.updateParams({ 'STYLES': '' ,'SLD_BODY': text_SLD });
+      source.updateParams({ 'STYLES': '', 'SLD_BODY': text_SLD });
     },
     getLayer: function(id) {
-      let lyr=null;
+      let lyr = null;
       var layers = this.map.getLayers().getArray();
-      for(let i in layers) {
+      for (let i in layers) {
         const l = layers[i];
         const thisLayerId = layers[i].get('id');
 
-        if(id === thisLayerId) {
+        if (id === thisLayerId) {
           lyr = l;
           break;
         }
       }
       return lyr;
     },
-  },
-};
+    shipData: async function(imoNumbers) {
+      const mapStore = useMapStore()
+      await mapStore.fetchShipData(imoNumbers);
+    }
+  }
+}
 </script>
 
 <style scoped>
