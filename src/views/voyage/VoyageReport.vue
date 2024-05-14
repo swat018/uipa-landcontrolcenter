@@ -1,97 +1,122 @@
 <template>
-  <div class="detail-page voyage-report d-flex flex-column pa-4">
-    <v-sheet class="pa-4 rounded-lg report-container">
-      <!-- 필터 -->
-      <div class="d-flex justify-space-between align-center mb-4">
-        <div class="title">항차 리포트</div>
-        <div class="d-flex align-center ga-3">
-          <v-btn-toggle v-model="shipCondition" color="#39393D" rounded="0" :mandatory="true" group
-            density="comfortable">
-            <v-btn value="all" :class="shipCondition == 'all' ? 'active' : 'inactive'">
-              All
-            </v-btn>
-            <v-btn value="ballast" :class="shipCondition == 'ballast' ? 'active' : 'inactive'">
-              BALLAST
-            </v-btn>
-            <v-btn value="laden" :class="shipCondition == 'laden' ? 'active' : 'inactive'">
-              LADEN
-            </v-btn>
-          </v-btn-toggle>
-
-          <div class="d-flex ga-2">
-            <div class="datePicker"><input type="date" v-model="startDate" :max="todayDate" /></div>
-            <div class="datePicker"><input type="date" v-model="endDate" :min="startDate" :disabled="endDateStatus" />
+  <v-container fluid class="h-100 management-page detail-page">
+    <v-row class="ma-0 h-100">
+      <v-col cols="12">
+        <v-card class="h-100" rounded="30">
+          <v-card-title class="d-flex justify-space-between align-center">
+            <div>항차 리포트</div>
+            <!-- <v-btn @click="exportPdf">출력</v-btn> -->
+            <div class="d-flex align-center ga-3">
+              <div class="d-flex ga-2">
+               <input type="date" v-model="startDate" :max="todayDate" class="noticeList-datePicker" />
+                <input type="date" v-model="endDate" :min="startDate" class="noticeList-datePicker"
+                    :disabled="endDateStatus" />
+                
+                <i-btn @click="filterDate()" text="조회" width="90"></i-btn>
+                <i-btn @click="openVoyagePopup()" text="등록" width="80" prepend-icon="mdi-plus" color="#3D3D40"></i-btn>
+              </div>
             </div>
-            <i-btn @click="filterDate()" text="조회" width="90"></i-btn>
-            <i-btn @click="openVoyagePopup()" text="등록" width="80" prepend-icon="mdi-plus" color="#3D3D40"></i-btn>
-          </div>
-        </div>
-      </div>
+          </v-card-title>
 
-      <!-- 리포트 -->
-      <DxDataGrid id="voyageGrid" ref="voyageGrid" :data-source="voyages" key-expr="id" @row-click="clickVoyage"
-        :column-auto-width="true">
-        <DxSelection mode="single"></DxSelection>
+          <v-card-text>
+            <!-- 리포트 -->
+            <DxDataGrid id="voyageGrid" ref="voyageGrid" class="title-container" :data-source="voyages" key-expr="id"
+              @row-click="clickVoyage" :column-auto-width="true" :show-borders="true">
+              <DxSelection mode="single"></DxSelection>
 
-        <DxColumn data-field="startPort" caption="Departure" :allow-editing="false" alignment="center"
-          cell-template="departure-template" width="10%" min-width="120">
-        </DxColumn>
-        <template #departure-template="{ data: templateOptions }">
-          <PortInfo :portName="templateOptions.data.startPortInfo.name" :time="templateOptions.data.startTime"
-            :country="templateOptions.data.startPortInfo.country" class="d-flex flex-column justify-center">
-          </PortInfo>
-        </template>
-        <DxColumn data-field="startTime" :visible="false">
-        </DxColumn>
+              <DxColumn data-field="departure" caption="Departure" :allow-editing="false" alignment="center"
+                cell-template="departure-template">
+              </DxColumn>
+              <template #departure-template="{ data: templateOptions }">
+                <PortInfo :portName="templateOptions.data.departurePortInfo.name"
+                  :time="templateOptions.data.departureTime" :country="templateOptions.data.departurePortInfo.country"
+                  class="d-flex flex-column justify-center">
+                </PortInfo>
+              </template>
+              <DxColumn data-field="departureTime" :visible="false">
+              </DxColumn>
 
-        <DxColumn data-field="endPort" caption="Arrival" cell-template="arrival-template" :allow-editing="false"
-          width="10%" min-width="120" alignment="center">
-        </DxColumn>
-        <template #arrival-template="{ data: templateOptions }">
-          <PortInfo :portName="templateOptions.data.endPortInfo.name" :time="templateOptions.data.endTime"
-            :country="templateOptions.data.endPortInfo.country">
-          </PortInfo>
-        </template>
-        <DxColumn data-field="endTime" :visible="false"></DxColumn>
-        <DxColumn data-field="condition" caption="Condition" alignment="center" :allow-editing="false"></DxColumn>
-        <DxColumn data-field="load" caption="Load(%)" alignment="center" :allow-editing="false"></DxColumn>
-        <DxColumn data-field="rpm" caption="RPM" alignment="center" :allow-editing="false"></DxColumn>
-        <DxColumn data-field="speed" caption="Speed(kn)" alignment="center" :allow-editing="false"></DxColumn>
-        <DxColumn data-field="underway" caption="Underway(h)" alignment="center" :allow-editing="false"></DxColumn>
-        <DxColumn data-field="distance" caption="Distance(nm)" alignment="center" :allow-editing="false"></DxColumn>
-        <DxColumn data-field="slip" caption="Slip(%)" alignment="center" :allow-editing="false"></DxColumn>
-        <DxColumn data-field="bf" caption="BF" alignment="center" :allow-editing="false"></DxColumn>
-        <DxColumn data-field="dfoc" caption="DFOC(hours)" alignment="center" :allow-editing="false"></DxColumn>
-        <DxColumn data-field="cargoCarried" caption="Cargo Carried(t)" alignment="center" :allow-editing="false">
-        </DxColumn>
-        <DxColumn data-field="eeoi" caption="EEOI" alignment="center" :allow-editing="false"></DxColumn>
-        <DxColumn data-field="id" caption="Export" cell-template="pdf-template" alignment="center"
-          :allow-editing="false">
-        </DxColumn>
-        <DxColumn cell-template="edit-template" aliignment="center"></DxColumn>
-        <template #pdf-template="{ data: templateOptions }">
-          <div class="d-inline-flex justify-center pa-1 rounded-lg" style="background-color : #B30B00">
-            <v-img :src="pdfIcon" :width="25" @click="exportPdf(templateOptions.data.id)"></v-img>
-          </div>
-        </template>
-        <template #edit-template="{ data: templateOptions }">
-          <v-btn icon="mdi-square-edit-outline" @click="openEditPopup(templateOptions.data.id)"></v-btn>
-        </template>
-        <DxMasterDetail :enabled="false" template="detailTemplate"></DxMasterDetail>
+              <DxColumn data-field="arrival" caption="Arrival" cell-template="arrival-template" :allow-editing="false"
+                alignment="center">
+              </DxColumn>
+              <template #arrival-template="{ data: templateOptions }">
+                <PortInfo :portName="templateOptions.data.arrivalPortInfo.name" :time="templateOptions.data.arrivalTime"
+                  :country="templateOptions.data.arrivalPortInfo.country">
+                </PortInfo>
+              </template>
+              <DxColumn data-field="arrivalTime" :visible="false"></DxColumn>
+              <DxColumn data-field="load" caption="Load(%)" alignment="center" :allow-editing="false"
+                header-cell-template="load-header"></DxColumn>
+              <template #load-header="{ data }">
+                <p>Load <br> (%)</p>
+              </template>
+              <DxColumn data-field="rpm" caption="RPM" alignment="center" :allow-editing="false"></DxColumn>
+              <DxColumn data-field="speed" caption="Speed(kn)" alignment="center" :allow-editing="false"
+                header-cell-template="speed-header"></DxColumn>
+              <template #speed-header="{ data }">
+                <p>Speed <br> (kn)</p>
+              </template>
+              <DxColumn data-field="underway" caption="Underway(h)" alignment="center" :allow-editing="false"
+                header-cell-template="underway-header" />
+              <template #underway-header="{ data }">
+                <p>Underway <br> (h)</p>
+              </template>
+              <DxColumn data-field="distance" caption="Distance(nm)" alignment="center" :allow-editing="false"
+                header-cell-template="distance-header">
+              </DxColumn>
+              <template #distance-header="{ data }">
+                <p>Distance<br>(nm)</p>
+              </template>
+              <DxColumn data-field="slip" caption="Slip(%)" alignment="center" :allow-editing="false"
+                header-cell-template="slip-header" />
+              <template #slip-header="{ data }">
+                <p>slip<br>(%)</p>
+              </template>
+              <DxColumn data-field="bf" caption="BF" alignment="center" :allow-editing="false"></DxColumn>
+              <DxColumn data-field="foc" caption="FOC(t)" alignment="center" :allow-editing="false"
+                header-cell-template="foc-header"></DxColumn>
+              <template #foc-header=" { data }">
+                <p>FOC<br>(t)</p>
+              </template>
+              <DxColumn data-field="eeoi" caption="EEOI" alignment="center" :allow-editing="false"></DxColumn>
 
-        <template #detailTemplate="{ data: voyageDetail }">
-          <VoyageReportDetail :template-data="voyageDetail" />
-        </template>
-        <DxPaging :page-size="10" />
-        <DxScrolling mode="virtual" />
-      </DxDataGrid>
+              <DxColumn caption="action" cell-template="edit-template" alignment="center"></DxColumn>
+              <template #edit-template="{ data: templateOptions }">
+                <div class="d-flex justify-space-between">
+                  <v-btn class="d-inline-flex justify-center actionBtn" icon="mdi-file-chart-outline"></v-btn>
+                  <v-btn class="d-inline-flex justify-center actionBtn" icon="mdi-square-edit-outline"
+                    @click="openEditPopup(templateOptions.data.id)"></v-btn>
+                  <v-btn class="d-inline-flex justify-center actionBtn" icon="mdi-trash-can-outline"
+                    @click="openDeleteModal(templateOptions.data.id)"></v-btn>
+                </div>
+              </template>
+              <DxMasterDetail :enabled="false" template="detailTemplate"></DxMasterDetail>
 
-      <VoyageRegisterForm v-model="isShow" @addVoyage="addVoyage" @closePopup="isShow = false"></VoyageRegisterForm>
-      <VoyageEditForm v-model="isShowEditForm" :id="voyageId" @editVoyage="editVoyage"
-        @closePopup="isShowEditForm = false">
-      </VoyageEditForm>
-    </v-sheet>
-  </div>
+              <template #detailTemplate="{ data: voyageDetail }">
+                <VoyageReportDetail :template-data="voyageDetail" />
+              </template>
+              <!-- <DxPaging :page-size="10" /> -->
+              <DxScrolling mode="virtual" />
+            </DxDataGrid>
+
+            <VoyageRegisterForm v-model="isShow" @addVoyage="addVoyage" @closePopup="isShow = false">
+            </VoyageRegisterForm>
+            <VoyageEditForm v-model="isShowEditForm" :id="voyageId" @editVoyage="editVoyage"
+              @editVoyageInfo="editVoyageInfo" @closePopup="isShowEditForm = false">
+            </VoyageEditForm>
+            <AppModal v-model="isShowDeleteModal" @close="closeDeleteModal">
+              <template #default>
+                <p>정말로 항차를 삭제하시겠습니까?</p>
+              </template>
+              <template #actions>
+                <i-btnGroup type="confirm" @close="closeDeleteModal" @confirm="removeVoyage"></i-btnGroup>
+              </template>
+            </AppModal>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script setup>
@@ -102,12 +127,14 @@ import { convertDateType, isValidDateRange, addDay } from '@/composables/util.js
 import emitter from '@/composables/eventbus.js'
 import { useToast } from '@/composables/useToast'
 import { useVoyageStore } from '@/stores/voyageStore'
-import { insertVoyage, updateVoyage } from '@/api/voyage'
+import { insertVoyage, updateVoyage, updateVoyageInfo } from '@/api/voyage'
+import { jsPDF } from 'jspdf';
 
 import VoyageReportDetail from '@/views/voyage/VoyageReportDetail.vue';
 import VoyageRegisterForm from '@/views/voyage/form/VoyageRegisterForm.vue';
 import VoyageEditForm from '@/views/voyage/form/VoyageEditForm.vue';
 import PortInfo from '@/components/voyage/PortInfo.vue';
+import AppModal from '@/components/modal/AppModal.vue'
 
 import pdfIcon from '@/assets/images/file-pdf-one.png'
 
@@ -121,6 +148,7 @@ const voyageInstance = ref('')
 
 const isShow = ref(false)
 const isShowEditForm = ref(false)
+const isShowDeleteModal = ref(false)
 
 const { showResMsg } = useToast()
 
@@ -131,6 +159,8 @@ const voyageId = ref()
 
 const todayDate = ref()
 
+let selectedShipImoNumber = ''
+
 onMounted(() => {
   voyageInstance.value = getDxGridInstance(voyageGrid)
   // getAllVoyageByImoNumber()c
@@ -140,7 +170,6 @@ onMounted(() => {
 })
 
 const clickVoyage = (e) => {
-  console.log(e)
   const isExpanded = e.component.isRowExpanded(e.key)
 
   if (isExpanded) {
@@ -162,6 +191,7 @@ watch(startDate, () => {
 })
 
 const getAllVoyageByImoNumber = async (imoNumber) => {
+  selectedShipImoNumber = imoNumber
   await voyageStore.fetchAllVoyageByImoNumber(imoNumber)
 }
 
@@ -171,20 +201,20 @@ const openVoyagePopup = () => {
 }
 
 const addVoyage = async (newVoyageData) => {
-  const { startPort, endPort, startTime, endTime } = newVoyageData;
-  newVoyageData.imoNumber = '9876544'
+  const { departure, arrival, departureTime, arrivalTime } = newVoyageData;
+  newVoyageData.imoNumber = selectedShipImoNumber;
 
-  if (!startPort || !endPort) {
+  if (!departure || !arrival) {
     showResMsg('출발지 또는 목적지는 필수 입력 항목입니다')
     return;
   }
 
-  if (startPort == endPort) {
+  if (departure == arrival) {
     showResMsg('출발지와 목적지가 같습니다')
     return;
   }
 
-  if (!isValidDateRange(startTime, endTime)) {
+  if (!isValidDateRange(departureTime, arrivalTime)) {
     showResMsg('도착시각이 출발시각보다 빠릅니다')
     return;
   }
@@ -193,46 +223,83 @@ const addVoyage = async (newVoyageData) => {
 
   if (response.status == 201) {
     isShow.value = false;
-    getAllVoyageByImoNumber()
+    getAllVoyageByImoNumber(selectedShipImoNumber)
     showResMsg('항차 정보가 등록되었습니다')
   }
 }
 
 const editVoyage = async (voyageEditForm) => {
-  const { startPort, endPort, startTime, endTime } = voyageEditForm;
 
-  if (!startPort || !endPort) {
+  const response = await updateVoyage(voyageEditForm)
+
+  if (response.status == 200) {
+    isShowEditForm.value = false;
+    voyageId.value = null
+    showResMsg('해당 항차 정보가 수정되었습니다')
+    getAllVoyageByImoNumber(selectedShipImoNumber)
+  }
+}
+
+const editVoyageInfo = async (voyageEditForm) => {
+  const { departure, arrival, departureTime, arrivalTime } = voyageEditForm;
+  console.dir(voyageEditForm)
+  if (!departure || !arrival) {
     showResMsg('출발지 또는 목적지는 필수 입력 항목입니다')
     return;
   }
 
-  if (startPort == endPort) {
+  if (departure == arrival) {
     showResMsg('출발지와 목적지가 같습니다')
     return;
   }
 
-  if (!isValidDateRange(startTime, endTime)) {
+  if (!isValidDateRange(departureTime, arrivalTime)) {
     showResMsg('도착시각이 출발시각보다 빠릅니다')
     return;
   }
 
-  const response = await updateVoyage(voyageEditForm)
+  const response = await updateVoyageInfo(voyageEditForm)
 
   if (response.status == 201) {
     isShowEditForm.value = false;
-    getAllVoyageByImoNumber()
+    voyageId.value = null
     showResMsg('해당 항차 정보가 수정되었습니다')
+    getAllVoyageByImoNumber(selectedShipImoNumber)
   }
 }
-
 
 const openEditPopup = (id) => {
   voyageId.value = id;
   isShowEditForm.value = true;
 }
 
+let deleteVoyageId = null
+const openDeleteModal = (id) => {
+  isShowDeleteModal.value = true;
+  deleteVoyageId = id;
+}
+const closeDeleteModal = () => {
+  isShowDeleteModal.value = false;
+}
+const removeVoyage = () => {
+  console.log(deleteVoyageId)
+  voyageStore.removeVoyageById(deleteVoyageId);
+  closeDeleteModal()
+}
+
 const exportPdf = (id) => {
 
+  let el = document.querySelector('.detail-page')
+  const doc = new jsPDF();
+
+  doc.text("Hello world!", 10, 10)
+  doc.html(el, {
+    callback: function (doc) {
+      doc.save()
+    },
+    x: 10,
+    y: 10
+  })
 }
 
 const filterShipCondition = () => {
@@ -258,7 +325,7 @@ const filterDate = () => {
   let addedEndDate = addDay(endDate.value, 1);
   addedEndDate = convertDateType(addedEndDate)
 
-  voyageInstance.value.filter(['startTime', '>=', startDate.value], "and", ['startTime', '<=', addedEndDate])
+  voyageInstance.value.filter(['departureTime', '>=', startDate.value], "and", ['departureTime', '<=', addedEndDate])
 }
 
 watch(shipCondition, filterShipCondition)
@@ -290,7 +357,17 @@ watch(shipCondition, filterShipCondition)
   height: calc(100vh - 65px - 32px);
 }
 
-#voyageGrid {
+/* #voyageGrid {
   height: calc(100% - 60px);
+} */
+
+.v-btn--icon.v-btn--density-default.actionBtn {
+  width: 35px;
+  height: 35px;
+  /* padding: 4px; */
+}
+
+.actionBtn i {
+  font-size: 20px;
 }
 </style>

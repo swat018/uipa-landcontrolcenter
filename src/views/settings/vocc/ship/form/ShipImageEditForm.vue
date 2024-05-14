@@ -47,8 +47,6 @@ onMounted(()=> {
 
 // 선박 정보 조회
 const fetchShipInformation = async () => {
-  console.log('imoNumber')
-  console.log(props.shipImoNumber)
   const result = await shipStore.fetchShipInfo(props.shipImoNumber)
   const shipImage = shipInfo.value.shipImage
   if (shipImage){
@@ -87,6 +85,7 @@ const changeShipImage = () => {
 
       const result = await new Uint8Array(convertedImage)
       const response = await shipStore.changeShipImage(props.shipImoNumber, result)
+
       if (response == 200) {
         showResMsg('선박 이미지가 업데이트 되었습니다')
       }

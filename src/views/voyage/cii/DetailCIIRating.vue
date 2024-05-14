@@ -1,46 +1,43 @@
 <template>
-  <div class="pa-4">
-    <v-sheet class="pa-4 rounded-lg cii-container">
-      <v-tabs v-model="tab" color="#5789FE">
-        <v-tab value="monitoring">항차별 CII Monitoring</v-tab>
-        <v-tab value="report">연간 CII Report</v-tab>
-        <v-tab value="simulation">CII 시뮬레이션</v-tab>
-      </v-tabs>
+  <v-sheet class="ma-6 px-6 rounded-lg tabs-container" style="overflow: hidden;">
+    <v-tabs v-model="tab" color="#5789FE">
+      <v-tab value="monitoring">항차별 CII Monitoring</v-tab>
+      <v-tab value="report">연간 CII Report</v-tab>
+      <v-tab value="simulation">CII 시뮬레이션</v-tab>
+    </v-tabs>
 
-      <v-window v-model="tab" class="cii-tab-container d-flex flex-column">
-        <!-- CCTV -->
-        <v-window-item value="monitoring">
-          <CllMonitoring></CllMonitoring>
-        </v-window-item>
+    <v-window v-model="tab" style="overflow: visible;">
+      <!-- CII Monitoring -->
+      <v-window-item value="monitoring" style="height: calc(100vh - 199px);">
+        <CllMonitoring />
+      </v-window-item>
 
-        <!-- AnualCIIReport -->
-        <v-window-item value="report" class="overflow-y-auto">
-          <AnualCIIReport></AnualCIIReport>
-          <!-- <div>test2</div> -->
-        </v-window-item>
+      <!-- Report -->
+      <v-window-item value="report" style="height: calc(100vh - 199px);">
+        <AnualCIIReport />
+      </v-window-item>
 
-        <!-- RADAR  -->
-        <v-window-item value="simulation">
-          <!-- <div>test3</div> -->
-        </v-window-item>
-      </v-window>
-    </v-sheet>
-  </div>
+      <!-- Simulation  -->
+      <v-window-item value="simulation" style="height: calc(100vh - 199px);">
+        <CllSimulation />
+      </v-window-item>
+    </v-window>
+  </v-sheet>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-
-import ShipFilter from '@/components/ShipFilter.vue';
 import AnualCIIReport from '@/views/voyage/cii/AnualCIIReport.vue'
 import CllMonitoring from '@/views/voyage/cii/CllMonitoring.vue';
+import CllSimulation from '@/views/voyage/cii/CIISimulation.vue';
 
 
-const tab = ref('monitoring')
+const tab = ref(null)
+
 </script>
 
-<style>
-.cii-tab-container .v-window__container {
+<style scoped>
+/* .cii-tab-container .v-window__container {
   flex: 1 1 auto;
 }
 
@@ -48,5 +45,5 @@ const tab = ref('monitoring')
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
-}
+} */
 </style>

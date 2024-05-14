@@ -1,33 +1,38 @@
-@use "variable.scss" as v;
-
-$appBarHeight : 65px;
-$serchHeight : 105px;
-$paddingHeight: 8px;
-$filterHeight : 45px;
-$marginHeight : 16px;
-$cardTitleHeight : 65px;
-$tabTitleHeight : 48px;
-$colPaddingHeight : 12px;
-$dxGridHeaderHeight : 35px;
-$chartCardTitleHeight : 52px;
-$chartLabelHeight : 45px;
-$shipFilterHeight : 48px;
+@use 'variable.scss' as v;
 
 /**
 * 레이아웃 
 */
-.v-card.cardContainer{
+.v-card.cardContainer {
   padding: 4px;
 }
 
-.content-title{
+.content-title {
   font-size: 1.2em;
+}
+
+.gray-border {
+  border: 1px solid #4d4d4d;
+}
+
+@media (max-height: 800px) {
+  .title-container {
+    overflow-y: auto;
+  }
+
+  .tab-card {
+    overflow-y: auto;
+  }
+
+  .cctvlist-grid {
+    overflow-y: auto;
+  }
 }
 
 // 스크롤바
 ::-webkit-scrollbar {
   width: 5px !important;
-  height: 5px;;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -39,16 +44,19 @@ $shipFilterHeight : 48px;
   border-radius: 2px !important;
 }
 
+.cii-slider .v-slider-thumb {
+  color: #5789fe !important;
+}
 
-.pointer-cursor{
+.pointer-cursor {
   cursor: default;
 }
 
-input[type="date"]{
-  cursor : cursor;
+input[type='date'] {
+  cursor: cursor;
 }
 
-input[type="date"]::-webkit-calendar-picker-indicator{
+input[type='date']::-webkit-calendar-picker-indicator {
   cursor: pointer;
 }
 
@@ -62,7 +70,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{
   width: 5px !important;
 }
 
- .v-data-table .v-data-table__wrapper::-webkit-scrollbar-track {
+.v-data-table .v-data-table__wrapper::-webkit-scrollbar-track {
   background: transparent !important;
 }
 
@@ -71,19 +79,27 @@ input[type="date"]::-webkit-calendar-picker-indicator{
   border-radius: 2px !important;
 }
 
-.area-container{
+.area-container {
   background: #3c3c3f;
   padding: 4px;
   border-radius: 5px !important;
   border: 0.5px solid #ffffff1f;
-} 
-
-.area-container.content{
-  background : #2b2b2d;
 }
 
-#cii-rating-grid{
+.area-container.content {
+  background: #2b2b2d;
+}
+
+#cii-rating-grid {
   height: calc(100% - 44px - 32px);
+}
+
+#cii-simulator-grid {
+  height: calc(100% - 44px - 32px);
+}
+
+.ellipsis.ship-name {
+  cursor: pointer;
 }
 
 /*
@@ -92,29 +108,35 @@ input[type="date"]::-webkit-calendar-picker-indicator{
 
 .container-height {
   height: 100vh;
-  max-height: calc(100vh - #{$appBarHeight});
+  max-height: calc(100vh - #{v.$appBarHeight});
 }
 
 .container-height1 {
   height: 100vh;
-  max-height: calc(100vh - (#{$appBarHeight} + 60px + (#{$paddingHeight} * 2) + 55px) );
+  max-height: calc(100vh - (#{v.$appBarHeight} + 60px + (#{v.$paddingHeight} * 2) + 55px));
 }
 
 .container-include-filter {
   height: 100vh;
-  max-height: calc(100vh - (#{$appBarHeight} + #{$serchHeight} +  #{$marginHeight} + (#{$paddingHeight} * 3)));
+  max-height: calc(
+    100vh -
+      (#{v.$appBarHeight} + #{v.$serchHeight} + #{v.$marginHeight} + (#{v.$paddingHeight} * 3))
+  );
 }
 
 // 사용자 그룹 관리
 .management-container {
   height: 100vh;
-  max-height: calc(100vh - (#{$appBarHeight} + 72px + 80px));
+  max-height: calc(100vh - (#{v.$appBarHeight} + 72px + 80px));
 }
 
 // 사용자 접속 기록
 .accesslog-container {
   height: 100vh;
-  max-height: calc(100vh - (#{$appBarHeight} + #{$serchHeight} + #{$filterHeight} + (#{$paddingHeight} * 3)));
+  max-height: calc(
+    100vh -
+      (#{v.$appBarHeight} + #{v.$serchHeight} + #{v.$filterHeight} + (#{v.$paddingHeight} * 3))
+  );
 }
 
 /*
@@ -122,17 +144,33 @@ input[type="date"]::-webkit-calendar-picker-indicator{
 */
 .tab-container {
   height: 100vh;
-  max-height: calc(100vh - (#{$appBarHeight} + #{$tabTitleHeight} + #{$marginHeight} + (#{$paddingHeight} * 6) + (#{$dxGridHeaderHeight}) + (#{$colPaddingHeight} * 2)))
+  max-height: calc(
+    100vh -
+      (
+        #{v.$appBarHeight} + #{v.$tabTitleHeight} + #{v.$marginHeight} + (#{v.$paddingHeight} * 6) +
+          (#{v.$dxGridHeaderHeight}) + (#{v.$colPaddingHeight} * 2)
+      )
+  );
 }
 
 .tab-container2 {
   height: 100vh;
-  max-height: calc(100vh - (#{$appBarHeight} + #{$tabTitleHeight} + #{$marginHeight} + (#{$paddingHeight} * 6)))
-  
+  max-height: calc(
+    100vh -
+      (#{v.$appBarHeight} + #{v.$tabTitleHeight} + #{v.$marginHeight} + (#{v.$paddingHeight} * 6))
+  );
 }
 
 .chart-container {
   height: calc(100% - 52px);
+}
+
+.v-window.ins-cctv-tab-container .v-window__container {
+  flex: 1 1 auto;
+}
+
+.cii-chart {
+  height: 45%;
 }
 
 // 팝업 줄 높이
@@ -140,19 +178,23 @@ input[type="date"]::-webkit-calendar-picker-indicator{
   line-height: 1.8;
 }
 
-@media(min-height : 700px){
-  .cii-container {
-      // height: calc(100vh - (#{$appBarHeight} + #{$shipFilterHeight} - (#{$paddingHeight} * 4) - #{$marginHeight}));
-      height: calc(100vh - 65px - 32px);
-      // background-color: blue;
-    }
-  
-    .cii-tab-container {
-      height: calc(100% - #{$tabTitleHeight});
-    }
+.filter-area {
+  height: 44px;
 }
 
-@media (max-height : 860px) {
+@media (min-height: 700px) {
+  .cii-container {
+    // height: calc(100vh - (#{v.$appBarHeight} + #{$shipFilterHeight} - (#{v.$paddingHeight} * 4) - #{v.$marginHeight}));
+    height: calc(100vh - 65px - 32px);
+    // background-color: blue;
+  }
+
+  .cii-tab-container {
+    // height: calc(100% - #{v.$tabTitleHeight});
+  }
+}
+
+@media (max-height: 860px) {
   .tab-container {
     max-height: 100vh;
     /* height: 100% !important; */
@@ -169,52 +211,74 @@ input[type="date"]::-webkit-calendar-picker-indicator{
 //   min-width: 195px;
 // }
 
-.operation-info .v-card-title+.v-card-text,
-.v-card-title+.v-card-actions {
+.operation-info .v-card-title + .v-card-text,
+.v-card-title + .v-card-actions {
   padding-top: inherit;
 }
 
 /**
 * 로그인 - 아이디 찾기 
 */
-.idFindModal-subTitle{
-  font-size : 1.0rem;
+.idFindModal-subTitle {
+  font-size: 1rem;
 }
 
-.idFindModal-info{
+.idFindModal-info {
   padding: 20px;
   background-color: #121111;
-  color : white;
+  color: white;
 }
 
-.inFindModal-infoText{
-  color : #B8B8B8;
+.inFindModal-infoText {
+  color: #b8b8b8;
 }
-
-
 
 /**
 * 계정 정보
 */
-.accountInfo >  .v-card {
+.accountInfo > .v-card {
   height: calc(100% - 48px);
 }
 
-
-
-.v-table.accountInfo{
-    th {
-      &:first-child{
-        border-right: 1px solid #49494E;
-        width : 20%;
-      }
-    }  
+.v-table.accountInfo {
+  th {
+    &:first-child {
+      border-right: 1px solid #49494e;
+      width: 20%;
+    }
+  }
 }
 
 .roleName {
-  font-size: 1.2em;
+  font-size: 0.9em;
 }
 
+/**
+* 선사 관리자 목록
+*/
+
+.management-page {
+  .v-table {
+    td {
+      &.username {
+        width: 85%;
+        font-size: 0.9rem;
+      }
+
+      &.activate-status {
+        width: 5%;
+      }
+
+      &.modify-btn {
+        width: 5%;
+      }
+
+      &.president-btn {
+        width: 5%;
+      }
+    }
+  }
+}
 
 /**
 * 사용자 접속 기록
@@ -235,7 +299,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{
 }
 
 .groupName.primary {
-  background: #4E83FF;
+  background: #4e83ff;
 }
 
 .groupName.gray {
@@ -244,6 +308,70 @@ input[type="date"]::-webkit-calendar-picker-indicator{
   padding: 2px 4px;
 }
 
+/**
+*
+* 알람 정보
+*/
+.normal {
+  color: #13d254;
+  border-color: #13d254;
+}
+
+.warning {
+  // color: #FD8100
+  color: #fff900;
+}
+
+.danger {
+  // color: #F04A4A;
+  // border-color: #F04A4A;
+  color: #ff0000;
+  border-color: #ff0000;
+}
+
+.v-table--density-default.cii-table > .v-table__wrapper > table > tbody > tr > td {
+  padding: 0 0.75rem !important;
+}
+
+.v-table--density-default.cii-table > .v-table__wrapper > table > tbody > tr > td,
+.v-table--density-default > .v-table__wrapper > table > thead > tr > td,
+.v-table--density-default > .v-table__wrapper > table > tfoot > tr > td {
+  height: 30px !important;
+}
+
+.gradeA {
+  color: #8ce816;
+}
+
+.gradeB {
+  color: #42d2a7;
+}
+
+.gradeC {
+  color: #febd19;
+}
+
+.gradeD {
+  color: #f68822;
+}
+
+.gradeE {
+  color: #f04a4a;
+}
+
+/**
+*
+화재 센서 
+
+*/
+.image-container img.v-img__img--contain {
+  object-fit: fill;
+}
+
+.image-container.radar img.v-img__img--contain {
+  object-fit: contain;
+  background: #010f02;
+}
 
 /**
 *
@@ -252,6 +380,15 @@ input[type="date"]::-webkit-calendar-picker-indicator{
   max-width: 270px;
 }
 
+.deck-image {
+  .v-img__img--contain {
+    object-fit: fill;
+  }
+
+  &.v-responsive.v-img {
+    height: calc(100% - 12px);
+  }
+}
 
 /**
 * 캐로셀 이전 버튼 
@@ -260,9 +397,10 @@ button.v-btn.v-btn--elevated.v-btn--icon.v-theme--customBlackTheme.v-btn--densit
   background: transparent;
 }
 
-button.v-btn.v-btn--elevated.v-btn--icon.v-theme--customBlackTheme.v-btn--density-default.v-btn--size-default.v-btn--variant-elevated.v-window__left:hover{
+button.v-btn.v-btn--elevated.v-btn--icon.v-theme--customBlackTheme.v-btn--density-default.v-btn--size-default.v-btn--variant-elevated.v-window__left:hover {
   background: #000000cf;
 }
+
 /**
 * 캐로셀 다음 버튼 
 */
@@ -272,6 +410,32 @@ button.v-btn.v-btn--elevated.v-btn--icon.v-theme--customBlackTheme.v-btn--densit
 
 button.v-btn.v-btn--elevated.v-btn--icon.v-theme--customBlackTheme.v-btn--density-default.v-btn--size-default.v-btn--variant-elevated.v-window__right:hover {
   background: #000000cf;
+}
+
+.progressBar.remain .v-slider-thumb__surface::after {
+  content: '' !important;
+  width: 45px;
+  height: 45px;
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(10%, -50%);
+  background-image: url(/images/shipicons/ship-icon-vector.png);
+  background-size: 40px 40px;
+  cursor: cursor;
+}
+
+.progressBar.remain .v-slider-thumb__surface {
+  width: 0px;
+  height: 0px;
+}
+
+.progressBar.remain .v-slider-thumb__ripple {
+  cursor: auto !important;
+}
+
+.progressBar.remain {
+  cursor: auto;
 }
 
 /**

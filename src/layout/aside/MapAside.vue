@@ -1,5 +1,5 @@
 <template>
-  <v-navigation-drawer v-model="drawer" :rail="rail" permanent @click="rail = false" class="bg-aside">
+  <v-navigation-drawer v-model="drawer" :rail="rail" permanent @click="rail = false" style="background : #1f1e1e">
     <v-list density="compact">
       <v-list-item v-if="rail" :prepend-avatar="rail ? getLogoImage : getLogoImage"> </v-list-item>
       <v-list-item class="d-flex justify-center" v-else><v-img :src="getLogoImage" width="150" height="50"
@@ -23,23 +23,24 @@
 
       </v-list-item> -->
       <v-list-item v-if="!rail" class="pa-0">
-        <v-sheet class="mt-5 pa-4" color="#29292D">
+        <v-sheet class="mt-5 pa-4" color="#1f1e1e">
           <i-input id="searchBox" v-model="searchShip" prepend-inner-icon="mdi-magnify" single-line hide-details
             @input="searchByShip" style="width:220px" placeholder="선박명을 입력해주세요"></i-input>
 
           <DxTreeList id="menus" ref="fleetsGrid" :data-source="initFleetsAndShip" key-expr="id"
             parent-id-expr="parentId" :selected-row-keys="selectedRowKeys" :autoExpandAll="true"
-            :on-selection-changed="selectShip" height="360" class="noStripe mt-4">
+            :on-selection-changed="selectShip" height="360" class="noStripe map mt-4" style="background-color: #1f1e1e;">
             <DxSelection mode="multiple" :recursive="true" show-check-boxes-mode="always"></DxSelection>
             <DxColumn data-field="displayName" cell-template="status-template" caption="Select all" />
             <DxColumn data-field="shipStatus" caption="Status" :visible="false" />
             <template #status-template="{ data: templateOptions }">
-              <div class="d-flex">
-                <div class="mr-4 ellipsis" :title="templateOptions.data.displayName">{{
-                  templateOptions.data.displayName }}</div>
+              <div class="ship-container d-flex">
+                <div class="mr-4 ship-name ellipsis" :title="templateOptions.data.displayName"
+                  :data-tooltip="templateOptions.data.displayName">{{
+    templateOptions.data.displayName }}</div>
                 <div v-if="templateOptions.data.parentId != 0
-                            && templateOptions.data.shipStatus != '' 
-                            && templateOptions.data.shipStatus != null"
+    && templateOptions.data.shipStatus != ''
+    && templateOptions.data.shipStatus != null"
                   :class="getStatus(templateOptions.data.shipStatus)">●</div>
               </div>
             </template>
@@ -63,9 +64,11 @@ import { useAuthStore } from '@/stores/authStore'
 import { useAccessMenuStore } from '@/stores/accessMenuStore'
 import { storeToRefs } from 'pinia'
 import { useVoccStore } from '@/stores/voccStore'
+import { useShipStore } from '@/stores/shipStore'
 import { getVoccListAll, fetchShipCondition } from '@/api/voccApi'
 import { getDxGridInstance } from '@/composables/dxGridUtil'
 import emitter from '@/composables/eventbus.js'
+import { fetchMachineData } from '@/composables/util'
 
 import uipaLogoImgKr from '@/assets/images/uipa_logo_kr.png'
 
@@ -73,7 +76,9 @@ const authStore = useAuthStore()
 const { userInfo } = storeToRefs(authStore)
 const { accessMenus } = useAccessMenuStore()
 const voccStore = useVoccStore()
+const shipStore = useShipStore()
 const { voccInfo, fleetsAndShip } = storeToRefs(voccStore)
+
 
 const drawer = ref(true)
 const rail = ref(false)
@@ -120,7 +125,7 @@ onUnmounted(() => {
 
 const fetchShipAlarm = async () => {
   const imoNumberList = fleetsAndShip.value.filter(ship => ship.imoNumber != "")
-                                            .map(result => result.imoNumber)
+    .map(result => result.imoNumber)
   const result = await fetchShipCondition(imoNumberList)
   fleetsAndShip.value.forEach(item => {
     if (result.hasOwnProperty(item.imoNumber)) {
@@ -130,7 +135,7 @@ const fetchShipAlarm = async () => {
 }
 
 const fetchVoccAll = async () => {
-  const result = await voccStore.fetchVoccListAll();
+  const result = await voccStore.fetchVoccs();
   voccs.value = result;
 }
 
@@ -151,10 +156,12 @@ const selectVocc = (e) => {
 
 const fetchFleetAndShipByVocc = async () => {
   // api 요청
+  console.log('voccs 선단 목록')
+  console.dir(voccs.value)
   let voccids = voccs.value.map(vocc => vocc.id).toString();
 
-  const test = voccids.toString()
-  const result = await voccStore.fetchFleetAndShipByVocc(test)
+  const voccIdString = voccids.toString()
+  const result = await voccStore.fetchFleetAndShipByVocc(voccIdString)
   // 결과값 반환
 
   initFleetsAndShip.value = [...fleetsAndShip.value]
@@ -181,9 +188,9 @@ const getStatus = (status) => {
 }
 
 
-const getLogoImage = computed(()=>{
+const getLogoImage = computed(() => {
   let logoImage = ''
-  if(voccInfo.value.logoImage){
+  if (voccInfo.value.logoImage) {
     logoImage = `data:image/png;base64,${voccInfo.value.logoImage}`
   }
   return voccInfo.value.logoImage ? logoImage : uipaLogoImgKr
@@ -196,31 +203,27 @@ const searchByVocc = () => {
 }
 
 let selectedImonumbers = []
-const selectShip = () => {
+const selectShip = async () => {
   const selectedShips = fleetsInstance.getSelectedRowsData(treeSelectMode);
 
   selectedImonumbers = getImoNumbers(selectedShips)
+
+  // 선박을 클릭 시 조회 되게 변경 
+  // await fetchMachineData(selectedShips)
 
   emitter.emit('selectedShip', selectedImonumbers)
 }
 
 const getImoNumbers = (selectedShips) => {
   const imoNumbers = selectedShips.filter(ship => ship.imoNumber != null && ship.imoNumber != '')
-                                  .map(ship => ship.imoNumber);
+    .map(ship => ship.imoNumber);
   return imoNumbers;
 }
 
 
 const searchShip = ref('')
-const searchByShip =  () => {
+const searchByShip = () => {
   fleetsInstance.searchByText(searchShip.value)
-}
-
-const test = (e) => {
-  console.dir(e)
-  if(e.data.imoNumber){
-    emitter.emit('clickShipName', e.data.imoNumber)
-  }
 }
 
 </script>
@@ -232,11 +235,11 @@ const test = (e) => {
   border-left: 5px solid #4e83ff;
 }
 
-.voccSelection .dx-data-row:nth-child(odd){
-  background : #29292D !important;
+.voccSelection .dx-data-row:nth-child(odd) {
+  background: #29292D !important;
 }
 
-.voccSelection .dx-data-row:nth-child(even){
+.voccSelection .dx-data-row:nth-child(even) {
   background: #29292D !important;
 }
 
@@ -257,11 +260,27 @@ const test = (e) => {
   color: #FF0045
 }
 
-.ellipsis{
+.ellipsis {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  width : 100px
+  width: 100%
 }
 
+
+/* TOOLTIP */
+.ship-container {
+  position: relative;
+}
+
+/* .ship-name[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: 99;
+  background: red;
+  padding: 5px;
+  border-radius: 5px;
+} */
 </style>

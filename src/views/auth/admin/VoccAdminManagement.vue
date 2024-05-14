@@ -1,33 +1,46 @@
 <template>
-  <v-container fluid class="h-100">
+  <v-container fluid class="h-100 management-page">
     <v-row class="ma-0 h-100">
-      <v-col cols="12" lg="9">
-        <v-card class="pa-1 h-100" rounded="30">
-          <v-card-title class="d-flex justify-space-between mb-4">
-            <div>선사 대표 관리자 목록</div>
-            <i-btn prepend-icon="mdi-plus" color="#3D3D40" text="등록" width="75" height="35"
+      <v-col cols="9" lg="9">
+        <v-card class="h-100" rounded="30">
+          <v-card-title class="d-flex justify-space-between align-center">
+            <div>선사 관리자 목록</div>
+            <i-btn prepend-icon="mdi-plus" color="#3D3D40" text="등록" width="75"
               @click.stop="changeComponent($event, 'VoccAdminRegisterForm')"></i-btn>
           </v-card-title>
           <v-card-text>
-            <v-table class="list-table management-container">
+            <v-table class="list-table title-container">
               <thead>
               </thead>
               <tbody>
                 <tr v-for="(admin, index) in admins" :key="admin.id">
-                  <td>{{ admin.nameKor }}</td>
-                  <td>{{ admin.nickname }}</td>
-                  <td class="d-flex justify-end align-center">
+                  <!-- <td>{{ admin.name }} </td> -->
+                  <td class="username">{{ admin.nickname }}
+                    <span class="ml-2"
+                      style="background : #5789FE; padding : 5px 10px; border-radius : 50px; "
+                      v-if="admin.presidentAdminUser">대표</span>
+                  </td>
+
+                  <td class="activate-status">
                     <i-btn :text="admin.activated ? '사용 가능' : '계정 잠금'"
                       :prepend-icon="admin.activated ? 'mdi-lock-open' : 'mdi-lock'"
                       :color="admin.activated ? '#fff' : '#737373'" variant="text" readonly
                       class="d-flex justify-end align-center">
                     </i-btn>
+
                   </td>
-                  <td class="text-center">
+                  <td class="modify-btn">
                     <i-btn :text="isEditing(index) ? '수정중' : '수정'" :color="isEditing(index) ? '#7A8294' : '#4E83FF'"
                       :disable="isEditing(index)" :dataId="index" name="VoccAdminEditForm"
-                      @click.stop="changeComponent($event, 'VoccAdminEditForm', admin.id, index)">
+                      @click.stop="changeComponent($event, 'VoccAdminEditForm', admin.voccId, index, admin.userId)">
                     </i-btn>
+                  </td>
+                  <td class="president-btn">
+                    <i-btn v-if="!isExistPresentAdmin" text="대표 관리자 할당" width="120" color="#434348 "
+                      @click="changePresidentAdmin(admin.voccId, admin.username, !admin.presidentAdminUser)"></i-btn>
+                    <i-btn v-if="admin.presidentAdminUser"
+                      @click="changePresidentAdmin(admin.voccId, admin.username, !admin.presidentAdminUser)"
+                      text="대표 관리자 해제" width="120" color="#F04A4A"></i-btn>
                   </td>
                 </tr>
               </tbody>
@@ -35,8 +48,9 @@
           </v-card-text>
         </v-card>
       </v-col>
-      <v-col cols="12" lg="3">
-        <component :is="componentList[currentComponent]" :voccAdminId="_voccAdminId" class="h-100"></component>
+      <v-col cols="3" lg="3">
+        <component :is="componentList[currentComponent]" :voccId="_voccId" :userId="selectedUserId" class="h-100">
+        </component>
       </v-col>
     </v-row>
 
@@ -44,7 +58,7 @@
 </template>
 
 <script setup>
-import { ref, onBeforeMount, provide } from 'vue'
+import { ref, onBeforeMount, provide, computed } from 'vue'
 import { useVoccStore } from '@/stores/voccStore.js'
 
 import DefaultText from '@/components/DefaultText.vue'
@@ -54,9 +68,10 @@ import VoccAdminEditForm from '@/views/auth/admin/VoccAdminEditForm.vue'
 
 const admins = ref([])
 const currentComponent = ref('DefaultText')
-const _voccAdminId = ref()
+const _voccId = ref()
 const currentId = ref('')
-
+const voccStore = useVoccStore()
+const selectedUserId = ref('')
 
 const componentList = {
   DefaultText,
@@ -69,16 +84,17 @@ onBeforeMount(() => {
 })
 
 const getVoccAdminAll = async () => {
-  const voccStore = useVoccStore()
-  const result = await voccStore.getVoccAdmins()
+
+  const result = await voccStore.fetchMyVoccAdmins()
   admins.value = result
 }
 
 /**
  * 수정 버튼 인덱스 값에 따른 컴포넌트 변경
  * */
-const changeComponent = (event, name, voccId = '', index = '') => {
-  _voccAdminId.value = voccId
+const changeComponent = (event, name, voccId = '', index = '', userId = '') => {
+  _voccId.value = voccId
+  selectedUserId.value = userId;
   console.dir(typeof (event))
   //typeof(event) == 'string'? currentComponent.value = event : currentComponent.value = event.target.name
 
@@ -89,6 +105,21 @@ const changeComponent = (event, name, voccId = '', index = '') => {
 const isEditing = (index) => {
   return parseInt(currentId.value) === index;
 }
+const changePresidentAdmin = async (voccId, username, appoint) => {
+
+  const form = { voccId, username, appoint }
+  await voccStore.changePresidentAdmin(form)
+
+  let index = admins.value.findIndex((admin) => admin.username == username)
+
+  admins.value[index].presidentAdminUser = appoint;
+
+}
+
+const isExistPresentAdmin = computed(() => {
+  const result = admins.value.some((admin) => admin.presidentAdminUser == true)
+  return result;
+})
 
 provide('changeComponent', changeComponent)
 
@@ -109,6 +140,11 @@ provide('changeComponent', changeComponent)
 
 .list-table .title {
   font-size: 1.2em;
+}
+
+.title-container{
+  /* height: 100vh; */
+  /* max-height: calc(100vh - 65px - 48px - 56px - 48px ); */
 }
 
 @media (max-height : 800px) {

@@ -1,5 +1,5 @@
 <template>
-  <v-text-field class="pa-0 mb-1" :prepend-inner-icon="props.prependInnerIcon" :append-icon="props.appendIcon"
+  <v-text-field class="pa-0" :prepend-inner-icon="props.prependInnerIcon" :append-icon="props.appendIcon"
     :append-inner-icon="props.appendInnerIcon" :bg-color="props.bgColor" :color="props.color" :disabled="props.disabled"
     :hide-details="hideDetails" :model-value="modelValue" :variant="props.variant" :width="props.width"
     :height="props.height" :density="density" :placeholder="props.placeholder" :type="props.type"

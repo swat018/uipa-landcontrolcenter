@@ -4,10 +4,11 @@
       <v-list-item v-if="rail" :prepend-avatar="rail ? getLogoImage : getLogoImage"> </v-list-item>
       <v-list-item class="d-flex justify-center" v-else><v-img :src="getLogoImage" width="300" height="50"></v-img>
       </v-list-item>
-      
-      <v-list-item v-for="menu in settingMenus" :key="menu.routerName" :title="menu.menuName" :value="menu.routerName"
-        @click="goPage(menu.routerPath)" class="py-3 active-class sidemenu">
-      </v-list-item>
+      <div v-if="!rail">
+        <v-list-item v-for="menu in settingMenus" :key="menu.routerName" :title="menu.menuName" :value="menu.routerName"
+          @click="goPage(menu.routerPath)" class="py-3 active-class sidemenu">
+        </v-list-item>
+      </div>
     </v-list>
 
     <template>
@@ -36,7 +37,7 @@ import { goPage } from '@/composables/util'
 import { Role } from '@/common/globalReference.js'
 
 
-import uipaLogoImg from '@/assets/images/uipa-logo.png'
+import uipaLogoImg from '/images/logo/uipa-logo.png'
 
 const authStore = useAuthStore()
 const { userInfo } = storeToRefs(authStore)
@@ -60,6 +61,8 @@ const menuRole = {
   anyone : 'ANYONE'
 }
 
+const SETTINGS_MENU_ID = 500
+
 
 onMounted(() => {
   userRole= userInfo.value.role
@@ -74,7 +77,6 @@ onMounted(() => {
 const getLogoImage = computed(() => {
   let logoImage = ''
   if (voccInfo.value.logoImage) {
-    console.log(typeof (voccInfo.value.logoImage))
     logoImage = `data:image/png;base64,${voccInfo.value.logoImage}`
   }
   return voccInfo.value.logoImage ? logoImage : uipaLogoImg
@@ -82,26 +84,23 @@ const getLogoImage = computed(() => {
 
 
 const getSettingMenus = () => {
-  let test = ''
+  let menu = ''
 
-  let settingMenu = accessMenus.value.filter(menu => menu.menuId == 50)
+  let settingMenu = accessMenus.value.filter(menu => menu.menuId == SETTINGS_MENU_ID)
   settingMenu = settingMenu[0].children
 
   console.dir(settingMenu)
   switch (userRole){
     case Role.lccAdmin:
-      test = settingMenu;
+      menu = settingMenu;
       break;
     case Role.voccAdmin:
-      test = settingMenu.filter(menu => menu.accessRole != menuRole.lccAdmin)
+      menu = settingMenu.filter(menu => menu.accessRole != menuRole.lccAdmin)
       break;
     case Role.voccUser:
-      console.log('유저')
-      test = settingMenu.filter(menu => menu.accessRole == menuRole.voccUser)
+      menu = settingMenu.filter(menu => menu.accessRole == menuRole.voccUser)
   }
-  settingMenus.value = test;
-  // console.log('셋팅')
-  // console.dir(settingMenus.value)
+  settingMenus.value = menu;
 
 }
 

@@ -13,7 +13,8 @@ export let stackedLineOption = {
     left: '3%',
     right: '4%',
     bottom: '3%',
-    containLabel: true
+    containLabel: true,
+    show: false
   },
   toolbox: {
     // feature: {

@@ -12,7 +12,6 @@ export const getDxGridInstance = (ref) => {
  * @param DxDataGrid ref 객체
  */
 export const dxGridRefresh = ( ref ) => {
-  console.log('새로고침')
   const instance = getDxGridInstance(ref)
   instance.refresh();
 }

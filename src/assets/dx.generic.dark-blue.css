@@ -4,6 +4,50 @@
 * http://js.devexpress.com/ThemeBuilder/
 */
 
+tr.dx-row.dx-data-row.dx-column-lines td{
+  font-size: 0.875rem;
+}
+
+/**
+* 테이블 간격
+*/
+.dx-datagrid .dx-row>td,
+.dx-datagrid .dx-row>tr>td {
+  padding: 7px 24px;
+}
+
+.dx-datagrid .dx-row>td {
+  padding: 7px 24px;
+}
+
+/**
+* 스트라이프 없는 트리 리스트 간격
+*/
+.dx-treelist.no-stripe .dx-row>td,
+.dx-treelist.no-stripe .dx-row>tr>td {
+  padding: 7px 24px;
+}
+
+.dx-treelist.no-stripe .dx-row>td {
+  padding: 7px 24px;
+}
+
+.no-stripe .dx-header-row .dx-treelist-text-content.dx-text-content-alignment-left {
+  margin-left: 24px;
+}
+
+
+/**
+* 기본 트리 리스트 간격
+*/
+.dx-treelist .dx-row > td,
+.dx-treelist .dx-row > tr > td {
+  padding: 7px;
+}
+
+.dx-treelist .dx-row>td {
+  padding: 7px;
+}
 .dx-data-row:nth-child(even) {
   background-color: #222224;
 }
@@ -12,12 +56,32 @@
   background-color: #2F2F32;
 }
 
+.no-stripe .dx-data-row:nth-child(odd){
+    background: #222224 !important;
+}
+
+.no-stripe .dx-data-row, .no-stripe .dx-datagrid-rowsview .dx-row {
+  border-bottom: 1px solid #4d4d4d;
+}
+
 .noStripe .dx-data-row:nth-child(odd) {
-  background: #29292D !important;
+  background: #1f1e1e !important;
 }
 
 .noStripe .dx-data-row:nth-child(even) {
-  background: #29292D !important;
+  background: #1f1e1e !important;
+}
+
+.noStripe .dx-treelist-container>.dx-treelist-headers,
+.dx-treelist-container>.dx-treelist-rowsview{
+  background-color: #1f1e1e !important;;
+}
+
+div#cii-simulator-grid .dx-data-row:nth-child(odd){
+  background: #1b1b1c;
+}
+div#cii-simulator-grid .dx-data-row:nth-child(even) {
+  background: #1b1b1c;
 }
 
 .noStripe .dx-checkbox-icon{
@@ -43,11 +107,11 @@
 }
 
 .noStripe .dx-treelist-rowsview.dx-treelist-nowrap.dx-scrollable.dx-visibility-change-handler.dx-scrollable-both.dx-scrollable-simulated {
-  padding-left: 18px;
+  padding-left: 5px;
 }
 
 .noStripe .dx-treelist-rowsview .dx-treelist-empty-space {
-  margin-right: 5px;
+  margin-right: 2px;
 }
 
 .noStripe .dx-header-row td.dx-command-select.dx-cell-focus-disabled.dx-editor-cell.dx-editor-inline-block{
@@ -102,23 +166,47 @@ div.noStripe>div>div.dx-datagrid-headers.dx-datagrid-nowrap>div>table>colgroup>c
   border-top: 0px solid #4d4d4d;        
 }
 
+.cctv-grid .dx-column-lines>td {
+  /* border-left: 0px solid #4d4d4d; */
+  border-right: 0px solid #4d4d4d;
+}
+
+#cctvGrid .dx-datagrid .dx-column-lines>td {
+  border: 0px;
+}
+
+#cctvGrid td[aria-colindex="1"] {
+  padding-left: 30px;
+}
+
+#cctvGrid tr.dx-row.dx-data-row>td {
+  height: 58px;
+}
+#cctvGrid.video-grid tr.dx-row.dx-data-row>td {
+  height: 56px;
+}
 /**
 * 항차리포트 테이블 및 상세화면 스타일
 */
-.detail-page tr.dx-row.dx-column-lines.dx-header-row {
+.detail-page .dx-header-row {
   background: #6e6e78;
   color: #2C2C37;
   font-weight: 600;
+  height: 52px;
 }
+
+/* tr.dx-row.dx-column-lines */
+
+/* / */
 
 .detail-page .dx-datagrid-rowsview .dx-master-detail-row:not(.dx-datagrid-edit-form) .dx-master-detail-cell,
 .dx-datagrid-rowsview .dx-master-detail-row:not(.dx-datagrid-edit-form)>.dx-datagrid-group-space{
   background: #000000;
 }
 
-.detail-page table{
+/* .detail-page table{
   border : 1px solid #49494E;
-}
+} */
 
 /**
 셀 선택될 때 배경색
@@ -143,14 +231,27 @@ div.noStripe>div>div.dx-datagrid-headers.dx-datagrid-nowrap>div>table>colgroup>c
   color: #dedede;
 }
 
+/* 체크박스 테두리 색상 */
+/* .dx-checkbox-container{
+  border : 1px solid #7B808A;
+} */
+
 /* row 최소 높이 */
 .dx-datagrid-rowsview .dx-row {
-  min-height: 60px;
+  min-height: 52px;
 }
 
+tr.dx-row.dx-data-row>td {
+  height: 52px;
+}
 
-tr.dx-row.dx-data-row > td {
-  height: 60px;
+/* 알람 실시간 모니터링 Description 정렬 */
+#realAlertGrid td#dx-col-7, #alarmHistoryGrid td#dx-col-17 {
+  text-align: center !important;
+}
+/* 알람 임계치 설정 Description 정렬*/
+div#alertThresholdGrid td#dx-col-14{
+  text-align: center !important;
 }
 
 #voyageGrid >  tr.dx-row.dx-data-row>td {
@@ -188,6 +289,12 @@ tr.dx-row.dx-data-row > td {
   display: inline-block;
   line-height: normal;
 }
+
+
+.detail-page #cii-simulator-grid2 .dx-header-row{
+  height: 35px;
+}
+
 @keyframes dx-valid-badge-frames {
   from {
     opacity: 0;
@@ -2839,7 +2946,7 @@ tr.dx-row.dx-data-row > td {
   width: 22px;
   height: 22px;
   border-radius: 2px;
-  border: 1px solid #4d4d4d;
+  border: 1px solid #7B808A;
   background-color: #2a2a2a;
 }
 .dx-checkbox-checked .dx-checkbox-icon {
@@ -9522,10 +9629,7 @@ tr.dx-row.dx-data-row > td {
   right: 0;
   margin: -7px;
 }
-.dx-datagrid .dx-row > td,
-.dx-datagrid .dx-row > tr > td {
-  padding: 7px;
-}
+
 .dx-datagrid .dx-error-row {
   -webkit-user-select: initial;
   -moz-user-select: initial;
@@ -10687,9 +10791,7 @@ tr.dx-row.dx-data-row > td {
   word-wrap: break-word;
   padding: 7px 35px 7px 7px;
 }
-.dx-datagrid .dx-row > td {
-  padding: 7px;
-}
+
 .dx-datagrid .dx-datagrid-content .dx-datagrid-table .dx-row .dx-command-edit-with-icons .dx-link {
   width: 18px;
   height: 18px;
@@ -11518,10 +11620,7 @@ tr.dx-row.dx-data-row > td {
   right: 0;
   margin: -7px;
 }
-.dx-treelist .dx-row > td,
-.dx-treelist .dx-row > tr > td {
-  padding: 7px;
-}
+
 .dx-treelist .dx-error-row {
   -webkit-user-select: initial;
   -moz-user-select: initial;
@@ -12695,9 +12794,7 @@ input.dx-hidden {
 .dx-treelist .dx-error-row .dx-error-message {
   padding: 7px 35px 7px 7px;
 }
-.dx-treelist .dx-row > td {
-  padding: 7px;
-}
+
 .dx-treelist .dx-treelist-content .dx-treelist-table .dx-row .dx-command-edit-with-icons .dx-link {
   width: 18px;
   height: 18px;

@@ -7,26 +7,28 @@
       <div class="d-flex ga-2">
         <div class="w-50">
           <span>출발지</span>
-          <i-selectbox v-model="voyageRegisterForm.startPort" :items="ports" item-title="name" item-value="code"
-            density="compact" bg-color='#434348' placeholder="출발지를 선택하세요"></i-selectbox>
+          <v-autocomplete v-model="voyageRegisterForm.departure" :items="ports" item-title="name" item-value="code"
+            density="compact" bg-color='#434348' placeholder="출발지를 선택하세요" variant="solo-filled"
+            no-data-text="데이터가 없습니다" />
         </div>
         <div class="w-50">
           <span>출발시각</span>
           <div>
-            <input type="datetime-local" v-model="voyageRegisterForm.startTime" class="w-100">
+            <input type="datetime-local" v-model="voyageRegisterForm.departureTime" class="w-100">
           </div>
         </div>
       </div>
       <div class="d-flex ga-2">
         <div class="w-50">
           <span>도착지</span>
-          <i-selectbox v-model="voyageRegisterForm.endPort" :items="ports" item-title="name" item-value="code"
-            density="compact" bg-color='#434348' placeholder="도착지를 선택하세요"></i-selectbox>
+          <v-autocomplete v-model="voyageRegisterForm.arrival" :items="ports" item-title="name" item-value="code"
+            density="compact" bg-color='#434348' placeholder="도착지를 선택하세요" variant="solo-filled"
+            no-data-text="데이터가 없습니다" />
         </div>
 
         <div class="w-50">
           <span>도착시각</span>
-          <input type="datetime-local" class="w-100" v-model="voyageRegisterForm.endTime">
+          <input type="datetime-local" class="w-100" v-model="voyageRegisterForm.arrivalTime">
         </div>
       </div>
       <!-- <div class="d-flex ga-2">
@@ -64,10 +66,10 @@ onMounted(() => {
 const emit = defineEmits('addVoyage')
 
 const voyageRegisterForm = ref({
-  startPort: null,
-  startTime: null,
-  endPort: null,
-  endTime: null,
+  departure: null,
+  departureTime: null,
+  arrival: null,
+  arrivalTime: null,
   // shipCondition: null,
   // underway: 0,
   // distance: 0

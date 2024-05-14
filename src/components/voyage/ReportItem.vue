@@ -37,8 +37,8 @@ const convertText = (key, names) =>{
 }
 
 .item-container{
-  padding-top : 16px;
-  padding-bottom : 16px;
+  padding-top : 12px;
+  padding-bottom : 12px;
 }
 
 .item-container > div{

@@ -138,6 +138,6 @@ const updateTime = () => {
 }
 
 .v-tab {
-  font-family: 'Pretendard-Light';
+  font-family: 'Pretendard';
 }
 </style>

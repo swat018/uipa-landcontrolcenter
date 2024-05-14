@@ -1,12 +1,11 @@
 <template>
-  <v-container fluid class="h-100">
+  <v-container fluid class="h-100 management-page detail-page settings">
     <v-row class="ma-0 h-100">
       <v-col cols="6">
-        <v-card class="cardContainer h-100" rounded="30">
-          <v-card-title>
-            <div class="d-flex justify-space-between mb-4">
-              <div class="align-self-center">권한그룹정보
-              </div>
+        <v-card class="h-100" rounded="30">
+          <v-card-title class="align-center">
+            <div class="d-flex justify-space-between align-center">
+              <div>권한그룹 목록</div>
               <div>
                 <i-btn class="bg-btn mr-1" @click="showAddModal" color="#3D3D40" prepend-icon="mdi-plus" text="새그룹추가"
                   width="120"></i-btn>
@@ -17,10 +16,10 @@
           </v-card-title>
           <v-card-text>
             <!-- 권한 그룹 목록 -->
-            <DxDataGrid id="groupGrid" class="management-container" ref="groupGrid" key-expr="first" :data-source="groups"
-              :active-state-enabled="activeStatus" :focused-row-enabled="activeStatus"
-              :on-focused-cell-changed="getUsersGroup">
-              <DxScrolling column-rendering-mode="virtual" />
+            <DxDataGrid id="groupGrid" class="title-container no-stripe" ref="groupGrid" key-expr="first"
+              :show-borders="true" :data-source="groups" :active-state-enabled="activeStatus"
+              :focused-row-enabled="activeStatus" :on-focused-cell-changed="getUsersGroup">
+              <DxScrolling mode="virtual" />
               <DxSelection mode="single" />
               <DxColumn data-field="first" caption="groupId" :visible="false" class="pl-10"></DxColumn>
               <DxColumn data-field="second" caption="권한그룹명" :allow-editing="false"></DxColumn>
@@ -30,9 +29,9 @@
       </v-col>
       <!-- 사용자 목록 -->
       <v-col cols="6">
-        <v-card class="pa-1 h-100" rounded="30">
+        <v-card class="h-100" rounded="30">
           <v-card-title>
-            <div class="d-flex justify-space-between mb-4">
+            <div class="d-flex justify-space-between">
               <div class="align-self-center">사용자 목록</div>
               <div>
                 <i-btn text="저장" @click="saveUserByGroup" class="bg-btn mr-1"></i-btn>
@@ -40,11 +39,12 @@
             </div>
           </v-card-title>
           <v-card-text>
-            <DxDataGrid id="users" ref="userGrid" class="management-container" key-expr="userId" :data-source="initUsers"
-              :column-auto-width="true" :selected-row-keys="selectedRowKeys" @row-prepared="onRowPrepared"
-              :show-column-lines="false" @selection-changed="onSelectionChanged" @editor-preparing="onEditorPreparing"
-              :show-column-headers="false" >
-              <DxScrolling column-rendering-mode="virtual" />
+            <DxDataGrid id="users" ref="userGrid" class="title-container no-stripe" key-expr="userId"
+              :data-source="initUsers" :column-auto-width="true" :selected-row-keys="selectedRowKeys"
+              :show-borders="true" @row-prepared="onRowPrepared" :show-column-lines="false"
+              @selection-changed="onSelectionChanged" @editor-preparing="onEditorPreparing"
+              :show-column-headers="false">
+              <DxScrolling mode="virtual" />
 
               <DxSelection mode="multiple" show-check-boxes-mode="always" :recursive="true"></DxSelection>
               <DxColumn data-field="username" caption="사용자명" cell-template="cellTemplate"></DxColumn>
@@ -55,7 +55,7 @@
                   <div class="userName">{{ templateOptions.data.username }}</div>
                   <div v-if="templateOptions.data.groupName != null" class="groupName ml-2"
                     :class="changeColor(templateOptions.data.groupName)">{{
-                      templateOptions.data.groupName
+                    templateOptions.data.groupName
                     }}</div>
                   <div v-else class="groupName ml-2" :class="changeColor(templateOptions.data.groupName)">그룹 없음</div>
                 </div>
@@ -99,11 +99,16 @@ import { ref, onBeforeMount } from 'vue'
 import AppModal from '@/components/modal/AppModal.vue'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/authStore'
+import { useVoccStore } from '@/stores/voccStore'
 import { DxColumn } from 'devextreme-vue/tree-list'
 import { dxGridRefresh, getDxGridInstance } from '@/composables/dxGridUtil'
+import _ from 'lodash'
 
 const authStore = useAuthStore()
 const { users, groups } = storeToRefs(authStore)
+
+const voccStore = useVoccStore()
+const { voccInfo }  = storeToRefs(voccStore)
 
 import { useToast } from '@/composables/useToast'
 const { showResMsg } = useToast()
@@ -123,13 +128,15 @@ let oldGroupKeys = []
 
 onBeforeMount(() => {
   // 그룹 목록 조회
-  if (groups.value.length == 0) {
+  // if (groups.value.length == 0) {
     getUserdAndGroups()
-  }
+  // }
 })
 
 const getUserdAndGroups = async () => {
-  await authStore.displayUsersByGroup()
+  console.log('선사 아이디')
+  console.log(voccInfo.value.id)
+  await authStore.displayUsersByGroup(voccInfo.value.id)
 }
 
 const changeColor = (groupName) => {
@@ -144,7 +151,10 @@ const getUsersGroup = (e) => {
 
   selectdGroupId.value = cellKey
   selectedGroupName.value = cellValue
-  initUsers.value = users.value;
+  initUsers.value = _.cloneDeep(users.value);
+
+  console.log('유저스')
+  console.dir(users.value)
 
   selectedRowKeys.value = users.value.filter((user) => user.groupId === cellKey)
                                     .map((user) => user.userId)
@@ -160,7 +170,6 @@ const getUsersGroup = (e) => {
  * @param {*} e 
  */
 const onRowPrepared = (e) => {
-  // console.log('rowPre')
   if (e.rowType !== "data") return;
   const isSelected = selectedRowKeys.value.includes(e.key);
 
@@ -196,14 +205,18 @@ const saveUserByGroup = async() => {
    
     if (newValue.length > 0) {
        userInfo1 = {
+        voccId : voccInfo.value.id, 
         groupName: selectedGroupName.value,
         userIdList: newValue
       }
+
+      
       result = await authStore.addUserByGroup(groupId, userInfo1)
     }
 
     if (removedValue.length > 0) {
        userInfo1 = {
+        voccId: voccInfo.value.id, 
         groupName: selectedGroupName.value,
         userIdList: removedValue
       }
@@ -211,12 +224,13 @@ const saveUserByGroup = async() => {
     }
 
     if(result){
-      initUsers.value = [...users.value]
+      // initUsers.value = [...users.value]
+      initUsers.value = _.cloneDeep(users.value)
       oldGroupKeys = [...selectedRowKeys.value]
       showResMsg('사용자 목록이 업데이트 되었습니다')
     }
   } catch (err) {
-    console.err()
+    console.dir(err)
   }
 
 }
@@ -225,7 +239,7 @@ const saveUserByGroup = async() => {
  * 그룹 삭제
  */
 const removeGroup = () => {
-  authStore.removeGroup(selectedGroupName.value).then(() => {
+  authStore.removeGroup(voccInfo.value.id, selectedGroupName.value).then(() => {
     const instance = getDxGridInstance(groupGrid)
     setTimeout(() => {
       closeDeleteModal()
@@ -256,7 +270,8 @@ const closeAddModal = () => {
 const newGroupName = ref('')
 const registerGroup = () => {
   const instance = getDxGridInstance(groupGrid)
-  authStore.registerGroup(newGroupName.value).then((response) => {
+  console.dir(voccInfo.value)
+  authStore.registerGroup(voccInfo.value.id, newGroupName.value).then((response) => {
     setTimeout(() => {
       closeAddModal()
       dxGridRefresh(groupGrid)

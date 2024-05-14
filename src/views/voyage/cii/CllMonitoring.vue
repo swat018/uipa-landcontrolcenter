@@ -1,99 +1,235 @@
 <template>
-  <div class="d-flex flex-column flex-grow-1 flex-shrink-1 detail-page">
-    <v-sheet class="rounded-lg h-100">
-      <!-- 필터 -->
-      <div class="d-flex justify-end ga-2 my-4">
-        <div class="datePicker"><input type="date" v-model="startDate" /></div>
-        <div class="datePicker"><input type="date" v-model="endDate" /></div>
-        <i-btn @click="btnSearch()" text="조회" width="90"></i-btn>
-      </div>
+  <v-sheet class="detail-page rounded-lg h-100">
+    <!-- 필터 -->
+    <div class="d-flex justify-end ga-2 my-6">
+      <div class="datePicker"><input type="date" v-model="startDate" /></div>
+      <div class="datePicker"><input type="date" v-model="endDate" /></div>
+      <i-btn @click="btnSearch()" text="조회" width="90"></i-btn>
+    </div>
 
-      <DxDataGrid id="cii-rating-grid" ref="cii-rating-grid" :data-source="cllRatingData" key-expr="id"
-        :column-auto-width="true">
-        <DxSelection mode="single"></DxSelection>
-        <DxColumn data-field="voyage" caption="Voyage" alignment="center"></DxColumn>
-        <DxColumn data-field="departure" caption="Departure" alignment="center" cell-template="departure-template"
-          :allow-editing="false"></DxColumn>
-        <template #departure-template="{ data: templateOptions }">
-          <PortInfo :portName="templateOptions.data.departure.portName" :time="templateOptions.data.time"
-            :country="templateOptions.data.departure.startPortCountry">
-          </PortInfo>
-        </template>
-        <DxColumn data-field="arrival" caption="Arrival" alignment="center" cell-template="arrival-template"
-          :allow-editing="false"></DxColumn>
-        <template #arrival-template="{ data: templateOptions }">
-          <PortInfo :portName="templateOptions.data.arrival.portName" :time="templateOptions.data.time"
-            :country="templateOptions.data.arrival.endPortCountry">
-          </PortInfo>
-        </template>
-        <DxColumn data-field="underway" caption="UnderWay(h)" alignment="center" header-cell-template="underway-header">
+    <DxDataGrid
+      id="cii-monitoring-grid"
+      ref="cii-monitoring-grid"
+      class="tabs-date-filter-container"
+      :data-source="ciiList"
+      key-expr="id"
+      :show-borders="true"
+    >
+      <DxSelection mode="single"></DxSelection>
+      <DxColumn data-field="voyage" caption="id" alignment="center" :visible="false"></DxColumn>
+      <DxColumn
+        data-field="departure"
+        caption="Departure"
+        alignment="center"
+        cell-template="departure-template"
+        :allow-editing="false"
+        width="10%"
+      ></DxColumn>
+      <template #departure-template="{ data: templateOptions }">
+        <PortInfo
+          :portName="templateOptions.data.departure"
+          :time="templateOptions.data.departureTime"
+          :country="templateOptions.data.departurePortInfo.country"
+        >
+        </PortInfo>
+      </template>
+      <DxColumn
+        data-field="arrival"
+        caption="Arrival"
+        alignment="center"
+        cell-template="arrival-template"
+        :allow-editing="false"
+        width="10%"
+      ></DxColumn>
+      <template #arrival-template="{ data: templateOptions }">
+        <PortInfo
+          :portName="templateOptions.data.arrivalPortInfo.name"
+          :time="templateOptions.data.arrivalTime"
+          :country="templateOptions.data.arrivalPortInfo.country"
+        >
+        </PortInfo>
+      </template>
+      <DxColumn
+        data-field="underway"
+        caption="UnderWay(h)"
+        alignment="center"
+        header-cell-template="underway-header"
+      >
+      </DxColumn>
+      <template #underway-header="{ data }">
+        <p>
+          UnderWay <br />
+          (h)
+        </p>
+      </template>
+      <DxColumn
+        data-field="distance"
+        caption="Distance(nm)"
+        alignment="center"
+        header-cell-template="distance-header"
+      >
+      </DxColumn>
+      <template #distance-header="{ data }">
+        <p>
+          Distance <br />
+          (nm)
+        </p>
+      </template>
+      <DxColumn
+        data-field="speed"
+        caption="Avg Speed(kn)"
+        alignment="center"
+        header-cell-template="speed-header"
+      >
+      </DxColumn>
+      <template #speed-header="{ data }">
+        <p>
+          Avg <br />
+          Speed<br />
+          (kn)
+        </p>
+      </template>
+      <DxColumn data-field="focMT" caption="FOC(mt)" alignment="center">
+        <DxColumn
+          data-field="detailFocMap.MDO/MGO"
+          caption="MDO/MGO"
+          alignment="center"
+          v-if="usedFuels.includes['MDO'] || usedFuels.includes['MGO']"
+        ></DxColumn>
+        <DxColumn
+          data-field="detailFocMap.LFO"
+          caption="LFO"
+          alignment="center"
+          v-if="usedFuels.includes['LFO']"
+        >
         </DxColumn>
-        <template #underway-header="{ data }">
-          <p>UnderWay <br> (h)</p>
-        </template>
-        <DxColumn data-field="distance" caption="Distance(nm)" alignment="center"
-          header-cell-template="distance-header">
+        <DxColumn
+          data-field="detailFocMap.HFO"
+          caption="HFO"
+          alignment="center"
+          v-if="usedFuels.includes['HFO']"
+        >
         </DxColumn>
-        <template #distance-header="{ data }">
-          <p>Distance <br> (nm)</p>
-        </template>
-        <DxColumn data-field="avgSpeed" caption="Avg Speed(kn)" alignment="center" header-cell-template="speed-header">
+        <DxColumn
+          data-field="detailFocMap.LPG"
+          caption="LPG"
+          alignment="center"
+          v-if="usedFuels.includes['LPG']"
+        >
         </DxColumn>
-        <template #speed-header="{ data }">
-          <p>Avg <br> Speed<br> (kn)</p>
-        </template>
-        <DxColumn data-field="focMT" caption="FOC(mt)" alignment="center">
-          <DxColumn data-field="mdo/mgo" caption="MDO/MGO" alignment="center"></DxColumn>
-          <DxColumn data-field="lfo" caption="LFO" alignment="center"></DxColumn>
-          <DxColumn data-field="hfo" caption="HFO" alignment="center"></DxColumn>
-          <DxColumn data-field="lpg_p" caption="LPG(P)" alignment="center"></DxColumn>
-          <DxColumn data-field="lpg_b" caption="LPG(B)" alignment="center"></DxColumn>
-          <DxColumn data-field="mto" caption="Mto" alignment="center"></DxColumn>
+        <DxColumn
+          data-field="detailFocMap.LNG"
+          caption="LNG"
+          alignment="center"
+          v-if="usedFuels.includes['LNG']"
+        >
         </DxColumn>
-        <DxColumn data-field="totalco2" caption="Total CO₂,Emission(kn)" alignment="center"
-          header-cell-template="totalEmission-header"></DxColumn>
-        <template #totalEmission-header="{ data }">
-          <p>Total <br> Co2 Emission<br> (kn)</p>
-        </template>
-        <DxColumn data-field="requiredCll" caption="Required Cll" alignment="center"
-          header-cell-template="requireCII-header">
-        </DxColumn>
-        <template #requireCII-header="{ data }">
-          <p>Required <br> CII</p>
-        </template>
-        <DxColumn data-field="attainedCll" caption="Attained Cll" alignment="center"
-          header-cell-template="attainedCll-header">
-        </DxColumn>
-        <template #attainedCll-header="{ data }">
-          <p>Attained <br> CII</p>
-        </template>
-        <DxColumn data-field="cllRating" caption="Cll Rating" alignment="center" header-cell-template="rating-header">
-        </DxColumn>
-        <template #rating-header="{ data }">
-          <p> CII <br> Rating</p>
-        </template>
+      </DxColumn>
+      <!-- Co2 Emission -->
+      <DxColumn
+        data-field="co2Emission"
+        caption="Total CO₂,Emission(kn)"
+        alignment="center"
+        header-cell-template="totalEmission-header"
+      ></DxColumn>
+      <template #totalEmission-header="{ data }">
+        <p>
+          Total <br />
+          Co2 Emission<br />
+          (kn)
+        </p>
+      </template>
+      <DxColumn
+        data-field="requiredCii"
+        caption="Required Cll"
+        alignment="center"
+        header-cell-template="requireCII-header"
+      >
+      </DxColumn>
+      <template #requireCII-header="{ data }">
+        <p>
+          Required <br />
+          CII
+        </p>
+      </template>
+      <DxColumn
+        data-field="attainedCii"
+        caption="Attained Cll"
+        alignment="center"
+        header-cell-template="attainedCll-header"
+      >
+      </DxColumn>
+      <template #attainedCll-header="{ data }">
+        <p>
+          Attained <br />
+          CII
+        </p>
+      </template>
+      <DxColumn
+        data-field="ciiRating"
+        caption="Cll Rating"
+        alignment="center"
+        header-cell-template="rating-header"
+      >
+      </DxColumn>
+      <template #rating-header="{ data }">
+        <p>
+          CII <br />
+          Rating
+        </p>
+      </template>
 
-        <DxColumn data-field="cllGrade" caption="Cll Grade" alignment="center" header-cell-template="grade-header">
-        </DxColumn>
-        <template #grade-header="{ data }">
-          <p> CII <br> Grade</p>
-        </template>
+      <DxColumn
+        data-field="ciiGrade"
+        caption="Cll Grade"
+        alignment="center"
+        header-cell-template="grade-header"
+      >
+      </DxColumn>
+      <template #grade-header="{ data }">
+        <p>
+          CII <br />
+          Grade
+        </p>
+      </template>
 
-        <DxPaging />
-        <DxScrolling column-rendering-mode="virtual"></DxScrolling>
-      </DxDataGrid>
-    </v-sheet>
-  </div>
+      <DxPaging />
+      <DxScrolling mode="virtual"></DxScrolling>
+    </DxDataGrid>
+  </v-sheet>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import PortInfo from '@/components/voyage/PortInfo.vue';
+import { onMounted, ref, computed } from 'vue'
+import { storeToRefs } from 'pinia'
+import emitter from '@/composables/eventbus.js'
+import PortInfo from '@/components/voyage/PortInfo.vue'
 import cllRatingData from '@/assets/mockup/cllRatingData.json'
+import { useCiiStore } from '@/stores/ciiStore'
+import { useShipStore } from '@/stores/shipStore'
 
 const startDate = ref('')
 const endDate = ref('')
 
+const ciiStore = useCiiStore()
+const { ciiList } = storeToRefs(ciiStore)
+
+const shipStore = useShipStore()
+const { usedFuels } = storeToRefs(shipStore)
+
+const fules = ['mdo', 'lfo', 'hfo', 'lpg']
+onMounted(() => {})
+
+const hasName = computed(() => {
+  return !!ciiList['detailFocMap'].MTO
+})
+
+const fetchCiiListByImoNumber = (imoNumber) => {
+  // alert('test' + imoNumber)
+  ciiStore.fetchCiiListByImoNumber(imoNumber)
+}
+
+emitter.on('selectShipOnDetailPage', fetchCiiListByImoNumber)
 </script>
 
 <style scoped>

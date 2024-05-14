@@ -1,7 +1,7 @@
 <template>
   <div class="menuContainer d-flex">
     <div v-for="(item, index) in accessMenus">
-      <v-menu open-on-hover v-if="item.menuId != 50">
+      <v-menu open-on-hover v-if="item.menuId != SETTINGS_MENU_ID">
         <template v-slot:activator="{ props }">
           <v-btn @click="goPage(item.routerPath)" color="white" v-bind="props">
             {{ item.menuName }}
@@ -24,7 +24,7 @@
 import { goPage } from '@/composables/util.js'
 import { useAccessMenuStore } from '@/stores/accessMenuStore'
 const { accessMenus } = useAccessMenuStore()
-
+const SETTINGS_MENU_ID = 500
 </script>
 
 <style></style>

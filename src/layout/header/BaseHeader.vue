@@ -1,9 +1,9 @@
 <template>
   <v-app-bar class="h-auto bg-appBar">
     <!-- <template #default> -->
-    <div class="d-flex w-100 justify-space-between px-6 ga-3">
+    <div class="d-flex w-100 justify-end px-6 ga-3">
       <!-- 출발지, 목적지 정보  -->
-      <DistanceProgress></DistanceProgress>
+      <!-- <DistanceProgress class="w-20"></DistanceProgress> -->
 
       <!-- AIS INFO  메뉴  -->
       <!-- <HeaderAisInfo class="w-45"></HeaderAisInfo> -->
@@ -31,6 +31,7 @@ import TimeInfo from '@/layout/header/menu/TimeInfo.vue'
 <style scoped>
 header {
   color: white !important;
-  border-bottom: 0.5px solid #595a63;
+  /* border-bottom: 0.5px solid #595a63; */
 }
+
 </style>

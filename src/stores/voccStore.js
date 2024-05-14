@@ -8,9 +8,12 @@ import {
   getVoccListAll,
   getVoccAdminListAll,
   getVoccAdmin,
+  getVoccAdminInfo,
   getVoccsWithoutAdmin,
   getVoccUserListAll,
+  getAdminsByVoccId,
   getVoccUser,
+  getMyVoccInfo,
   getVoccInfo,
   deleteVoccAdmin,
   joinVoccUser,
@@ -18,7 +21,11 @@ import {
   changeUserActivate,
   changeUserRole,
   updateVoccLogo,
-  getFleetAndShipByVocc
+  getFleetAndShipByVocc,
+  getVoccs,
+  getMyVoccAdmins,
+  updatePresidentAdmin,
+  getUsersByVoccId
 } from '@/api/voccApi'
 import { useToast } from '@/composables/useToast'
 
@@ -39,6 +46,7 @@ export const useVoccStore = defineStore(
 
     const voccUserInfo = ref({
       id: 0,
+      voccName: '',
       username: '',
       nickname: '',
       email: '',
@@ -68,6 +76,17 @@ export const useVoccStore = defineStore(
       }
     }
 
+    const fetchVoccs = async () => {
+      const response = await getVoccs()
+      const {
+        data: { data }
+      } = response
+
+      if (response.status == 200) {
+        return data
+      }
+    }
+
     /**
      * 관리자가 없는 선사 목록 조회
      */
@@ -84,15 +103,37 @@ export const useVoccStore = defineStore(
       return result
     }
 
+    const fetchVoccInfo = async (voccId) => {
+      try {
+        const response = await getVoccInfo(voccId)
+        ;({
+          data: { data: voccInfo.value }
+        } = response)
+
+        if (!voccInfo.value.address) {
+          voccInfo.value.address = ''
+        }
+
+        if (!voccInfo.value.ceoName) {
+          voccInfo.value.ceoName = ''
+        }
+        sessionStorage.setItem('voccInfo', JSON.stringify(voccInfo.value))
+      } catch (error) {
+        const errMsg = error.response.data.errorMsg
+        showResMsg(errMsg)
+        // console.dir(error)
+      }
+    }
+
     /**
      * 선사 정보 조회
      * @param {Number} voccUserId
      * @returns
      */
 
-    const fetchVoccInfo = async () => {
+    const fetchMyVoccInfo = async () => {
       try {
-        const response = await getVoccInfo()
+        const response = await getMyVoccInfo()
         ;({
           data: { data: voccInfo.value }
         } = response)
@@ -128,7 +169,7 @@ export const useVoccStore = defineStore(
             data: { data: voccInfo.value }
           } = response)
           voccInfo.value = { voccId, ...editForm }
-          sessionStorage.setItem(JSON.stringify(voccInfo.value))
+          sessionStorage.setItem('voccInfo', JSON.stringify(voccInfo.value))
           return status
         }
       } catch (error) {
@@ -176,22 +217,10 @@ export const useVoccStore = defineStore(
         const errMsg = error.response.data.errorMsg
         showResMsg(errMsg)
       }
-      // await registerVocc(registerForm)
-      //   .then((response) => {
-      //     result = response
-      //     console.dir(registerForm)
-      //     registerForm.id = response.data
-      //     registerForm.activated = true
-      //     registerForm.name = registerForm.voccName
-      //     voccAdmins.value.push(registerForm)
-      //     showResMsg('관리자 등록이 성공적으로 되었습니다')
-      //   })
-      //   .catch((err) => {})
-      // return result
     }
 
     /**
-     * 선사 관리자 목록 조회
+     * 선사별 관리자 목록 조회(UIPA)
      * @param
      * @returns
      */
@@ -209,18 +238,56 @@ export const useVoccStore = defineStore(
       return result
     }
 
-    const getVoccAdminInfo = async (voccAdminId) => {
-      await getVoccAdmin(voccAdminId).then((response) => {
-        const result = response
+    /**
+     * 선사 관리자 목록 조회
+     * @param
+     * @returns
+     */
+    const fetchMyVoccAdmins = async () => {
+      let result
+      await getMyVoccAdmins()
+        .then((response) => {
+          result = response
+          voccAdmins.value = response
+
+          console.dir(voccAdmins)
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+
+      return result
+    }
+
+    /**
+     * 선사 아이디를 통한 관리자 목록 조회
+     * @param {*} voccId
+     * @returns
+     */
+
+    const fetchAdminsByVoccId = async (voccId) => {
+      const result = await getAdminsByVoccId(voccId)
+      return result
+    }
+
+    const fetchVoccAdminInfo = async (voccId, userId) => {
+      try {
+        const response = await getVoccAdminInfo(voccId, userId)
+        const {
+          data: { data }
+        } = response
         voccAdminInfo.value = {
-          name: result.name,
-          username: result.getUserData.username,
-          nickname: result.getUserData.nickname,
-          email: result.getUserData.email,
-          role: result.getUserData.role,
-          activated: result.getUserData.activated
+          userId: data.userId,
+          voccName: data.voccName,
+          username: data.username,
+          nickname: data.nickname,
+          email: data.email,
+          role: data.role,
+          activated: data.activated
         }
-      })
+      } catch (error) {
+        console.log(error)
+      }
 
       return voccAdminInfo
     }
@@ -231,17 +298,17 @@ export const useVoccStore = defineStore(
      * @param {*} removeVoccAdminInfo
      */
     const removeAdmin = async (voccAdminId, removeVoccAdminInfo) => {
-      try{
+      try {
         const response = await deleteVoccAdmin(removeVoccAdminInfo)
 
-        const { status } = response;
+        const { status } = response
 
-        if(status == 200){
+        if (status == 200) {
           const index = voccAdmins.value.findIndex((voccAdmin) => voccAdmin.id === voccAdminId)
           voccAdmins.value.splice(index, 1)
           showResMsg('선사 관리자가 삭제되었습니다')
         }
-      }catch(error){
+      } catch (error) {
         const errMsg = error.response.data.errorMsg
         showResMsg(errMsg)
       }
@@ -281,18 +348,33 @@ export const useVoccStore = defineStore(
     }
 
     /**
+     * 선사 아이디를 통한 사용자 목록 조회
+     * @param {*} voccId
+     * @returns
+     */
+
+    const fetchUsersByVoccId = async (voccId) => {
+      const result = await getUsersByVoccId(voccId)
+      return result
+    }
+
+    /**
      * 선사 사용자 정보 조회
      * @param {Number} voccUserId
      * @returns
      */
 
-    const getVoccUserInfo = async (voccUserId) => {
-      let result
-      await getVoccUser(voccUserId).then((response) => {
-        result = response
-        voccUserInfo.value = response
-      })
-      return result
+    const getVoccUserInfo = async (voccId, userId) => {
+      try {
+        const response = await getVoccUser(voccId, userId)
+        const {
+          data: { data }
+        } = response
+        voccUserInfo.value = data
+        return data
+      } catch (error) {
+        console.error(error)
+      }
     }
 
     /**
@@ -317,13 +399,13 @@ export const useVoccStore = defineStore(
             voccAdmins.value.forEach((admin) => {
               if (admin.username == userName) {
                 admin.activated = activate
+                voccAdminInfo.value.activated = activate
               }
             })
           } else if (type == 'voccUser') {
             voccUsers.value.forEach((user) => {
               if (user.username == userName) {
                 user.activated = activate
-                console.log(user.activated)
               }
             })
 
@@ -352,7 +434,18 @@ export const useVoccStore = defineStore(
 
     const fetchFleetAndShipByVocc = async (voccids) => {
       fleetsAndShip.value = await getFleetAndShipByVocc(voccids)
-      console.dir(fleetsAndShip.value)
+    }
+
+    const changePresidentAdmin = async (form) => {
+      const response = await updatePresidentAdmin(form)
+      console.dir(response)
+      if (response.status == 200) {
+        if (!form.appoint) {
+          showResMsg('대표 관리자가 해제되었습니다')
+        } else {
+          showResMsg('대표 관리자가 할당되었습니다')
+        }
+      }
     }
 
     return {
@@ -364,12 +457,13 @@ export const useVoccStore = defineStore(
       fleetsAndShip,
       joinVoccAdmin,
       fetchVoccInfo,
+      fetchMyVoccInfo,
       editVoccInfo,
       changeLogoImage,
       fetchVoccsWithoutAdmin,
       fetchVoccListAll,
+      fetchVoccs,
       getVoccAdmins,
-      getVoccAdminInfo,
       registerVoccUser,
       getVoccUsers,
       getVoccUserInfo,
@@ -377,7 +471,12 @@ export const useVoccStore = defineStore(
       removeVoccUser,
       changeActive,
       changeRole,
-      fetchFleetAndShipByVocc
+      fetchFleetAndShipByVocc,
+      fetchMyVoccAdmins,
+      fetchAdminsByVoccId,
+      fetchUsersByVoccId,
+      changePresidentAdmin,
+      fetchVoccAdminInfo
     }
   },
   {

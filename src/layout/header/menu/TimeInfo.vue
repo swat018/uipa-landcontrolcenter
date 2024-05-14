@@ -1,10 +1,10 @@
 <template>
-  <div class="d-flex mr-2 ">
+  <div class="timeinfo d-flex mr-2 ">
     <div class="mr-2 d-flex ga-4 pointer-cursor">
       <div class="subTitle">UTC TIme</div>
       <div class="subTitle">{{ nowUTCTime }}</div>
     </div>
-    <div class="d-flex ml-2 ga-4 localTime pointer-cursor">
+    <div class="d-flex ga-4 localTime pointer-cursor">
       <div class="subTitle">Local TIme</div>
       <div class="subTitle">{{ nowKRTime }} (+9)</div>
     </div>
@@ -46,5 +46,20 @@ const getNowTime = () => {
 .localTime::before {
   content: '';
   border: 0.5px solid #595A63;
+  margin-left : 4px;
+}
+
+@media screen and (max-width: 1250px) {
+  .timeinfo{
+    flex-direction : column;
+  }
+
+  .localTime::before {
+    display: none;
+  }
+
+  .localTime{
+    margin-left : 0px;
+  }
 }
 </style>

@@ -55,6 +55,14 @@ export const getShipInfo = (imoNumber) => {
   })
 }
 
+export const getShipDetailInfo = (imoNumber) => {
+  return instance({
+    url: '/ship/info/get-detail',
+    method: 'GET',
+    params: { imoNumber }
+  })
+}
+
 export const getShipAisInfo = (imoNumber) => {
   return instance({
     url: 'world-map/get-ais',
@@ -70,3 +78,12 @@ export const deleteShip = (imoNumber) => {
     params : { imoNumber }
   })
 }
+
+export const getShipMachineInfo = (imoNumber) => {
+  return instance({
+    url: '/ship/info/get-machine-data',
+    method: 'GET',
+    params: { imoNumber }
+  })
+}
+

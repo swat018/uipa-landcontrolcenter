@@ -16,13 +16,18 @@ export const getVoyageList = (imoNumber) => {
   })
 }
 
+export const getTotalInfo = (imoNumber) => {
+  return instance({
+    url: '/world-map/get-total-info',
+    method: 'GET',
+    params: { imoNumber }
+  })
+}
+
 export const getShipData = (imoNumberList) => {
   return instance({
     url: '/world-map/get-ship-data',
     method: 'GET',
-    params:  { imoNumberList : imoNumberList}
-  }).then((response => {
-    const { data : { data }} = response
-    return data;
-  }))
+    params:  { imoNumberList : imoNumberList }
+  })
 }

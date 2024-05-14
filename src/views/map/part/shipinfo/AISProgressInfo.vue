@@ -1,17 +1,17 @@
 <template>
   <div style="margin-bottom: -25px;">
-    <v-slider v-model="process" :thumb-size="18" :track-size="10" height="50" color="#4E83FF" thumb-label="always"
-      rounded readonly hide-details class="progressBar">
+    <v-slider v-model="aisInfo.process" :thumb-size="18" :track-size="10" height="50" color="#4E83FF"
+      thumb-label="always" rounded readonly hide-details class="progressBar">
     </v-slider>
     <div class="d-flex justify-space-between">
       <div>
-        <div class="distance-title text-center">{{ aisInfo.startPort }}</div>
-        <div class="desc"> {{ aisInfo.startTime }}</div>
+        <div class="distance-title text-center">{{ aisInfo.departure }}</div>
+        <div class="desc"> {{ aisInfo.departureTime }}</div>
       </div>
       <!-- <div style="background : white; color : black; border-radius : 50px; padding:5px; height : 30px; vertical-align:middle">68</div> -->
       <div>
-        <div class="distance-title text-center">{{ aisInfo.endPort }}</div>
-        <div class="desc">{{ aisInfo.endTime }}</div>
+        <div class="distance-title text-center">{{ aisInfo.arrival }}</div>
+        <div class="desc">{{ aisInfo.arrivalTime }}</div>
       </div>
     </div>
   </div>
@@ -27,7 +27,6 @@ import emitter from '@/composables/eventbus.js'
 
 const mapStore = useMapStore()
 const { clickedShipInfo, aisInfo } = storeToRefs(mapStore)
-const process = ref(aisInfo.value.process)
 
 
 // emitter.on('fetchAisInfo', ()=> {

@@ -21,9 +21,7 @@ export const useFleetStore = defineStore('fleetManagement', () => {
         let {
           data: { data, statusCode }
         } = response
-        
-        console.log(data)
-        console.log(statusCode)
+
         let status = parseInt(statusCode.substr(0,3))
         if( status == 201){
           fleets.value.push({ id: data, ...fleetRegisterForm, imoNumberList: null })

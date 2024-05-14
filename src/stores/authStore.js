@@ -36,7 +36,7 @@ export const useAuthStore = defineStore(
       role: '',
       activated: false,
       sessionId: '',
-      uuid  : ''
+      uuid: ''
     })
 
     const users = ref([])
@@ -113,7 +113,7 @@ export const useAuthStore = defineStore(
           getActivePinia()._s.forEach((store) => {
             console.dir(store)
             // store.$dispose()
-            if(store.$id == "mapManagement"){
+            if (store.$id == 'mapManagement') {
               store.$reset()
             }
           })
@@ -272,9 +272,9 @@ export const useAuthStore = defineStore(
      * 사용자 그룹 추가
      * @param {*} groupName
      */
-    const registerGroup = async (groupName) => {
+    const registerGroup = async (voccId, groupName) => {
       try {
-        const response = await addGroup(groupName)
+        const response = await addGroup(voccId, groupName)
         const { data: groupKey } = response
 
         const addGroupInfo = {
@@ -294,9 +294,9 @@ export const useAuthStore = defineStore(
      * 권한 그룹 삭제
      * @param {} groupName
      */
-    const removeGroup = async (groupName) => {
+    const removeGroup = async (voccId, groupName) => {
       try {
-        const response = await deleteGroup(groupName)
+        const response = await deleteGroup(voccId, groupName)
         const index = groups.value.findIndex((group) => group.value === groupName)
         groups.value.splice(index, 1)
         showResMsg('그룹이 삭제되었습니다')
@@ -307,9 +307,9 @@ export const useAuthStore = defineStore(
     }
 
     // 사용자 그룹별 사용자 목록 조회
-    const displayUsersByGroup = async () => {
+    const displayUsersByGroup = async (voccId) => {
       try {
-        const response = await getUsersByGroup()
+        const response = await getUsersByGroup(voccId)
         const {
           data: {
             data: {
@@ -330,6 +330,25 @@ export const useAuthStore = defineStore(
       }
     }
 
+    const fetchGroupsByVoccId = async (voccId) => {
+      try {
+        const response = await getUsersByGroup(voccId)
+        const {
+          data: {
+            data: {
+              userGroupIdAndNameList, // 그룹 목록,
+              userGroupInfoByUserList // 사용자 목록
+            }
+          }
+        } = response
+
+        return { userGroupIdAndNameList, userGroupInfoByUserList }
+      } catch (err) {
+        const errorMsg = err.response.data.errorMsg
+        showResMsg(errorMsg)
+      }
+    }
+
     /**
      * 그룹에 사용자 추가
      * @param {*} groupId
@@ -342,13 +361,35 @@ export const useAuthStore = defineStore(
 
         if (response.status == 200) {
           const { groupName, userIdList } = userInfo
+
+          console.log(`그룹명 : ${groupName}`)
+          console.log(`사용자 목록  : ${userIdList}`)
           users.value = users.value.forEach((user) => {
             if (userIdList.includes(user.userId)) {
               user.groupName = groupName
               user.groupId = groupId
             }
           })
+        
 
+          console.log('사용자 추가 후 결과')
+        console.dir(users.value)
+
+          // localStorage.setItem('users', users.value)
+
+          return true
+        }
+      } catch (error) {
+        const errorMsg = error.response.data.errorMsg
+        showResMsg(errorMsg)
+      }
+    }
+
+    const addUserByVoccId = async (groupId, userInfo) => {
+      try {
+        const response = await saveUserByGroup(userInfo)
+
+        if (response.status == 200) {
           // localStorage.setItem('users', users.value)
 
           return true
@@ -379,10 +420,33 @@ export const useAuthStore = defineStore(
           return true
         }
       } catch (error) {
-        const errorMsg = error.response.data.errorMsg
-        showResMsg(errorMsg)
+        if (error.response) {
+          const errorMsg = error.response.data.errorMsg
+          showResMsg(errorMsg)
+        }
       }
     }
+
+    /**
+     * 그룹에 사용자 삭제
+     * @param {*} userInfo
+     * @returns
+     */
+    const removeUserByVoccId = async (userInfo) => {
+      try {
+        const response = await deleteUserByGroup(userInfo)
+        if (response.status == 200) {
+          return true
+        }
+      } catch (error) {
+        if (error.response) {
+          const errorMsg = error.response.data.errorMsg
+          showResMsg(errorMsg)
+        }
+      }
+    }
+
+    // /
 
     // 사용자 접속 기록 조회
     const fetchAccessLog = async (startDate = '', endDate = '') => {
@@ -428,7 +492,10 @@ export const useAuthStore = defineStore(
       addUserByGroup,
       removeUserByGroup,
       removeGroup,
-      fetchAccessLog
+      fetchAccessLog,
+      fetchGroupsByVoccId,
+      addUserByVoccId,
+      removeUserByVoccId
     }
   },
   {

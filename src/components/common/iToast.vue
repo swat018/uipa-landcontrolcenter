@@ -1,5 +1,5 @@
 <template>
-  <v-snackbar v-model="isShow" :timeout="props.timeout" :color="props.color">
+  <v-snackbar v-model="isShow" :timeout="duration" :color="props.color">
     <div class="text-center">{{ resMessage }}</div>
   </v-snackbar>
 </template>
@@ -7,7 +7,7 @@
 
 <script setup>
 import { useToast } from '@/composables/useToast';
-const { isShow, resMessage } = useToast();
+const { isShow, resMessage, duration } = useToast();
 
 // const styleClass = computed(()=>{
 //    return props.type =='error' ? 'alert-danger' : 'alert-success'
@@ -28,7 +28,7 @@ const props = defineProps({
     },
     timeout : {
       type : Number,
-      default : 1500
+      default : 3000
     }
     // type : {
     //     type : String,

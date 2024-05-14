@@ -1,6 +1,8 @@
 import router from '@/routes/index.js'
 import moment from 'moment'
 import { getActivePinia } from 'pinia'
+import { useShipStore } from '@/stores/shipStore'
+import { remove } from 'lodash'
 
 export const dateFormatter = (param) => {}
 export const goPage = (url, metaName, metaValue) => {
@@ -21,27 +23,22 @@ export const logout = () => {
 
 /**
  * 객체 초기화
- * @param {} object 
+ * @param {} object
  */
-export const resetObject = ( object )=>{
-   // 초기화
+export const resetObject = (object) => {
+  // 초기화
   for (const key in object) {
-    object[key] = null;
+    object[key] = null
   }
 }
-
 
 /**
  * SSE 이벤트 구독
  */
 export const sse = (eventSource) => {
-  
-  eventSource.addEventListener('open', (e) => {
-  })
+  eventSource.addEventListener('open', (e) => {})
 
   eventSource.addEventListener('sse', (e) => {
-  
-
     const obj = JSON.parse(e.data)
     if (obj.sseReturnCode == 'DUPLICATED_LOGIN') {
       logout()
@@ -52,19 +49,18 @@ export const sse = (eventSource) => {
       logout()
     }
 
-    if(obj.sseReturnCode == 'ALREADY_LOGGED_IN_USER'){
+    if (obj.sseReturnCode == 'ALREADY_LOGGED_IN_USER') {
       const errMsg = obj.msg
       router.push({
-        path: '/noAccess', 
-        params: { 
+        path: '/noAccess',
+        params: {
           message: errMsg
         }
       })
     }
 
-    if(obj.sseReturnCode == 'CHANGED_SHIP'){
-      console.log('선박 변경')
-      return obj.msg;
+    if (obj.sseReturnCode == 'CHANGED_SHIP') {
+      return obj.msg
     }
   })
 
@@ -73,18 +69,13 @@ export const sse = (eventSource) => {
       eventSource.close()
     }
   })
-
 }
-
 
 /**
  * SSE 이벤트 구독
  */
 export const sse2 = (eventSource) => {
-  
   eventSource.addEventListener('sse2', (e) => {
-  
-
     const obj = JSON.parse(e.data)
     if (obj.sseReturnCode == 'DUPLICATED_LOGIN') {
       logout()
@@ -95,11 +86,11 @@ export const sse2 = (eventSource) => {
       logout()
     }
 
-    if(obj.sseReturnCode == 'ALREADY_LOGGED_IN_USER'){
+    if (obj.sseReturnCode == 'ALREADY_LOGGED_IN_USER') {
       const errMsg = obj.msg
       router.push({
-        path: '/noAccess', 
-        params: { 
+        path: '/noAccess',
+        params: {
           message: errMsg
         }
       })
@@ -111,30 +102,61 @@ export const sse2 = (eventSource) => {
       eventSource.close()
     }
   })
-
 }
 
 /**
  * 숫자 3자리 단위로 끊는 기능
- * ex) 123000 => 1,23,000
+ * ex) 123000 => 123,000
  */
 
-export const convertNumberFormat = ( data ) => {
-  return new Intl.NumberFormat('ko', {
+export const convertNumberFormat = (data) => {
+  let formattedData = new Intl.NumberFormat('ko', {
     style: 'decimal',
-    minimumFractionDigits: 2
+    maximumFractionDigits: 2
   }).format(data)
+
+  return formattedData
 }
 
-export const convertDateType = ( date ) => {
+export const convertStringToFloat = (object) => {
+  Object.entries(object).forEach(([key, value]) => {
+    let type = typeof value
+    if (Number.isInteger(value)) {
+      return
+    }
+
+    value = value.replace(',', '')
+
+    if (isNaN(value)) {
+      if (value == null || value == '-') {
+        object[key] = 0.0
+        return
+      }
+    } else {
+      console.log(typeof value)
+      console.log(value)
+      // const hasDecimal = value.include('.')
+
+      if (!Number.isInteger(value)) object[key] = parseFloat(value)
+      else object[key] = parseInt(value)
+    }
+  })
+  return object
+}
+
+export const removeComma = (data) => {
+  return data.replace(',', '')
+}
+
+export const convertDateType = (date) => {
   const utcDate = moment(date)
   const formattedDate = utcDate.format('YYYY-MM-DD')
 
-  return formattedDate;
+  return formattedDate
 }
 
 export const convertDateTimeType = (date) => {
-  const utcDate = moment(date)
+  const utcDate = moment(date).utc()
   const formattedDate = utcDate.format('YYYY-MM-DD HH:mm')
   return formattedDate
 }
@@ -146,30 +168,72 @@ export const convertDateTimeSecondType = (date) => {
   return formattedDate
 }
 
+/**
+ * 객체 내 속성 값이 Float인 경우, 소수점 단위 끊어서 반환
+ * @param {*} object
+ * @returns
+ */
+export const convertFloatFormatObject = (object) => {
+  Object.entries(object).forEach(([key, value]) => {
+    let type = typeof value
+
+    if (Array.isArray(typeof value)) {
+      object[key] = covertFloatFormatArray(value)
+    } else if (typeof value == 'object' && value != null) {
+      convertFloatFormatObject(value)
+    }
+
+    if (type != 'number') {
+      if (value == null || value == 'NaN') {
+        object[key] = '-'
+      }
+      return
+    }
+
+    if (!Number.isInteger(value)) {
+      if (value == 0.0 || value == 'NaN') {
+        object[key] = '-'
+      } else {
+        object[key] = convertNumberFormat(value)
+      }
+    } else {
+      if (value == 0 || value == 'NaN') {
+        object[key] = '-'
+      }
+    }
+  })
+  return object
+}
+
+export const covertFloatFormatArray = (array) => {
+  array.forEach((item, index) => (item[index] = convertNumberFormat(item)))
+  return array
+}
+
 export const addDay = (date, days) => {
-  const originDate = moment(date);
+  const originDate = moment(date)
   let addedDate = originDate.add(days, 'days')
 
-  return addedDate;
+  return addedDate
 }
 
 /**
  * 날짜 범위 유효성 검사
  * 시작날짜는 종료날짜보다 과거여야한다
- * @param {*} startDate 
- * @param {*} endDate 
- * @returns 
+ * @param {*} startDate
+ * @param {*} endDate
+ * @returns
  */
-export const isValidDateRange = (startDate, endDate) =>{
+export const isValidDateRange = (startDate, endDate) => {
   let startDateTime = moment(startDate)
   let endDateTime = moment(endDate)
 
-  console.log(startDateTime)
-  console.log(endDateTime)
-
   let result = startDateTime.isBefore(endDateTime)
 
-  console.log(result)
-
   return result
+}
+
+export const fetchMachineData = async (imoNumber) => {
+  const shipStore = useShipStore()
+  await shipStore.fetchShipMachineInfo(imoNumber)
 }

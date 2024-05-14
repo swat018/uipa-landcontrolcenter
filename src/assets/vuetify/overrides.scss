@@ -1,14 +1,102 @@
 @use "variable.scss" as v;
 
+
 // Container
 .v-application__wrap {
   .v-container {
     padding: v.$paddingGap
   }
+
+  $switch-inset-track-height : "15px";
+
+  
+  .v-card-title {
+    padding: 1.5rem;
+    height: 88px;
+  
+    &.tab-title {
+      height: 60px;
+      font-size: 1rem;
+    }
+  }
+
+  .v-card-text {
+    padding: 1.5rem;
+  }
+
+  /**
+  * 탭 관련 CSS
+  */
+  .v-window__container .v-col {
+    padding: 12px;
+  }
+
+  // 탭 내 Card 내부 간격 및 높이
+  .v-window-item {
+    .v-card-title {
+      padding: 0.75rem 0px;
+      height: 64px;
+      &.cii-title {
+            height: auto;
+      }
+    }
+
+    .v-card-text {
+      padding: 0.75rem 0px;
+    }
+
+    .v-card--variant-elevated {
+      box-shadow: 0px 0px 0px;
+    }
+  }
+
+  .v-slide-group__content span.v-btn__content {
+    font-size: 0.875rem;
+  }
+
+  .v-tabs--density-default {
+    --v-tabs-height: 62px;
+  }
+
+  /*
+  * v-table 관련 속성
+  */
+  .v-table>.v-table__wrapper>table>tbody>tr>td,
+  .v-table>.v-table__wrapper>table>tbody>tr>th,
+  .v-table>.v-table__wrapper>table>thead>tr>td,
+  .v-table>.v-table__wrapper>table>thead>tr>th,
+  .v-table>.v-table__wrapper>table>tfoot>tr>td,
+  .v-table>.v-table__wrapper>table>tfoot>tr>th {
+    padding: 0 1.5rem;
+  }
+
+  /**
+  * 스위치 관련 속성
+  */
+  .v-switch__thumb {
+    width: 15px;
+    height: 15px;
+  }
+
+  .voyage-track-switch .v-selection-control__wrapper {
+    width: 25px;
+    height: 25px;
+  }
+
+  .voyage-track-switch .v-switch .v-selection-control {
+    min-height: 25px;
+  }
+
+  .v-slider.generator-power.v-input--horizontal>.v-input__control {
+    min-height: 20px;
+    display: flex;
+    align-items: center;
+  }
 }
 
-// Grid
-
+// .v-application__wrap .v-card-text {
+//   padding: 1.5rem;
+// }
 // V-Input
 .v-input.v-text-field .v-input__details {
   padding-inline: 14px;
@@ -20,7 +108,7 @@
 }
 
 .v-input__details .v-messages {
-  font-size: 11px;
+  font-size: 0.875rem;
   min-height: 10px;
 }
 
@@ -83,12 +171,14 @@
 }
 
 // Scroll Bar
-.v-table__wrapper::-webkit-scrollbar{
-  width : 5px;
+.v-table__wrapper::-webkit-scrollbar {
+  width: 5px;
 }
-.v-table__wrapper::-webkit-scrollbar-track{
+
+.v-table__wrapper::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .v-table__wrapper::-webkit-scrollbar-thumb {
   background: #5c5c5c;
   border-radius: 2px;
@@ -101,7 +191,7 @@ input[type="date"] {
   border: 1px solid #49494E;
   padding: 10px 15px;
   border-radius: 8px;
-  cursor : default;
+  cursor: default;
 }
 
 .col2-Layout {
@@ -129,8 +219,26 @@ input[type="date"] {
 .v-slider-thumb__label {
   background: #fff !important;
   color: #5789FE !important;
-  font-size: 0.8em !important;
+  font-size: 0.825em !important;
   font-weight: 600;
   width: 45px
 }
 
+.cii-slider .v-slider.v-input--horizontal .v-slider-track__fill {
+  background: transparent !important;
+}
+
+.cii-slider .v-slider-thumb__surface.elevation-2 {
+  border: 2px solid #fff;
+  color: #5789FE
+}
+
+.v-slider-thumb__ripple {
+  cursor: pointer;
+}
+
+.v-slider.progressBar.v-input--horizontal>.v-input__control {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+}

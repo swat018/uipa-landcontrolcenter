@@ -1,6 +1,7 @@
 <template>
-  <div>
-    <v-form @submit.prevent class="w-100">
+  <!-- <div class=""> -->
+  <div class="tab-card gray-border pa-6">
+    <v-form @submit.prevent class="w-100 ">
       <div class="tab-container">
         <div class="shipInfo-container d-flex flex-wrap ga-2">
           <div class="shipInfo-item">
@@ -11,8 +12,11 @@
           </div>
           <div class="shipInfo-item">
             <div class="mb-1">Flag</div>
-            <i-input label="Flag" type="text" v-model="shipEditForm.nation" placeholder="Flag를 입력하여 주십시오" required
-              :hide-details="false"></i-input>
+            <!-- <i-input label="Flag" type="text" v-model="shipEditForm.nation" placeholder="Flag를 입력하여 주십시오" required
+              :hide-details="false"></i-input> -->
+            <v-autocomplete v-model="shipEditForm.nation" :items="ports" item-title="name" item-value="code"
+              density="compact" bg-color='#434348' placeholder="출발지를 선택하세요" hide-details variant="solo-filled"
+              no-data-text="데이터가 없습니다" />
           </div>
           <div class="shipInfo-item">
             <div class="mb-1">IMO Number</div>
@@ -70,18 +74,22 @@
             </i-input>
           </div>
         </div>
-        <i-btn v-if="role != 'ROLE_VOCC_USER'" @click="editShipInfo" class="w-100 mt-10" text="수정" :color="changeColor"
+        <i-btn v-if="role != 'ROLE_VOCC_USER'" @click="editShipInfo" class="w-100 mt-3" text="수정" :color="changeColor"
           :disabled="isDisabled"></i-btn>
       </div>
     </v-form>
   </div>
+  <!-- </div> -->
 </template>
 
 <script setup>
 import { onMounted, watch, computed, ref, defineProps, watchEffect } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useShipStore } from '@/stores/shipStore.js'
+import { getAllPort } from '@/api/operationapi.js'
 import _ from 'lodash'
+
+const ports = ref([])
 
 const shipStore = useShipStore()
 const { shipInfo } = storeToRefs(shipStore)
@@ -120,6 +128,7 @@ onMounted(() => {
   if (role != 'ROLE_VOCC_USER') {
     readonly.value = false;
   }
+  fetchAllPort()
 })
 
 // 선박 정보 조회
@@ -149,6 +158,10 @@ const changeColor = computed(() => {
   return isDisabled.value ? '#7A8294' : '#5789FE'
 })
 
+const fetchAllPort = async () => {
+  // const response = await getAllPort()
+  ({ data: { data: ports.value } } = await getAllPort())
+}
 </script>
 
 <style scoped>

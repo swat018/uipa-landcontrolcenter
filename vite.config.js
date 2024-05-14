@@ -21,7 +21,19 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
         ws: true,
-      }
+      },
+      '/influx': {
+        target: localUrl,
+        changeOrigin: true,
+        secure: false,
+        ws: true
+      },
+      '/ship': {
+        target: localUrl,
+        changeOrigin: true,
+        secure: false,
+        ws: true
+      },
     }
   },
 })

@@ -36,7 +36,6 @@ defineProps({
 const boatName = ref()
 
 emitter.on('clickedShipOnMap', () => {
-  console.log('팝업 : emiiter 호출')
   // boatName.value = currentShip.value
   console.dir(clickedShipInfo)
 })

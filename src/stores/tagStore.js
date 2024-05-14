@@ -40,11 +40,6 @@ export const useTagStore = defineStore('tagManagement', () => {
       const response = await deleteTag(removedTags)
 
       if(response.status == 200){
-        // const filteredTestList = tagList.value.filter((item) => {
-        //   !removedTags.some((tag) => { tag.imoNumber === item.imoNumber && tag.tagName === item.tagName })
-        // })
-        // tagList.value = filteredTestList
-        // console.log('삭제 결과' + response.status)
         return response.status
       }
     }catch(error){

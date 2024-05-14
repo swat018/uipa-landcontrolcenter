@@ -1,5 +1,5 @@
 <template>
-  <v-dialog class="d-flex justify-cecnter" width="700">
+  <v-dialog class="d-flex justify-center" width="700">
     <v-card class="pb-6">
       <v-card-text class="text-end">
         <v-btn class="pl-6" prepend-icon="mdi-close" @click="$emit('closePopup')"></v-btn>

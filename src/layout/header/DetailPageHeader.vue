@@ -24,7 +24,7 @@ import TimeInfo from '@/layout/header/menu/TimeInfo.vue'
 <style scoped>
 header {
   color: white !important;
-  border-bottom: 0.5px solid #595a63;
+  /* border-bottom: 0.5px solid #595a63; */
 }
 
 .subTitle {

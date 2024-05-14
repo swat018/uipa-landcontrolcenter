@@ -28,9 +28,9 @@ export const getUserInfo = (param) => {
   return instance({
     url: '/user/get-data',
     method: 'POST',
-    data: param
+    data: param 
   })
-
+  
 }
 
 export const getUserInfoById = () => {
@@ -42,8 +42,8 @@ export const getUserInfoById = () => {
 
 /**
  * 아이디 찾기
- * @param {*} email
- * @returns
+ * @param {*} email 
+ * @returns 
  */
 export const getUserId = (email) => {
   return instance({
@@ -68,21 +68,21 @@ export const resetUserPassword = (userName) => {
 /**
  * 사용자 이메일 변경
  * @param {} emailEditForm
- * @returns
+ * @returns 
  */
 
 export const changeEmail = (emailEditForm) => {
   return instance({
     url: '/user/change-email',
     method: 'POST',
-    data: emailEditForm
+    data: emailEditForm 
   })
 }
 
 /**
  * 사용자 비밀번호 변경
  * @param {} emailEditForm
- * @returns
+ * @returns 
  */
 export const changePassword = (passwordEditForm) => {
   return instance({
@@ -94,14 +94,14 @@ export const changePassword = (passwordEditForm) => {
 
 /**
  * 사용자 닉네임 변경
- * @param {*} nicknameEditForm
- * @returns
+ * @param {*} nicknameEditForm 
+ * @returns 
  */
 export const changeNickname = (nicknameEditForm) => {
   return instance({
     url: '/user/change-nickname',
     method: 'POST',
-    data: nicknameEditForm
+    data: nicknameEditForm 
   })
 }
 
@@ -112,30 +112,31 @@ export const changeNickname = (nicknameEditForm) => {
 
 /**
  * 새 그룹 추가
- * @param {*} groupName
- * @returns
+ * @param {*} groupName 
+ * @returns 
  */
-export const addGroup = (groupName) => {
+export const addGroup = (voccId,groupName) => {
   return instance({
     url: '/user-group/add-group',
     method: 'POST',
-    params : { groupName }
+    params : {voccId, groupName }
   })
 }
 
-export const deleteGroup = (groupName) => {
+export const deleteGroup = (voccId, groupName) => {
   return instance({
     url: '/user-group/remove-group',
     method: 'POST',
-    params: { groupName }
+    params: { voccId, groupName }
   })
 }
 
-export const getUsersByGroup = () => {
+export const getUsersByGroup = (voccId) => {
   return instance({
-      url :'/user-group/get-user-list',
-      method : 'GET'
-   })
+    url: '/user-group/get-user-list',
+    method: 'GET',
+    params: { voccId }
+  })
 }
 
 export const saveUserByGroup = (userInfo) => {
@@ -150,7 +151,7 @@ export const deleteUserByGroup = (userInfo) => {
   return instance({
     url : '/user-group/remove-user',
     method : 'POST',
-    data : userInfo
+    data : userInfo 
   })
 }
 

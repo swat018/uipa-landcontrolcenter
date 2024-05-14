@@ -1,14 +1,14 @@
 <template>
-  <BaseChangeForm class="mx-auto">
-    <template #title>
+  <v-card class="h-100">
+    <v-card-title>
       <div>선사 관리자 등록</div>
-    </template>
-
-    <template #content>
+    </v-card-title>
+    <v-card-text class="title-form-container">
       <v-form @submit.prevent v-model="isDisabled">
-        <div class="mt-8 mb-1">선사명</div>
-        <i-selectbox :items="voccs" label="선사명을 선택해주세요" v-model="registerForm.voccName">
-        </i-selectbox>
+        <div class="mb-1">선사명</div>
+        <v-autocomplete :items="voccs" item-title="name" item-value="name" placeholder="선사명을 선택해주세요"
+          v-model="registerForm.voccName" variant="solo-filled" density="compact" bg-color="#434348">
+        </v-autocomplete>
         <div class="mb-1">아이디</div>
         <i-input type="text" v-model="registerForm.username" placeholder="아이디를 입력하여 주십시오" required>
         </i-input>
@@ -33,15 +33,16 @@
         </i-input>
         <div class="mb-1">계정 권한</div>
         <span class="roleName">선사 관리자</span>
+        <div class="d-flex justify-space-between mt-8">
+          <i-btn width="48%" text="취소" color="#5E616A" @click="cancleChange"></i-btn>
+          <i-btn width="48%" text="등록" color="#4E83FF" @click="registerVocc" :disabled="!isDisabled"></i-btn>
+        </div>
       </v-form>
-    </template>
-    <template #actions>
-      <div class="d-flex justify-space-between">
-        <i-btn width="48%" text="취소" color="#5E616A" @click="cancleChange"></i-btn>
-        <i-btn width="48%" text="등록" color="#4E83FF" @click="registerVocc" :disabled="!isDisabled"></i-btn>
-      </div>
-    </template>
-  </BaseChangeForm>
+      <!-- <i-btnGroup class="d-flex justify-space-between mt-8" :btnGroup="btnGroup" @cancle="cancleChange($event)"
+        @delete="showDeleteModal"></i-btnGroup> -->
+
+    </v-card-text>
+  </v-card>
 </template>
 
 <script setup>
@@ -78,14 +79,15 @@ const registerForm = ref({
 
 
 onMounted(() => {
-  fetchVoccWithoutAdmin()
+  fetchVoccs()
 })
 
 /**
- * 관리자가 없는 선사 목록 조회
+ * 선사 목록 조회
  */
-const fetchVoccWithoutAdmin = async () => {
-  const result = await voccStore.fetchVoccsWithoutAdmin()
+const fetchVoccs = async () => {
+  const result = await voccStore.fetchVoccs()
+  console.dir(result)
   voccs.value = result;
 }
 
@@ -97,8 +99,8 @@ const registerVocc = async () => {
 
 const rePasswordRules = reactive({
   check: value => {
-    if (value && registerForm.value.passwordCheck 
-              && value === registerForm.value.passwordCheck){
+    if (value && registerForm.value.passwordCheck
+      && value === registerForm.value.passwordCheck) {
       return true
     }
     return '비밀번호가 일치하지않습니다'

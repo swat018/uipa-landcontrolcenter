@@ -1,27 +1,28 @@
 <template>
-  <div class="mt-8">
-    <v-form @submit.prevent>
-      <div class="mt-2 mb-1">선사명</div>
-      <i-input label="선사명" type="text" v-model="editForm.nameKor" placeholder="선사명을 입력하여 주십시오" :readonly="isReadonly">
-      </i-input>
-      <div class="mt-2 mb-1">소재지</div>
-      <i-input label="소재지" type="text" v-model="editForm.address" placeholder="소재지를 입력하여 주십시오" :readonly="isReadonly">
-      </i-input>
-      <div class="mt-2 mb-1">대표이사</div>
-      <i-input label="대표이사" type="text" v-model="editForm.ceoName" placeholder="대표이사명을 입력하여 주십시오"
-        :readonly="isReadonly">
-      </i-input>
-      <div class="d-flex justify-space-between align-center my-4">
-        <div>선사 로고</div>
-        <i-btn text="로고 업로드" @click="uploadBtnClick"></i-btn>
-        <input ref="logoFileUploader" class="d-none" type="file" @change="previewFile" />
-      </div>
-
+  <v-form @submit.prevent>
+    <div class="mb-1">선사명</div>
+    <i-input label="선사명" type="text" v-model="editForm.name" placeholder="선사명을 입력하여 주십시오" :readonly="isReadonly">
+    </i-input>
+    <div class="mt-4 mb-1">소재지</div>
+    <i-input label="소재지" type="text" v-model="editForm.address" placeholder="소재지를 입력하여 주십시오" :readonly="isReadonly">
+    </i-input>
+    <div class="mt-4 mb-1">대표이사</div>
+    <i-input label="대표이사" type="text" v-model="editForm.ceoName" placeholder="대표이사명을 입력하여 주십시오" :readonly="isReadonly">
+    </i-input>
+    <div class="d-flex justify-space-between align-center my-4">
+      <div>선사 로고</div>
+      <i-btn text="로고 업로드" @click="uploadBtnClick"></i-btn>
+      <input ref="logoFileUploader" class="d-none" type="file" @change="previewFile" />
+    </div>
+    <div class="gray-border">
       <v-img :src="preview" height="150" aspect-ratio="16/9" position="center" contain></v-img>
-      <i-btn v-if="role != 'ROLE_VOCC_USER'" @click="editVoccInfo" class="w-100 mt-10" text="수정" :color="changeColor"
+    </div>
+    <div class="mt-6">
+      <i-btn v-if="role != 'ROLE_VOCC_USER'" @click="editVoccInfo" class="w-100" text="수정" :color="changeColor"
         :disabled="isDisabled"></i-btn>
-    </v-form>
-  </div>
+    </div>
+  </v-form>
+
 </template>
 
 <script setup>
@@ -40,12 +41,19 @@ const { userInfo } = storeToRefs(authStore)
 import { useToast } from '@/composables/useToast'
 const { showResMsg } = useToast()
 
+const props = defineProps({
+  voccId: {
+    type: [String, Number],
+    default: null
+  }
+})
+
 const editForm = ref({
   nameKor: '', // 선사명
   nameEng: '',
   address: '',
   ceoName: '',
-  logoImage : []
+  logoImage: []
 })
 
 const isReadonly = ref(false)
@@ -82,8 +90,9 @@ const editVoccInfo = async () => {
   const voccId = voccInfo.value.id
   const response = await voccStore.editVoccInfo(voccId, editForm.value)
 
-  console.log(response)
   if (response == 200) {
+
+    console.log('수정 후 이미지 요청')
     isDisabled.value = true;
 
     let reader = new FileReader()
@@ -93,12 +102,12 @@ const editVoccInfo = async () => {
       reader.onload = async (e) => {
         convertedImage = reader.result;
         const result = await new Uint8Array(convertedImage)
-        
+
         const response = await voccStore.changeLogoImage(result)
 
         console.dir(response)
 
-        if (response == 200){
+        if (response == 200) {
           showResMsg('선사 정보가 업데이트 되었습니다')
         }
       }
@@ -108,7 +117,7 @@ const editVoccInfo = async () => {
 }
 
 const fetchVoccInformation = async () => {
-  await voccStore.fetchVoccInfo()
+  await voccStore.fetchMyVoccInfo()
   editForm.value = { ...voccStore.voccInfo }
   editForm.value.logoImage = `data:image/png;base64,${editForm.value.logoImage}`
   preview.value = `${editForm.value.logoImage}`
@@ -125,13 +134,13 @@ const previewFile = (e) => {
   logoImagefile.value = e.target.files[0]
   let reader = new FileReader()
 
-  if (logoImagefile.value !== null){
+  if (logoImagefile.value !== null) {
     reader.onload = (e) => {
       preview.value = reader.result;
       editForm.value.logoImage = reader.result
     }
     reader.readAsDataURL(logoImagefile.value)
-  }else{
+  } else {
     preview.value = ''
   }
 }

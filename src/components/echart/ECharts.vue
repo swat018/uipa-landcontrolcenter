@@ -20,7 +20,9 @@ import {
   TooltipComponent,
   LegendComponent,
   ToolboxComponent,
-  TransformComponent
+  TransformComponent,
+  VisualMapComponent,
+  MarkAreaComponent
 } from 'echarts/components'
 
 use([
@@ -39,7 +41,9 @@ use([
   MarkLineComponent,
   DataZoomComponent,
   BrushComponent,
-  TransformComponent
+  TransformComponent,
+  VisualMapComponent,
+  MarkAreaComponent
 ])
 
 const store = useThemeStore()

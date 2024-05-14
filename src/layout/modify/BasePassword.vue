@@ -76,8 +76,6 @@ const changePassword = async () => {
   passwordInfo.value.username = authStore.userInfo.username;
   const result = await authStore.changeUserPassword(passwordInfo.value)
 
-  console.log(result)
-
   if(result == 200){
     setTimeout(() => {
       resetComponent();

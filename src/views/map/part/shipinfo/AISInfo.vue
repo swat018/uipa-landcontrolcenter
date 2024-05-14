@@ -18,12 +18,12 @@
           <div><span class="squareIcon">■</span><span class="shipInfo-fieldName">Course/Speed</span></div>
           <div>{{ aisInfo.course }} ˚ / {{ aisInfo.speed }} kn</div>
         </div>
-        <ShipInfoText fieldName="Destination" :fieldValue="aisInfo.endPort" />
+        <ShipInfoText fieldName="Destination" :fieldValue="aisInfo.arrival" />
       </div>
       <div class="rightInfo popupLineHeight pointer-cursor">
         <ShipInfoText fieldName="LON" :fieldValue="aisInfo.longitude" />
         <ShipInfoText fieldName="Current Draft" :fieldValue="aisInfo.draft" unit="m" />
-        <ShipInfoText fieldName="ETA(UTC)" :fieldValue="aisInfo.endDateTime" />
+        <ShipInfoText fieldName="ETA(UTC)" :fieldValue="aisInfo.arrivalDateTime" />
       </div>
     </div>
   </div>
@@ -31,7 +31,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { storeToRefs } from 'pinia'
 import { useMapStore } from '@/stores/mapStore'
 
@@ -53,9 +53,6 @@ const relativeTime = ref('')
 
 onMounted(()=>{
   fetchShipAisInfo()
-  // dataFetchTime = convertDateTimeType(new Date())
-  console.log(dataFetchTime)
-
   interval = setInterval(fetchShipAisInfo, SECOND_IN_ONE_MINUTE)
   emitter.emit('fetchAisInfo')
 })
@@ -71,6 +68,8 @@ const fetchShipAisInfo = async() => {
   await mapStore.fetchShipAisInfo(imoNumber)
   updatedTime.value = convertDateTimeType(new Date())
 }
+
+watch(clickedShipInfo, fetchShipAisInfo, { deep: true })
 
 const getTimeDifference = (searchTime, updateTime) => {
   const searchDate = new Date(searchTime);

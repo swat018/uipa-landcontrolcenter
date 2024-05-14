@@ -7,6 +7,7 @@ import BaseLayout from '@/layout/BaseLayout.vue'
  */
 import VoyageReport from '@/views/voyage/VoyageReport.vue'
 import DetailCIIRating from '@/views/voyage/cii/DetailCIIRating.vue'
+import ImoDcs from '@/views/voyage/imodcs/ImoDcs.vue'
 
 const voyageRoutes = [
   {
@@ -22,6 +23,11 @@ const voyageRoutes = [
         name: 'CllMonitoring',
         path: 'cii/rating',
         component: DetailCIIRating
+      },
+      {
+        name: 'ImoDcs',
+        path: 'imodcs',
+        component: ImoDcs
       },
       {
         name: 'AnualReport',

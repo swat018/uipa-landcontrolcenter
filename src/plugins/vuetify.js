@@ -22,7 +22,7 @@ const customBlackTheme = {
     // color: "#000000",
     color: '#fff',
     // activeColor: "#6200EE",
-    appBar: '#000000',
+    appBar: '#1f1e1e ',
     aside: '#1F1E1E',
     footer: '#1e1e1e',
     card: '#222224',
@@ -49,8 +49,11 @@ export default createVuetify({
   theme: {
     defaultTheme: 'customBlackTheme',
     themes: {
-      customBlackTheme,
+      customBlackTheme
     }
+  },
+  icons: {
+    defaultSet: 'mdi'
   },
   components,
   directives

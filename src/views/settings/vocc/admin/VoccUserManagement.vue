@@ -1,48 +1,44 @@
 <template>
-  <v-container fluid class="h-100">
-  <v-row class="ma-0 h-100">
-    <v-col cols="12" lg="9">
-      <v-card class="cardContainer h-100" rounded="30">
-        <v-card-title class="d-flex justify-space-between mb-4">
-          <div>사용자 목록</div>
-          <i-btn prepend-icon="mdi-plus" color="#3D3D40" text="등록" width="75" height="35"
-           @click.stop="changeComponent($event, 'VoccUserRegisterForm')"></i-btn>
+  <v-container fluid class="h-100 management-page">
+    <v-row class="ma-0 h-100">
+      <v-col cols="9" lg="9">
+        <v-card class="h-100" rounded="30">
+          <v-card-title class="d-flex justify-space-between align-center">
+            <div>사용자 목록</div>
+            <i-btn prepend-icon="mdi-plus" color="#3D3D40" text="등록" width="75"
+              @click.stop="changeComponent($event, 'VoccUserRegisterForm')"></i-btn>
           </v-card-title>
-        <v-card-text>
-          <v-table class="list-table management-container">
-            <thead>
-            </thead>
-            <tbody>
-              <tr v-for="(voccUser, index) in voccUsers" :key="voccUser.id">
-                <td>{{ voccUser.nickname }}</td>
-                <td class="text-center">{{ convertRoleName(voccUser.role) }}</td>
-                <td class="d-flex justify-end align-center">
+          <v-card-text>
+            <v-table class="list-table title-container">
+              <thead>
+              </thead>
+              <tbody>
+                <tr v-for="(voccUser, index) in voccUsers" :key="voccUser.id">
+                  <td class="username">{{ voccUser.nickname }}</td>
+                  <td class="activate-status">
                     <i-btn :text="voccUser.activated ? '사용 가능' : '계정 잠금'"
-                           :prepend-icon="voccUser.activated ? 'mdi-lock-open' : 'mdi-lock'"
-                           :color="voccUser.activated ? '#fff' : '#737373'"
-                          variant="text" readonly
-                          class="d-flex justify-end align-center">
+                      :prepend-icon="voccUser.activated ? 'mdi-lock-open' : 'mdi-lock'"
+                      :color="voccUser.activated ? '#fff' : '#737373'" variant="text" readonly
+                      class="d-flex justify-end align-center">
                     </i-btn>
-                </td>
-                <td class="text-center">
-                  <i-btn :text="isEditing(index) ? '수정중' : '수정'" 
-                         :color="isEditing(index) ? '#7A8294' : '#4E83FF'" 
-                         :disable="isEditing(index)"
-                         :dataId="index" 
-                          name="VoccAdminEditForm"
-                          @click.stop="changeComponent($event,'VoccUserEditForm', voccUser.id, index)">
-                  </i-btn>
-                </td>
-              </tr>
-            </tbody>
-          </v-table>
-        </v-card-text>
-      </v-card>
-    </v-col>
-    <v-col cols="12" lg="3">
-      <component  :is="componentList[currentComponent]" :voccUserId="_voccUserId" class="h-100"></component>
-    </v-col>
-  </v-row>
+                  </td>
+                  <td class="modify-btn">
+                    <i-btn :text="isEditing(index) ? '수정중' : '수정'" :color="isEditing(index) ? '#7A8294' : '#4E83FF'"
+                      :disable="isEditing(index)" :dataId="index" name="VoccAdminEditForm"
+                      @click.stop="changeComponent($event, 'VoccUserEditForm', voccUser.voccId, voccUser.userId, index)">
+                    </i-btn>
+                  </td>
+                </tr>
+              </tbody>
+            </v-table>
+          </v-card-text>
+        </v-card>
+      </v-col>
+      <v-col cols="3" lg="3">
+        <component :is="componentList[currentComponent]" :voccId="_voccId" :voccUserId="_voccUserId" class="h-100">
+        </component>
+      </v-col>
+    </v-row>
 
   </v-container>
 </template>
@@ -58,8 +54,10 @@ import { storeToRefs } from 'pinia'
 const currentComponent = ref('DefaultText')
 const voccStore = useVoccStore()
 const { voccUsers  } = storeToRefs(voccStore)
+const _voccId = ref()
 const _voccUserId = ref()
 const currentId = ref('')
+
 
 
 const componentList = {
@@ -80,10 +78,10 @@ const getVoccUserAll = async () => {
 /**
  * 수정 버튼 인덱스 값에 따른 컴포넌트 변경
  * */
-const changeComponent = (event, name, voccUserId ='', index='') => {
+const changeComponent = (event, name, voccId='',  voccUserId ='', index='') => {
   _voccUserId.value = voccUserId
   //typeof(event) == 'string'? currentComponent.value = event : currentComponent.value = event.target.name
-  
+  _voccId.value = voccId
   currentComponent.value = name;
   currentId.value = index
 }
@@ -97,13 +95,13 @@ provide('changeComponent', changeComponent)
 </script>
 
 <style scoped>
-.v-row {
+/* .v-row {
   height: 100%;
 }
 
 .v-card {
   height: 100%;
-}
+} */
 
 .list-table{
   border: 1px solid #49494E;

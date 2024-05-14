@@ -8,11 +8,27 @@ export const insertVoyage = (voyageRegisterForm) => {
   })
 }
 
-export const updateVoyage = (voyageEditForm) => {
+export const updateVoyageInfo = (voyageEditForm) => {
   return instance({
     url: '/ship/voyage/update-voyage',
     method: 'POST',
     data: voyageEditForm
+  })
+}
+
+export const updateVoyage = (voyageEditForm) => {
+  return instance({
+    url: '/ship/voyage/update-voyage-detail',
+    method: 'POST',
+    data: voyageEditForm
+  })
+}
+
+export const deleteVoyageById = (voyageId) => {
+  return instance({
+    url: '/ship/voyage/remove-voyage',
+    method: 'POST',
+    params: { id: voyageId }
   })
 }
 
@@ -27,6 +43,14 @@ export const getAllVoyageByImoNumber = (imoNumber) => {
 export const getVoyageById = (voyageId) => {
   return instance({
     url: '/ship/voyage/get-voyage',
+    method: 'GET',
+    params: { id: voyageId }
+  })
+}
+
+export const getVoyageTrack = (voyageId) => {
+  return instance({
+    url: '/ship/voyage/get-voyage-track',
     method: 'GET',
     params: { id: voyageId }
   })

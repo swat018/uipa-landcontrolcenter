@@ -1,23 +1,24 @@
 <template>
-  <div class="w-20 pa-2 progressBar-wrap pointer-cursor">
-    <div class="float-left pl-2">
-      <div class="distance-title text-center">{{ aisInfo.startPort }}</div>
-      <div class="desc">{{ aisInfo.startTime }}</div>
+  <div class="pa-2 progressbar-container d-flex pointer-cursor">
+    <div class="depature d-flex flex-column align-center justify-center">
+      <div class="distance-title">{{ aisInfo.departure }}</div>
+      <div class="desc">{{ aisInfo.departureTime }}</div>
     </div>
 
-    <div class="float-left progressBar-style">
-      <v-slider v-model="progress" :thumb-size="10" color="#4E83FF"
-        :thumb-label="true" rounded readonly hide-details class="progressBar pointer-cursor"></v-slider></div>
-    <div class="float-right pr-2">
-      <div class="distance-title text-center">{{ aisInfo.endPort}}</div>
-      <div class="desc">{{ aisInfo.endTime }}</div>
+    <div class="slider d-flex align-end">
+      <v-slider v-model="aisInfo.process" :thumb-size="10" color="#4E83FF" :thumb-label="true" rounded readonly
+        hide-details class="progressBar pointer-cursor"></v-slider>
+    </div>
+    <div class="arrival d-flex flex-column align-center justify-center">
+      <div class="distance-title">{{ aisInfo.arrival }}</div>
+      <div class="desc">{{ aisInfo.arrivalTime }}</div>
     </div>
   </div>
 
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useMapStore } from '@/stores/mapStore'
 
@@ -29,15 +30,37 @@ const { aisInfo } = storeToRefs(mapStore)
 const progress = ref(aisInfo.progress)
 
 
+onMounted(() => {
+  init()
+})
+
+
+const init = () => {
+  if (!aisInfo.value.departure) {
+    aisInfo.value.departure = '-'
+  }
+
+  if (!aisInfo.value.departureTime) {
+    aisInfo.value.departureTime = '-'
+  }
+
+  if (!aisInfo.value.arrival) {
+    aisInfo.value.arrival = '-'
+  }
+
+  if (!aisInfo.value.arrivalTime) {
+    aisInfo.value.arrivalTime = '-'
+  }
+}
+
+
 // emitter.on('fetchAisInfo', ())
 
 </script>
 
 <style scoped>
-.progressBar-wrap {
+.progressbar-container {
   background: #282828;
-  margin-top: 10px;
-  margin-bottom: 10px;
   position: relative;
 }
 
@@ -64,5 +87,32 @@ const progress = ref(aisInfo.progress)
 
 .w-20 {
   width: 20%;
+}
+
+.depature,
+.arrival {
+  flex: 1 1 20%
+}
+
+.slider {
+  flex: 1 1 40%;
+  position: relative;
+}
+
+.slider .v-input {
+  position: absolute;
+  width: 95%;
+  bottom: -8px;
+}
+
+
+.progressbar-container {
+  min-width: 300px;
+}
+
+@media screen and (max-width: 1250px) {
+  .progressbar-container {
+    min-width: 250px;
+  }
 }
 </style>

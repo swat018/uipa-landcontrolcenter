@@ -2,14 +2,20 @@ import axios from 'axios'
 import instance from '@/composables/useAxios.js'
 
 export const getShipOperationInfo = (imoNumber) => {
-  return axios
-    .get(`/api/ship/info/get-detail?imoNumber=${imoNumber}`)
-    .then((response) => {
-      return response.data.data
-    })
-    .catch((error) => {
-      throw error
-    })
+  // return axios
+  //   .get(`/api/ship/info/get-detail?imoNumber=${imoNumber}`)
+  //   .then((response) => {
+  //     return response.data.data
+  //   })
+  //   .catch((error) => {
+  //     throw error
+  //   })
+
+  return instance({
+    url: '/ship/info/get-detail',
+    method: 'GET',
+    params: { imoNumber }
+  })
 }
 
 export const updateFuelInfo = (data) => {
@@ -22,7 +28,6 @@ export const updateFuelInfo = (data) => {
       throw error
     })
 }
-
 
 export const updateImoDcsInfo = (data) => {
   return axios

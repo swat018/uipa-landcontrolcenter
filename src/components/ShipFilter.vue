@@ -60,9 +60,6 @@ const fetchVoccAll = async () => {
   voccs.value = result;
   selectedVocc.value = voccs.value.filter(vocc => vocc.id == clickedShipInfo.value.voccId)[0]
 
-  console.log('fetchVoccAll')
-  console.dir(selectedVocc.value)
-
   fetchFleetsByVoccId()
 }
 

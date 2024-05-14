@@ -17,6 +17,7 @@ import Echarts from 'vue-echarts'
 import { GridLayout, GridItem } from 'grid-layout-plus'
 import moment from 'moment'
 import * as xlsx from 'xlsx'
+import  * as  jspdf from 'jspdf'
 
 const pinia = createPinia()
 const app = createApp(App)
@@ -32,6 +33,8 @@ app.use(vuetify)
 app.use(router)
 app.use(customPlugins)
 app.use(devExtreamPlugins)
+app.use(jspdf)
+app.use(moment)
 
 app.config.globalProperties.echartTheme = 'echartBlackTheme'
 app.config.globalProperties.xlsx = xlsx

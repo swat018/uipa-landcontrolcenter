@@ -7,7 +7,7 @@ import _ from 'lodash'
 
 export const useOperationStore = defineStore('operationManagement', () => {
   const { showResMsg } = useToast()
-  
+
   const fuelInfo = ref({
     residualMgo: 10, // MGO 잔여연료
     perMgoDistance: 0, // 기준 연료당 거리(MGO)
@@ -23,7 +23,7 @@ export const useOperationStore = defineStore('operationManagement', () => {
     chargeableCostLng: 0 // 기준 단위당 충전 가능 연료 비용(MCO)
   })
 
-  const imoInfo = ref({
+  const ciiInfo = ref({
     requiredCII: 0,
     targetGrade: 'A'
   })
@@ -42,7 +42,7 @@ export const useOperationStore = defineStore('operationManagement', () => {
          */
         const fuleInformation = _.pick(result, Object.keys(fuelInfo.value))
         if (!_.isEmpty(fuleInformation)) {
-          imoInfo.value = fuleInformation
+          ciiInfo.value = fuleInformation
         }
       })
     } catch (error) {
@@ -63,18 +63,19 @@ export const useOperationStore = defineStore('operationManagement', () => {
     }
   }
 
-  const fetchImoDcsInfo = async (imoNumber) => {
+  const fetchCiiInfo = async (imoNumber) => {
     try {
-      await getShipOperationInfo(imoNumber).then((response) => {
-        const result = response.detailDataMap
-        // detailDataMap에서 위의 imoInfo 속성 값이 있는지 체크
-        const imoInformation = _.pick(result, Object.keys(imoInfo.value))
+      const {
+        data: { detailDataMap }
+      } = await getShipOperationInfo(imoNumber)
+      const result = detailDataMap
+      // detailDataMap에서 위의 imoInfo 속성 값이 있는지 체크
+      const imoInformation = _.pick(result, Object.keys(imoInfo.value))
 
-        if (!_.isEmpty(imoInformation)) {
-          imoInfo.value = imoInformation
-        }
-        // ({ data: fuelInfo.value } = response)
-      })
+      if (!_.isEmpty(imoInformation)) {
+        ciiInfo.value = imoInformation
+      }
+      // ({ data: fuelInfo.value } = response
     } catch (error) {
       console.log(error)
     }
@@ -85,7 +86,7 @@ export const useOperationStore = defineStore('operationManagement', () => {
     try {
       const result = await updateImoDcsInfo(data).then((response) => {
         const { detailDataMap } = editInfo
-        imoInfo.value = { ...detailDataMap }
+        ciiInfo.value = { ...detailDataMap }
         showResMsg('해당 정보가 수정되었습니다')
       })
     } catch (error) {
@@ -95,10 +96,10 @@ export const useOperationStore = defineStore('operationManagement', () => {
 
   return {
     fuelInfo,
-    imoInfo,
+    ciiInfo,
     fetchShipOperationInfo,
     editFuelInfo,
-    fetchImoDcsInfo,
+    fetchCiiInfo,
     editImoDcsInfo
   }
 })

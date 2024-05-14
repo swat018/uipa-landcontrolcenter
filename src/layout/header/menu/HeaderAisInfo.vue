@@ -22,7 +22,7 @@
     </div>
     <div>
       <div class="subTitle font-weight-light text-caption">ETA(UTC)</div>
-      <div class="font-weight-bold">{{ aisInfo.endDateTime }}</div>
+      <div class="font-weight-bold">{{ aisInfo.arrivalTime }}</div>
     </div>
   </div>
 </template>

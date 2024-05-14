@@ -19,7 +19,7 @@ const slide = ref(1)
 
 </script>
 
-<style>
+<style >
 .ciiRating .v-window__container {
   flex: 1 1 auto;
 }

@@ -1,9 +1,9 @@
 <template>
-  <v-container fluid class="h-100">
+  <v-container fluid class="h-100 settings">
     <v-row class="ma-0 h-100">
       <v-col cols="9" lg="9">
-        <v-card class="cardContainer h-100 rounded-lg">
-          <v-card-title>계정 정보</v-card-title>
+        <v-card class="h-100 rounded-lg">
+          <v-card-title class="align-center">계정 정보</v-card-title>
           <v-card-text>
             <v-table class="text-caption">
               <tbody>

@@ -1,87 +1,92 @@
 <template>
-  <BaseChangeForm>
-    <template #title>
-      <div>사용자 수정</div>
-    </template>
-
-    <template #content>
+  <v-card class="h-100">
+    <v-card-title>
+      <div>선사 사용자 수정</div>
+    </v-card-title>
+    <v-card-text class="title-form-container">
       <v-form @submit.prevent>
-        <div class="mb-1">아이디</div>
+        <div class="mb-1">선사명</div>
+        <i-input type="text" v-model="voccUserInfo.voccName" :disabled='true'>
+        </i-input>
+        <div class="mt-4 mb-1">아이디</div>
         <i-input type="text" v-model="voccUserInfo.username" :disabled='true'>
         </i-input>
-        <div class="mt-8 mb-1">비밀번호</div>
+        <div class="mt-4 mb-1">비밀번호</div>
         <div class="d-flex">
           <i-input type="password" v-model="voccUserInfo.password" class="mr-2" :disabled='true' />
           <i-btn text="비밀번호 초기화" width="120" @click="showPasswordResetModal"></i-btn>
         </div>
-        <div class="mt-8 mb-1">닉네임</div>
+        <div class="mt-4 mb-1">닉네임</div>
         <i-input type="text" v-model="voccUserInfo.nickname" placeholder="닉네임을 입력하여 주십시오" :disabled='true'>
         </i-input>
-        <div class="mt-8 mb-1">이메일</div>
+        <div class="mt-4 mb-1">이메일</div>
         <i-input type="text" v-model="voccUserInfo.email" placeholder="이메일을 입력하여 주십시오" :disabled='true'>
         </i-input>
-        <div class="mt-8 mb-1">활성화 상태</div>
+        <div class="mt-4 mb-1">활성화 상태</div>
         <!-- <i-btnToggle :toggles="toggles" v-model="voccAdminInfo.activated"></i-btnToggle> -->
         <v-btn-toggle v-model="toggle" color="#5789FE">
           <i-btn text="사용가능" @click="showStautsModal('active')" :value="true"></i-btn>
           <i-btn text="계정잠금" @click="showStautsModal('inactive')" :value="false"></i-btn>
         </v-btn-toggle>
-        <div class="mt-8 mb-1">계정 권한</div>
+        <div class="mt-4 mb-1">계정 권한</div>
         <div class="d-flex ga-3">
           <div class="align-self-center"> {{ convertRoleName(voccUserInfo.role) }}</div>
           <i-btn text="권한 변경" @click="showEditRoleModal()"></i-btn>
         </div>
+
+        <i-btnGroup class="d-flex justify-space-between mt-8" :btnGroup="btnGroup" @cancle="cancleChange($event)"
+          @delete="showDeleteModal"></i-btnGroup>
+
       </v-form>
-    </template>
-    <template #actions>
-      <i-btnGroup class="d-flex justify-space-between" :btnGroup="btnGroup" @cancle="cancleChange($event)"
-        @delete="showDeleteModal"></i-btnGroup>
 
-         <AppModal v-model="isShowPasswordResetModal" @close="closePasswordResetModal" title="정말로 비밀번호 초기화 하시겠습니까? ">
 
-      <template #default>
-        <p>초기화된 비밀번호는 <br>해당 선사 사용자의 이메일로 발송됩니다</p>
-      </template>
+      <AppModal v-model="isShowPasswordResetModal" @close="closePasswordResetModal" title="정말로 비밀번호 초기화 하시겠습니까? ">
 
-      <template #actions>
-        <i-btnGroup type="confirm" @close="closePasswordResetModal" @confirm="resetPassword"></i-btnGroup>
-      </template>
-    </AppModal>
+        <template #default>
+          <p>초기화된 비밀번호는 <br>해당 선사 사용자의 이메일로 발송됩니다</p>
+        </template>
 
-    <AppModal v-model="isShowStautsModal" @close="closeStautsModal">
+        <template #actions>
+          <i-btnGroup type="confirm" @close="closePasswordResetModal" @confirm="resetPassword"></i-btnGroup>
+        </template>
+      </AppModal>
 
-      <template #default>
-        <p>{{ statusModalMessage }}</p>
-      </template>
+      <AppModal v-model="isShowStautsModal" @close="closeStautsModal">
 
-      <template #actions>
-        <i-btnGroup type="confirm" @close="closeStautsModal" @confirm="changeAcitveStatus"></i-btnGroup>
-      </template>
-    </AppModal>
+        <template #default>
+          <p>{{ statusModalMessage }}</p>
+        </template>
 
-    <AppModal v-model="isShowDeleteModal" @close="closeDeleteModal">
+        <template #actions>
+          <i-btnGroup type="confirm" @close="closeStautsModal" @confirm="changeAcitveStatus"></i-btnGroup>
+        </template>
+      </AppModal>
 
-      <template #default>
-        <p>정말로 계정을 삭제 처리 하시겠습니까?</p>
-      </template>
+      <AppModal v-model="isShowDeleteModal" @close="closeDeleteModal">
 
-      <template #actions>
-        <i-btnGroup type="confirm" @close="closeDeleteModal" @confirm="removeVoccUser"></i-btnGroup>
-      </template>
-    </AppModal>
+        <template #default>
+          <p>정말로 계정을 삭제 처리 하시겠습니까?</p>
+        </template>
 
-    <AppModal v-model="isShowEditRoleModal" @close="closeEditRoleModal">
-      <template #default>
-        <p>{{ roleEditMessage }}</p>
-      </template>
+        <template #actions>
+          <i-btnGroup type="confirm" @close="closeDeleteModal" @confirm="removeVoccUser"></i-btnGroup>
+        </template>
+      </AppModal>
 
-      <template #actions>
-        <i-btnGroup type="confirm" @close="closeEditRoleModal" @confirm="editUserRole"></i-btnGroup>
-      </template>
-    </AppModal>
-    </template>
-  </BaseChangeForm>
- 
+      <AppModal v-model="isShowEditRoleModal" @close="closeEditRoleModal">
+        <template #default>
+          <p>{{ roleEditMessage }}</p>
+        </template>
+
+        <template #actions>
+          <i-btnGroup type="confirm" @close="closeEditRoleModal" @confirm="editUserRole"></i-btnGroup>
+        </template>
+      </AppModal>
+
+    </v-card-text>
+  </v-card>
+
+
 </template>
 
 <script setup>
@@ -102,6 +107,9 @@ const voccStore = useVoccStore()
 const { voccInfo, voccUserInfo } = storeToRefs(voccStore);
 
 const props = defineProps({
+  voccId: {
+    type: [Number, String]
+  },
   voccUserId: {
     type: [Number, String]
   }
@@ -134,7 +142,7 @@ const fetchVoccInformation = async () => {
  * => voccUserId가 바뀌면 사용자 정보 조회하는 함수 재호출
  */
 const getInfo = async () => {
-  await voccStore.getVoccUserInfo(props.voccUserId)
+  await voccStore.getVoccUserInfo(props.voccId, props.voccUserId)
     .then((response) => {
       // voccAdminInfo.value = response
       voccUserInfo.value.password = '********'
@@ -195,15 +203,17 @@ const closeStautsModal = () => {
   toggle.value = voccUserInfo.value.activated
 }
 
-const changeAcitveStatus = () => {
+const changeAcitveStatus = async () => {
   const userName = voccUserInfo.value.username
   const activate = voccUserInfo.value.activated
   const type = 'voccUser'
 
-  console.log('유저 활성 상태' + activate)
-  voccStore.changeActive(userName, !activate, type).then(() => {
+  await voccStore.changeActive(userName, !activate, type).then(() => {
     isShowStautsModal.value = false;
+    refreshUsers()
   })
+
+
 }
 
 /**
@@ -259,7 +269,7 @@ const editUserRole = () => {
   }
 
   voccStore.changeRole(editUserInfo).then(() => {
-   closeEditRoleModal()
+    closeEditRoleModal()
     cancleChange()
   })
 }
@@ -288,6 +298,7 @@ const removeVoccUser = () => {
   voccStore.removeVoccUser(voccUserId, removeVoccUserInfo).then(() => {
     isShowDeleteModal.value = false
     cancleChange()
+    refreshUsers()
   })
 }
 
@@ -298,7 +309,7 @@ const removeVoccUser = () => {
  */
 const emit = defineEmits(['changeComponent'])
 const changeComponent = inject('changeComponent', 'DefaultText')
-
+const refreshUsers = inject('refreshUsers')
 const cancleChange = (e) => {
   changeComponent(e, 'DefaultText')
 }

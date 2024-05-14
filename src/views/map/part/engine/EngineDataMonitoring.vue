@@ -29,7 +29,7 @@
         <v-data-table :headers="headers" :items="formattedData" :hide-default-footer="true" item-key="fuel">
           <template #body="{ items }">
             <tr v-for="(item, index) in items" :key="index">
-              <td>{{ platformText(item.fuel) }}</td>
+              <td>{{ getAttributeName(item.fuel) }}</td>
               <td v-for="(usage, month) in item.usage" :key="month">
                 {{ usage }}
               </td>
@@ -183,7 +183,7 @@ const data = [
   { pi: [1, 0, 3, 40, 5, 20, 15, 0, 15, 2] },
 ];
 
-const platformNames = {
+const attributeNames = {
   gasTemp: 'Exh.Gas Temp',
   pcoTemp: 'P.C.O Temp (℃)',
   jcwOutTemp: 'JCW Out Temp (℃)',
@@ -209,8 +209,8 @@ const formattedData = computed(() => {
 
 });
 
-const platformText = (platform) => {
-  return platformNames[platform] || platform;
+const getAttributeName = (attribute) => {
+  return attributeNames[attribute] || attribute;
 };
 </script>
 

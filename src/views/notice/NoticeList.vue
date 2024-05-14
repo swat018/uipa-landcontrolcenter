@@ -1,15 +1,13 @@
 <template>
-  <v-container fluid class="h-100">
+  <v-container fluid class="h-100 management-page detail-page settings ">
     <v-row class="ma-0 h-100">
       <v-col cols="12">
-        <v-card class="cardContainer h-100" flat>
-
-          <v-card-title class="d-flex justify-space-between mt-1 mb-2">
+        <v-card class="h-100" flat rounded="30">
+          <v-card-title class="d-flex justify-space-between">
             <div>공지사항</div>
             <div class="d-flex justify-space-between ">
-
               <div class="d-flex ml-2">
-                <div class="d-flex ga-3 mr-2">
+                <div class="d-flex ga-3 mr-3">
                   <input class="noticeList-datePicker" type="date" v-model="startDate" />
                   <input class="noticeList-datePicker" type="date" v-model="endDate" />
                   <i-btn @click="periodData()" text="조회"></i-btn>
@@ -20,28 +18,26 @@
                 <!-- </v-responsive> -->
               </div>
             </div>
-
           </v-card-title>
-
-          <v-card-text class="py-0">
-            <DxDataGrid id="noticeGrid" ref="noticeGrid" class="container-height1 " key-expr="id" :data-source="notices"
-              :show-column-headers="false" :show-borders="false" :column-auto-width="true"
-              :show-column-lines="false">
+          <v-card-text>
+            <DxDataGrid id="noticeGrid" ref="noticeGrid" class="title-container" key-expr="id" :data-source="notices"
+              :column-auto-width="true" :show-column-lines="false" :show-borders="true">
+              <!--  -->
 
               <DxColumn data-field="id" caption="id" :visible="false"></DxColumn>
-              <DxColumn data-field="title" caption="title" cellTemplate="titleTemplate" :allow-search="true"
+              <DxColumn data-field="title" caption="제목" cellTemplate="titleTemplate" :allow-search="true"
                 :allow-editing="false"></DxColumn>
 
-              <DxColumn data-field="register" caption="register" :allow-search="false" :allow-editing="false"
+              <DxColumn data-field="register" caption="작성자" :allow-search="false" :allow-editing="false"
                 alignment="center">
               </DxColumn>
-              <DxColumn data-field="registTime" caption="registTime" :allow-search="false" alignment="center"
+              <DxColumn data-field="registTime" caption="등록일" :allow-search="false" alignment="center"
                 :allow-editing="false"></DxColumn>
-              <DxColumn data-field="views" caption="views" :allow-search="false" :allow-editing="false"
+              <DxColumn data-field="views" caption="조회수" :allow-search="false" :allow-editing="false"
                 alignment="center"></DxColumn>
 
-              <DxColumn v-if="role === 'ROLE_LCC_ADMIN'" data-field="topFix" caption="topFix"
-                cellTemplate="topFixTemplate" :allow-search="false" :allow-editing="false">
+              <DxColumn v-if="role === 'ROLE_LCC_ADMIN'" data-field="topFix" caption="" cellTemplate="topFixTemplate"
+                :allow-search="false" :allow-editing="false">
               </DxColumn>
 
               <template #titleTemplate="{ data: templateOptions }">
@@ -126,7 +122,6 @@ const getPostsByPage = () => {
   start = (currentPage.value - 1) * (itemsPerPage.value - topPinnedPosts.value.length)
   end = itemsPerPage.value - topPinnedPosts.value.length;
   const normalNotice = normalNotices.value.slice(start, start + end)
-  console.log('start' + start, 'end' + end + '고정된 갯수' + topPinnedPosts.value.length)
   const notices = [...topPinnedPosts.value, ...normalNotice]
   currentPagePost.value = notices
 }
@@ -193,7 +188,7 @@ const searchByText = () =>{
 }
 
 .noticeList-datePicker {
-  font-size: 0.8em;
+  font-size: 0.9rem;
   text-align: center;
 }
 

@@ -2,8 +2,7 @@
   <v-app class="w-100">
     <router-view></router-view>
     <iToast></iToast>
-
- </v-app>
+  </v-app>
 </template>
 
 <script setup>

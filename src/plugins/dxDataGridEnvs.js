@@ -65,10 +65,7 @@ DataGrid.defaultOptions({
 DataGrid.prototype.newRow =  function(newRow) {
   let dataSource = this.option('dataSource')
   let visibleRow = this.getVisibleRows()
-
-  console.log('로우 갯수' + newRow.id) 
-  console.dir(visibleRow)
-
+  
   const newRow1 = {
     id: newRow.id,
     measurementName: '',
@@ -87,7 +84,6 @@ DataGrid.prototype.newRow =  function(newRow) {
   visibleRow.length !== 0 ? dataSource.findIndex((element) => element === visibleRow[0].data) : 0
 
   const result = dataSource.findIndex((element) => element === visibleRow[0].data)
-
   if (this.option('paging.pageSize') !== 0) {
     dataSource.splice(firstRowIndex == -1 ? firstRowIndex : 0, 0, newRow1)
   } else {

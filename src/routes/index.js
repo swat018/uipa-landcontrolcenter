@@ -8,9 +8,12 @@ import mapRoutes from './map'
 import adminRoutes from './admin'
 import noticeRoutes from './notice'
 import settingsRoutes from './settings'
-import alarmRoutes from './alarm'
+import alertRoutes from './alert'
 import voyageRoutes from './voyage'
 import equipmentRoutes from './equipment'
+import fdsRoutes from './fds'
+import dataRoutes from './data'
+import insRoutes from './ins'
 
 /**
  * 페이지 Import
@@ -27,7 +30,6 @@ import NotFound from '@/views/error/NotFound.vue'
 import NoAccessMenu from '@/views/error/NoAccessMenu.vue'
 
 import GuideDashboard from '@/views/dashboard/GuideDashboard.vue'
-
 
 import { useAuthStore } from '@/stores/authStore.js'
 import { useMapStore } from '@/stores/mapStore.js'
@@ -53,7 +55,7 @@ const routes = [
     ]
   },
   {
-    path: '/notFound',
+    path: '/notfound',
     component: NoHeaderLayout,
     children: [
       {
@@ -81,9 +83,12 @@ const routes = [
   ...adminRoutes,
   ...noticeRoutes,
   ...settingsRoutes,
-  ...alarmRoutes,
+  ...alertRoutes,
   ...voyageRoutes,
-  ...equipmentRoutes
+  ...equipmentRoutes,
+  ...fdsRoutes,
+  ...dataRoutes,
+  ...insRoutes
 ]
 
 const router = createRouter({
@@ -102,7 +107,7 @@ const authAccess = () => {
   if (userInfo) {
     return true
   } else {
-     return false
+    return false
   }
 }
 
@@ -119,70 +124,71 @@ router.beforeEach((to, from, next) => {
   // to : 이동할 url
   // from  : 현재 url
   // next : to에서 지정한 url로 이동하기 위해 꼭 호출해야하는 함수
+  const authStore = useAuthStore()
+  const mapStore = useMapStore()
+  const voccStore = useVoccStore()
 
   if (from === START_LOCATION && sessionStorage.getItem('userInfo')) {
-    const authStore = useAuthStore()
-    const mapStore = useMapStore()
-    const voccStore = useVoccStore()
     authStore.userInfo = JSON.parse(sessionStorage.getItem('userInfo'))
     mapStore.clickedShipInfo = JSON.parse(sessionStorage.getItem('clickedShipInfo'))
     voccStore.voccInfo = JSON.parse(sessionStorage.getItem('voccInfo'))
-    
   }
 
   const isLogin = authAccess()
   const menus = hasAccessMenu()
   const userRole = sessionStorage.getItem('userRole')
 
+  console.log('이름')
+  console.log(to.name)
+
   if (to.name == undefined) {
+    // return { name: 'NotFound' }
     next('/notFound')
   }
 
-  if (to.meta.requiresAuth && !isLogin){
-    next('/auth/login')
+  if (to.meta.requiresAuth && !isLogin) {
+    return { name: 'Login' }
   }
-   
-  if (isLogin) { // 로그인 여부 확인
-    if (menus) { // 접근 가능한 메뉴 있는지 확인    
-      if(to.meta.requiresAuth){
-        if(to.meta.roles.includes(userRole)){
-          if(from.fullPath == '/'){
-            next()
-          }else{
-            next()
-          }
-        }else{
-           return { path : '/noAccess'}
-        }
-      }else{
-        if (from.fullPath == '/' && to.fullPath == '/auth/login') {
-          const { accessMenus } = menus
 
-          console.dir(accessMenus)
+  // 로그인 여부 확인
+  if (!isLogin) {
+    // 무한 루프 방지
+    return to.name !== 'Login' ? { name: 'Login' } : next()
+  }
 
-          let firstMenu = ''
-          if(accessMenus[0]['children']){
-            firstMenu = accessMenus[0]['children'][0]['routerPath']
-          }else{
-            firstMenu = accessMenus[0]['routerPath']
-          }
-          next(firstMenu)
-        } else {
-          next()
-        }
-      }
+  // 접근 가능한 메뉴 있는지 확인
+  if (!menus) {
+    // 무한 루프 방지
+    return to.name === 'NoAccess' ? next() : { name: 'NoAccess' }
+    // next()
+    // next('/noAccess')
+  }
+
+  // 권한이 필요한 페이지일 경우
+  if (to.meta.requiresAuth) {
+    if (to.meta.roles.includes(userRole)) {
+      next()
     } else {
-      if(to.name === 'NoAccess'){
-        next()
-      }
-      next('/noAccess')
+      return { name: 'NoAccess' }
     }
-  } else {
-    if (to.name !== 'Login') {
-      next('/auth/login')
-    }else{
+  }
+
+  if (from.fullPath == '/' && to.fullPath == '/auth/login') {
+    const { accessMenus } = menus
+
+    if(!accessMenus){
       next()
     }
+
+    let firstMenu = ''
+    if (accessMenus[0]['children']) {
+      firstMenu = accessMenus[0]['children'][0]['routerPath']
+    } else {
+      firstMenu = accessMenus[0]['routerPath']
+    }
+    next(firstMenu)
+  } else {
+    next()
   }
 })
 

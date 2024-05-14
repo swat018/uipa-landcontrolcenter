@@ -7,92 +7,100 @@ import {
   getShipsByVocc,
   getShipsByFleetId,
   getShipInfo,
-  deleteShip
+  deleteShip,
+  getShipMachineInfo
 } from '@/api/shipApi.js'
 import { useFleetStore } from '@/stores/fleetStore'
 import { useToast } from '@/composables/useToast'
 import _ from 'lodash'
 
+export const useShipStore = defineStore(
+  'shipManagement',
+  () => {
+    const ships = ref([])
+    const shipInfo = ref()
+    const currentShip = ref(null)
+    const shipMachineInfo = ref(null)
+    const usedFuels = ref([])
+    // 사이드바에서 선택한 선박
+    const selectedShip = ref(null)
+    const fleetStore = useFleetStore()
+    const { showResMsg } = useToast()
 
-export const useShipStore = defineStore('shipManagement', () => {
-  const ships = ref([])
-  const shipInfo = ref()
-  const currentShip = ref(null)
-  const fleetStore = useFleetStore()
-  const { showResMsg } = useToast()
+    /**
+     * 선박 추가
+     * @param {*} shipRegisterForm
+     * @returns
+     */
+    const addShip = async (shipRegisterForm) => {
+      try {
+        const response = await registerShip(shipRegisterForm)
+        console.dir(response)
+        let {
+          data: { statusCode }
+        } = response
 
-  /**
-   * 선박 추가
-   * @param {*} shipRegisterForm 
-   * @returns 
-   */
-  const addShip = async (shipRegisterForm) => {
-    try {
-      const response = await registerShip(shipRegisterForm)
-      console.dir(response)
-      let {  data : { statusCode } } = response
-      console.log(statusCode)
-      let status = parseInt(statusCode.substr(0,3))
-      console.log(status)
-      if (status == 201) {
-        ships.value.push(shipRegisterForm)
-        showResMsg('선박이 성공적으로 추가가 되었습니다')
-        return status
+        let status = parseInt(statusCode.substr(0, 3))
+        if (status == 201) {
+          ships.value.push(shipRegisterForm)
+          showResMsg('선박이 성공적으로 추가가 되었습니다')
+          return status
+        }
+      } catch (error) {
+        console.log(error)
       }
-    } catch (error) {
-      console.log(error)
     }
-  }
 
-  /**
-   * 선박 정보 수정
-   * @param {} shipEditForm 
-   */
-  const editShipInfo = async (shipEditForm) => {
-    try {
-      const response = await updateShip(shipEditForm)
-      const status = response.status
-      if(status == 200){
-        shipInfo.value = { ...shipEditForm }
-        showResMsg('선박 정보가 수정되었습니다')
+    /**
+     * 선박 정보 수정
+     * @param {} shipEditForm
+     */
+    const editShipInfo = async (shipEditForm) => {
+      try {
+        const response = await updateShip(shipEditForm)
+        const status = response.status
+        if (status == 200) {
+          shipInfo.value = { ...shipEditForm }
+          showResMsg('선박 정보가 수정되었습니다')
+        }
+      } catch (error) {
+        const errorMsg = error.response.data.errorMsg
+        showResMsg(errorMsg)
       }
-    }catch (error) {
-      const errorMsg = error.response.data.errorMsg
-      showResMsg(errorMsg)
     }
-  }
 
+    /**
+     * 선박 이미지 변경
+     * @param {*} imoNumber
+     * @param {*} image
+     * @returns
+     */
+    const changeShipImage = async (imoNumber, image) => {
+      try {
+        const { status } = await updateShipImage(imoNumber, image)
 
-  /**
-   * 선박 이미지 변경
-   * @param {*} imoNumber 
-   * @param {*} image 
-   * @returns 
-   */
-  const changeShipImage = async (imoNumber, image) => {
-    try {
-      const { status } = await updateShipImage(imoNumber, image)
-
-      if (status == 200) {
-        const result = btoa(String.fromCharCode.apply(null, image))
-        shipInfo.value.shipImage = result
-        return status
+        if (status == 200) {
+          const result = btoa(String.fromCharCode.apply(null, image))
+          shipInfo.value.shipImage = result
+          return status
+        }
+      } catch (error) {
+        console.error(error)
       }
-    } catch (error) {
-      console.error(error)
     }
-  }
 
-  /**
-   * 선사의 선박 목록 조회
-   * 선박 정보에 선사 아이디, 선사명 추가
-   * @returns
-   */
-  const fetchShipsByVocc = async () => {
-    try {
-      const response = await getShipsByVocc()
-        const { data : { data : result } } = response
-  
+    /**
+     * 선사의 선박 목록 조회
+     * 선박 정보에 선사 아이디, 선사명 추가
+     * @returns
+     */
+    const fetchShipsByVocc = async () => {
+      try {
+        const response = await getShipsByVocc()
+        const {
+          data: { data: result }
+        } = response
+
         if (fleetStore.fleets.length <= 0) {
           await fleetStore.fetchFleetsByVocc()
         }
@@ -103,76 +111,99 @@ export const useShipStore = defineStore('shipManagement', () => {
         })
 
         ships.value = _.cloneDeep(newShipInfo)
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  /**
-   * 선단 아이디를 통해 선사의 선박 목록 조회
-   * @param {} voccId 
-   */
-  const fetchShipsByFleetId = async (fleetId) => {
-    const result = await getShipsByFleetId(fleetId)
-    return result.data
-  }
-
-  /**
-   * 선박 정보 조회
-   * @returns
-   */
-  const fetchShipInfo = async (imoNumber) => {
-    try {
-      const response = await getShipInfo(imoNumber)
-      // ({
-      //     data: { data: shipInfo.value }
-      //   } = response)
-      shipInfo.value = response.data.data
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  /**
-   * 선박 정보 삭제
-   * @returns
-   */
-  const removeShip = async (imoNumber) => {
-    try {
-      const response = await deleteShip(imoNumber)
-      const status = response.status
-      if(status == 200){
-        const index = ships.value.findIndex((ship) => ship.imoNumber === imoNumber)
-        ships.value.splice(index, 1)
-        showResMsg('해당 선박이 성공적으로 삭제되었습니다')
-        return status
+      } catch (error) {
+        console.error(error)
       }
-    } catch (error) {
-      console.error(error)
     }
-  }
 
-  return {
-    ships,
-    currentShip,
-    shipInfo,
-    addShip,
-    editShipInfo,
-    changeShipImage,
-    fetchShipsByVocc,
-    fetchShipsByFleetId,
-    fetchShipInfo,
-    removeShip
+    /**
+     * 선단 아이디를 통해 선사의 선박 목록 조회
+     * @param {} voccId
+     */
+    const fetchShipsByFleetId = async (fleetId) => {
+      const result = await getShipsByFleetId(fleetId)
+      return result.data
+    }
+
+    /**
+     * 선박 정보 조회
+     * @returns
+     */
+    const fetchShipInfo = async (imoNumber) => {
+      try {
+        const response = await getShipInfo(imoNumber)
+        // ({
+        //     data: { data: shipInfo.value }
+        //   } = response)
+        shipInfo.value = response.data.data
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    /**
+     * 선박 정보 삭제
+     * @returns
+     */
+    const removeShip = async (imoNumber) => {
+      try {
+        const response = await deleteShip(imoNumber)
+        const status = response.status
+        if (status == 200) {
+          const index = ships.value.findIndex((ship) => ship.imoNumber === imoNumber)
+          ships.value.splice(index, 1)
+          showResMsg('해당 선박이 성공적으로 삭제되었습니다')
+          return status
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    const fetchShipMachineInfo = async (imoNumber) => {
+      try {
+        ;({
+          data: { data: shipMachineInfo.value }
+        } = await getShipMachineInfo(imoNumber))
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    const fetchUsedFuels = () => {
+      usedFuels.value = Object.keys(shipMachineInfo.value)
+        .filter((key) => key.startsWith('use') && shipMachineInfo.value[key] == true)
+        .map((key) => key.replace('use', '').toUpperCase())
+    }
+
+    return {
+      ships,
+      currentShip,
+      selectedShip,
+      shipInfo,
+      shipMachineInfo,
+      usedFuels,
+      addShip,
+      editShipInfo,
+      changeShipImage,
+      fetchShipsByVocc,
+      fetchShipsByFleetId,
+      fetchShipInfo,
+      fetchShipMachineInfo,
+      removeShip,
+      fetchUsedFuels
+    }
+  },
+  {
+    persist: true
   }
-}, {
-  persist : true
-})
+)
 
 /**
  * 선사에 선박이 속하는지 확인
- * @param {*} fleets 
- * @param {*} ship 
- * @returns 
+ * @param {*} fleets
+ * @param {*} ship
+ * @returns
  */
 const isIncludedShip = (fleets, ship) => {
   for (let fleet of fleets) {

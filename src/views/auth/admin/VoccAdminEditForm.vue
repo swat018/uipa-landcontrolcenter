@@ -1,41 +1,44 @@
 <template>
-  <v-card class="pa-1 h-100">
+  <v-card class="h-100">
     <v-card-title>
       <div>선사 관리자 수정</div>
     </v-card-title>
 
-    <v-card-text>
+    <v-card-text class="title-form-container">
       <v-form @submit.prevent>
-        <div class="mt-8 mb-1">아이디</div>
+        <div class="mb-1">선사명</div>
+        <i-input type="text" v-model="voccAdminInfo.voccName" :disabled='true'>
+        </i-input>
+        <div class="mt-4 mb-1">아이디</div>
         <i-input type="text" v-model="voccAdminInfo.username" :disabled='true'>
         </i-input>
-        <div class="mt-8 mb-1">비밀번호</div>
+        <div class="mt-4 mb-1">비밀번호</div>
         <div class="d-flex">
           <i-input type="password" v-model="voccAdminInfo.password" class="mr-2" :disabled='true' />
           <i-btn text="비밀번호 초기화" width="120" @click="showPasswordResetModal"></i-btn>
         </div>
-        <div class="mt-8 mb-1">닉네임</div>
+        <div class="mt-4 mb-1">닉네임</div>
         <i-input type="text" v-model="voccAdminInfo.nickname" placeholder="닉네임을 입력하여 주십시오" :disabled='true'>
         </i-input>
-        <div class="mt-8 mb-1">이메일</div>
+        <div class="mt-4 mb-1">이메일</div>
         <i-input type="text" v-model="voccAdminInfo.email" placeholder="이메일을 입력하여 주십시오" :disabled='true'>
         </i-input>
-        <div class="mt-8 mb-1">활성화 상태</div>
+        <div class="mt-4 mb-1">활성화 상태</div>
         <!-- <i-btnToggle :toggles="toggles" v-model="voccAdminInfo.activated"></i-btnToggle> -->
         <v-btn-toggle v-model="toggle" color="#5789FE">
           <i-btn text="사용가능" @click="showStautsModal('active')" :value="true"></i-btn>
           <i-btn text="계정잠금" @click="showStautsModal('inactive')" :value="false"></i-btn>
         </v-btn-toggle>
-        <div class="mt-8 mb-1">계정 권한</div>
+        <div class="mt-4 mb-1">계정 권한</div>
         <span>선사 관리자</span>
 
         <i-btnGroup class="d-flex justify-space-between mt-8" :btnGroup="btnGroup" @cancle="cancleChange($event)"
           @delete="showDeleteModal"></i-btnGroup>
       </v-form>
-      
+
     </v-card-text>
   </v-card>
-  
+
   <AppModal v-model="isShowPasswordResetModal" @close="closePasswordResetModal" title="정말로 비밀번호 초기화 하시겠습니까? ">
     <tempalte #default>
       <p>초기화된 비밀번호는 <br>선사 관리자의 이메일로 발송됩니다</p>
@@ -73,11 +76,12 @@ import { useVoccStore } from '@/stores/voccStore.js'
 import BaseChangeForm from '@/layout/modify/BaseChangeForm.vue'
 import { useAlert } from '@/composables/modal'
 import AppModal from '@/components/modal/AppModal.vue'
-const { dialogStatus, alertMessage, vAlert } = useAlert()
+import { useToast } from '@/composables/useToast'
 
 const authStore = useAuthStore()
 const voccStore = useVoccStore()
 const { voccAdminInfo } = storeToRefs(voccStore);
+const { showResMsg } = useToast()
 
 
 const test = computed(() => {
@@ -94,19 +98,24 @@ const btnGroup = [
 const toggle = ref('')
 
 const props = defineProps({
-  voccAdminId: {
+  voccId: {
     type: [Number, String]
+  },
+  userId: {
+    type : [Number, String]
   }
 })
 
 const adminId = toRef(props.voccAdminId)
 
 onMounted(() => {
-  const result = getInfo(props.voccAdminId)
+  const result = getInfo()
 })
 
 const getInfo = async () => {
-  await voccStore.getVoccAdminInfo(props.voccAdminId)
+  console.log('vocc 들고오는지')
+  console.log(props.voccId)
+  await voccStore.fetchVoccAdminInfo(props.voccId, props.userId)
     .then((response) => {
 
       // voccAdminInfo.value = response
@@ -115,7 +124,7 @@ const getInfo = async () => {
     })
     .catch((error) => {
       console.error()
-      vAlert('네트워크 오류')
+      showResMsg('네트워크 오류')
     })
 }
 

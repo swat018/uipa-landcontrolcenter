@@ -1,18 +1,19 @@
 <template>
-  <div>
+  <div class="tab-card gray-border pa-6">
     <v-form @submit.prevent="registerShip" class="w-100" v-model="disabled">
       <div class="tab-container">
         <div class="shipInfo-container d-flex flex-wrap ga-2">
           <div class="shipInfo-item">
-            <div class="mb-1">선박명</div>
+            <div class="mb-1">Ship Name</div>
             <i-input label="선박명" type="text" v-model="shipRegisterForm.name" placeholder="선박명을 입력하여 주십시오" required
               :hide-details="false">
             </i-input>
           </div>
           <div class="shipInfo-item">
             <div class="mb-1">Flag</div>
-            <i-input label="Flag" type="text" v-model="shipRegisterForm.nation" placeholder="Flag를 입력하여 주십시오" required
-              :hide-details="false"></i-input>
+            <v-autocomplete v-model="shipRegisterForm.nation" :items="ports" item-title="code" item-value="code"
+              density="compact" bg-color='#434348' variant="solo-filled" placeholder="국적을 선택하여 주십시오"
+              no-data-text="데이터가 없습니다" hide-details />
           </div>
           <div class="shipInfo-item">
             <div class="mb-1">IMO Number</div>
@@ -27,7 +28,7 @@
             </i-input>
           </div>
           <div class="shipInfo-item">
-            <div class="mb-1">CallSign</div>
+            <div class="mb-1">Call Sign</div>
             <i-input label="TYPE" type="text" :maxlength="5" v-model="shipRegisterForm.callSign"
               placeholder="CallSign을 입력하여 주십시오" required :hide-details="false">
             </i-input>
@@ -70,7 +71,7 @@
             </i-input>
           </div>
         </div>
-        <i-btn v-if="role != 'ROLE_VOCC_USER'" type="submit" class="w-100 mt-4" text="등록" :disabled="!disabled"></i-btn>
+        <i-btn v-if="role != 'ROLE_VOCC_USER'" type="submit" class="w-100 mt-3" text="등록" :disabled="!disabled"></i-btn>
       </div>
     </v-form>
   </div>
@@ -85,6 +86,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { useShipStore } from '@/stores/shipStore.js'
 import { useVoccStore } from '@/stores/voccStore.js'
 import { dxGridRefresh } from '@/composables/dxGridUtil'
+import { getAllPort } from '@/api/operationapi.js'
 
 const authStore = useAuthStore();
 const { userInfo } = storeToRefs(authStore)
@@ -93,6 +95,8 @@ const shipStore = useShipStore()
 
 const voccStore = useVoccStore()
 const { voccInfo } = storeToRefs(voccStore)
+
+const ports = ref([])
 
 const props = defineProps({
   shipImoNumber: {
@@ -104,7 +108,7 @@ const props = defineProps({
 const shipRegisterForm = ref({
   voccId: voccInfo.value.id, // 선사 아이디
   name: '',
-  nation: '',
+  nation: null,
   imoNumber: '',
   mmsiNumber: '',
   callSign: '',
@@ -119,6 +123,7 @@ const shipRegisterForm = ref({
 let role = ''
 onMounted(() => {
   role = userInfo.value.role
+  fetchAllPort()
 })
 
 /**
@@ -149,6 +154,10 @@ const registerShip = async () => {
   }
 }
 
+
+const fetchAllPort = async () => {
+  ({ data: { data: ports.value } } = await getAllPort())
+}
 </script>
 
 <style scoped>

@@ -176,7 +176,6 @@ const getFleetList = async () => {
   fleetList.value = fleets.value
 
   if (role.value !== "ROLE_LCC_ADMIN") {
-    console.log('test')
     selectedFleet.value = fleetList.value[0]
   }
 }
@@ -227,7 +226,6 @@ const searchTagList = async () => {
           imoNumberList.push(...fleet.imoNumberList)
         }
       })
-      console.log(imoNumberList)
       result = await fetchTagListByImoNumber(imoNumberList)
 
       if (result.status == 200) {
@@ -486,7 +484,6 @@ const saveTags = async () => {
         getTagList()
       }
     }catch(e){
-      console.log('오류')
       console.dir(e)
       // tagErrorMsg.value = errorMsgs.push()
     }

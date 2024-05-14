@@ -1,7 +1,7 @@
 <template>
   <div class="rounded-lg">
   <v-card class="h-100 ">
-    <v-card-title class="my-8">
+    <v-card-title class="my-4">
       <slot name="title"></slot>
     </v-card-title>
     <v-card-text>

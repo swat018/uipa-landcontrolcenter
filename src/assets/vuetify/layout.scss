@@ -1,0 +1,123 @@
+@use "variable.scss" as v;
+
+.title-container {
+  height: 100vh;
+  max-height: calc(100vh - (v.$appBarHeight + v.$topPadding + v.$bottomPadding + v.$cardTitleHeight + v.$bottomPadding));
+}
+
+.title-form-container {
+  height: 100vh;
+  max-height: calc(100vh - (v.$appBarHeight + v.$topPadding + v.$bottomPadding + v.$cardTitleHeight));
+}
+
+.title-filter-container {
+  height: 100vh;
+  max-height: calc(100vh - (v.$appBarHeight + v.$topPadding + v.$bottomPadding + v.$cardTitleHeight + v.$dateFilterHeight + (v.$bottomPadding * 2)));
+}
+
+.title-image-container {
+  height: calc(100vh - 65px - 48px);
+  padding: v.$defalutPadding;
+  margin: v.$defalutPadding;
+}
+
+.tab-sheet {
+  // padding-top : $paddingHeight;
+  // padding-right: $colPaddingHeight;
+  // padding-left : $colPaddingHeight;
+  height: 100vh;
+  max-height: calc(100vh - (v.$appBarHeight + v.$topPadding + v.$bottomPadding));
+}
+
+.tab-dx-grid,
+.tab-card {
+  height: 100vh;
+  max-height: calc(100vh - (v.$appBarHeight + v.$topPadding + v.$bottomPadding + 66px + 64px + 24px + 24px));
+}
+
+.tabs-container {
+  height: 100vh;
+  max-height: calc(100vh - (v.$appBarHeight + v.$topPadding + v.$bottomPadding));
+}
+
+.tabs-content-container {
+  height: 100vh;
+  max-height: calc(100vh - (v.$appBarHeight + v.$topPadding + v.$tabsHeader2Height + v.$bottomPadding + v.$bottomPadding));
+}
+
+/*
+* 탭 내 타이틀이 있는 영역
+*/
+
+.tabs-title-container {
+  height: 100vh;
+  max-height: calc(100vh - (v.$appBarHeight + v.$topPadding + v.$tabsHeader2Height + v.$bottomPadding));
+}
+
+/*
+* 탭 내 필터가 있는 영역
+*/
+
+
+.tabs-filter-container {
+  height: 100vh;
+  max-height: calc(100vh - (v.$appBarHeight + (#{v.$topPadding} * 4) + v.$tabsHeader2Height + (#{ v.$bottomPadding} * 5) + v.$dateFilterHeight ));
+}
+
+.alarm-buttons-container {
+  height: 100vh;
+  max-height: calc(100vh - (v.$appBarHeight + (#{v.$topPadding} * 3) + (#{v.$tabsHeaderHeight} * 3) + v.$bottomPadding + v.$alarmTypeHeight ));
+}
+
+.cctv-history-area {
+  max-height: calc(100vh - (v.$appBarHeight + v.$topPadding + v.$tabsHeader2Height + v.$bottomPadding + v.$bottomPadding + v.$timeLineHeight));
+}
+
+.tabs-date-filter-container {
+  height: 100vh;
+  max-height: calc(100vh - (v.$appBarHeight + (#{v.$topPadding} * 2) + v.$tabsHeader2Height + (#{ v.$bottomPadding} * 3) + v.$dateFilterHeight ));
+}
+
+@media (max-height : 800px) {
+  .title-container {
+    overflow-y: auto;
+  }
+
+  .title-form-container, tabs-content-container {
+    overflow-y: auto;
+  }
+
+  .tabs-title-container {
+    overflow-y: auto;
+
+    &.v-card {
+      overflow-y: auto;
+    }
+  }
+
+  .tabs-date-filter-container {
+    overflow-y: auto;
+  }
+
+  .operation-equipment-area {
+    padding-right: v.$rightPadding;
+  }
+
+  .cctv-history-area {
+    overflow-y: auto;
+  }
+
+  .deck-image-container {
+    overflow-y: auto;
+
+    .v-img {
+      min-height: 400px;
+    }
+  }
+
+  .sensor-register-area {
+    &.v-card {
+      overflow-y: auto;
+    }
+  }
+}

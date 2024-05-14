@@ -1,22 +1,22 @@
 <template>
-  <v-container fluid class="h-100">
+  <v-container fluid class="h-100  management-page detail-page settings">
     <v-row class="ma-0 h-100">
       <v-col cols="6">
-        <v-card class="cardContainer h-100" rounded="30">
+        <v-card class="h-100" rounded="30">
           <v-card-title>
-            <div class="d-flex justify-space-between mb-4">
-              <div class="align-self-center">권한그룹정보</div>
+            <div class="d-flex justify-space-between align-center">
+              <div>권한그룹정보</div>
               <div>
               </div>
             </div>
           </v-card-title>
           <v-card-text>
             <!-- 권한 그룹 목록 -->
-            <DxDataGrid id="grid" class="management-container" key-expr="first" :data-source="groups"
-              :active-state-enabled="activeStatus" :focused-row-enabled="activeStatus"
+            <DxDataGrid id="grid" class="title-container no-stripe" key-expr="first" :data-source="groups"
+              :active-state-enabled="activeStatus" :focused-row-enabled="activeStatus" :show-borders="true"
               :on-focused-cell-changed="getMenuGroup" :filter-criteria="null">
               <DxColumn data-field="first" caption="groupId" :visible="false" class="pl-10"></DxColumn>
-              <DxColumn data-field="second" caption="권한그룹명" :allow-editing="false"></DxColumn>
+              <DxColumn data-field="second" class="groupname" caption="권한그룹명" :allow-editing="false"></DxColumn>
               <DxScrolling column-rendering-mode="virtual" />
             </DxDataGrid>
           </v-card-text>
@@ -24,9 +24,9 @@
       </v-col>
       <!-- 메뉴 목록 -->
       <v-col cols="6">
-        <v-card class="cardContainer h-100" rounded="30">
+        <v-card class="h-100" rounded="30">
           <v-card-title>
-            <div class="d-flex justify-space-between mb-4">
+            <div class="d-flex justify-space-between">
               <div class="align-self-center">메뉴 목록</div>
               <div>
                 <i-btn class="" @click="saveMenusByGroup" text="저장"></i-btn>
@@ -34,9 +34,9 @@
             </div>
           </v-card-title>
           <v-card-text>
-            <DxTreeList id="menus" ref="menusGrid" class="management-container" :data-source="initMenus"
-              :show-borders="true" :column-auto-width="true" key-expr="menuId" parent-id-expr="parentId"
-              :selected-row-keys="selectedRowKeys" :autoExpandAll="true" noDataText="데이터가 없습니다">
+            <DxTreeList id="menus" ref="menusGrid" class="title-container no-stripe" :data-source="initMenus"
+              :column-auto-width="true" key-expr="menuId" parent-id-expr="parentId" :selected-row-keys="selectedRowKeys"
+              :autoExpandAll="true" noDataText="데이터가 없습니다" :show-borders="true">
               <DxHeaderFilter :visible="false" />
               <DxScrolling column-rendering-mode="virtual" />
               <DxSelection mode="multiple" :recursive="true"></DxSelection>

@@ -7,7 +7,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import radarImage from '@/assets/images/radar.png'
+// import radarImage from '/images/ins/radar.png'
 
 
 const ONE_MINUTES_TO_SECONDS = 1000
