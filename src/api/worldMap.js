@@ -31,3 +31,19 @@ export const getShipData = (imoNumberList) => {
     params:  { imoNumberList : imoNumberList }
   })
 }
+
+export const getShipWakeCurrent = (imoNumber) => {
+  return instance({
+    url: '/world-map/get-ship-wake-current',
+    method: 'GET',
+    params: { imoNumber }
+  })
+}
+
+export const getShipWakePast = (imoNumber, startTime, endTime) => {
+  return instance({
+    url: '/world-map/get-ship-wake-past',
+    method: 'GET',
+    params: { imoNumber, startTime, endTime }
+  })
+}
