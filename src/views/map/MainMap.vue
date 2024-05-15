@@ -50,17 +50,20 @@ emitter.on('selectedShip', (imoNumbers) => {
   // 지도에 선박 표시하는 함수 호출
   imoNumberList.value = imoNumbers;
   emitter.emit('imoNumberList', imoNumbers);
-  // shipData(imoNumbers);
 })
 
-const shipData = async (imoNumbers) => {
-  await mapStore.fetchShipData(imoNumbers);
-}
-
+/**
+ * 지도에서 선박 클릭했을 때, 선박 imoNumber 전달받는 함수
+ * @param {} imoNumber imoNumber
+ */
 emitter.on('clickShipName', (imoNumber) => {
   clickShip(imoNumber)
 })
 
+/**
+ * 지도에서 선박 클릭했을 때, 팝업창 띄우는 함수
+ * @param {} imoNumber imoNumber
+ */
 const clickShip = async (imoNumber) => {
 
   await mapStore.fetchShipSummary(imoNumber);

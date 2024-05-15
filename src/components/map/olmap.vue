@@ -45,6 +45,7 @@ import Select from 'ol/interaction/Select'
 import emitter from '@/composables/eventbus'
 import { TileWMS } from 'ol/source'
 import { useMapStore } from '@/stores/mapStore'
+import { getShipData } from '@/api/worldMap'
 
 
 const urlBefore = 'http://navioncorp.asuscomm.com:8080/TileMap/';
@@ -62,7 +63,7 @@ export default {
     mapTypeId: String,
     map: null,
     imoNumbers: [],
-    isClick: false
+    isClick: false,
   }),
   props: ['propsdata'],
   computed: {
@@ -116,8 +117,7 @@ export default {
         layers: [this.baselayers],
         view: new View({
           center: transform([128.100, 36.000], 'EPSG:4326', 'EPSG:3857'),
-          //zoom: 12,
-          zoom: 7,
+          zoom: 2,
           minZoom: 2, // 최소 줌 설정
           constrainResolution: true,
         }),
@@ -188,38 +188,13 @@ export default {
       this.setShipLayer();
     },
     setShipLayer: function() {
-      var pointFeature = new Feature({
-        geometry: new Point([Number(129.47939163245047), Number(35.343702931513434)])
-      });
-      pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
-
+      this.map.removeLayer(this.shipLayer);
       var temp;
       this.propsdata.forEach((imoNumber) => {
         if (temp !== undefined) temp = temp + ',' +imoNumber;
         else temp = imoNumber;
       });
-
-      console.log(temp)
-
       this.shipData(temp);
-
-      this.shipLayer = new VectorLayer({
-        source: new VectorSource({
-          // features: [pointFeature]
-          url: import.meta.env.DEV ? 'src/assets/mockup/sship.geojson' : '/assets/mockup/sship.geojson',
-          format: new GeoJSON()
-        }),
-        style: new Style({
-          image: new Icon({
-            src: import.meta.env.DEV ? 'src/assets/images/shipicons/shipIcon_green.png' : '/assets/images/shipicons/shipIcon_green.png',
-            scale: 0.3,
-            anchor: [0.5, 0.5],
-            rotateWithView: true,
-            rotation: 0
-          })
-        })
-      });
-      this.map.addLayer(this.shipLayer);
     },
     shipSelectEvent: function() {
       this.isClick = !this.isClick;
@@ -227,16 +202,16 @@ export default {
         var select = new Select();
         this.map.addInteraction(select);
         select.on('select', function(e) {
+          // console.log(e.selected[0]);
+          // console.log(e.selected[0].values_.name)
           e.selected[0].setStyle(new Style({
             image: new Icon({
               src: import.meta.env.DEV ? 'src/assets/images/shipicons/shipIcon_red.png' : '/assets/images/shipicons/shipIcon_red.png',
               scale: 0.3,
               anchor: [0.5, 0.5],
-              rotateWithView: true,
-              rotation: 0
             })
           }));
-          emitter.emit('clickShipName', '9876543');
+          emitter.emit('clickShipName', e.selected[0].values_.name);
         });
       }
     },
@@ -397,8 +372,39 @@ export default {
       return lyr;
     },
     shipData: async function(imoNumbers) {
-      const mapStore = useMapStore()
+      const mapStore = useMapStore();
       await mapStore.fetchShipData(imoNumbers);
+      getShipData(imoNumbers).then((response) => {
+        var shipDataList = response.data.data;
+        console.log(shipDataList);
+
+        shipDataList.forEach((shipData) => {
+          console.log(shipData.imoNumber, shipData.longitude, shipData.latitude)
+          var pointFeature = new Feature({
+            geometry: new Point([Number(shipData.longitude),Number(shipData.latitude)]),
+            name: shipData.imoNumber,
+          });
+          pointFeature.getGeometry().transform( 'EPSG:4326',  'EPSG:3857');
+
+          this.shipLayer = new VectorLayer({
+            source: new VectorSource({
+              features: [pointFeature]
+              // url: import.meta.env.DEV ? 'src/assets/mockup/sship.geojson' : '/assets/mockup/sship.geojson',
+              // format: new GeoJSON()
+            }),
+            style: new Style({
+              image: new Icon({
+                src: import.meta.env.DEV ? 'src/assets/images/shipicons/shipIcon_green.png' : '/assets/images/shipicons/shipIcon_green.png',
+                scale: 0.3,
+                anchor: [0.5, 0.5],
+                rotateWithView: true,
+                rotation: shipData.course
+              })
+            })
+          });
+          this.map.addLayer(this.shipLayer);
+        })
+      });
     }
   }
 }

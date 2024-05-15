@@ -40,6 +40,7 @@ export const useMapStore = defineStore('mapManagement', () => {
     const voyageList = ref([])
 
     const imoNumberList = ref([])
+    const shipDataList = ref([])
 
     /**
      * 지도 위 클릭한 선박 정보 조회
@@ -108,6 +109,7 @@ export const useMapStore = defineStore('mapManagement', () => {
         } = response
 
         console.log(data)
+        shipDataList.value = data.data
       } catch (error) {
         console.error(error)
       }
@@ -118,12 +120,15 @@ export const useMapStore = defineStore('mapManagement', () => {
       resetObject(selectedPopMenu)
       selectedPopMenu.value = null
       voyageList.value = []
+      imoNumberList.value = []
+      shipDataList.value = []
     }
 
     return {
       aisInfo,
       voyageList,
       imoNumberList,
+      shipDataList,
       clickedShipInfo,
       selectedPopMenu,
       fetchShipSummary,
