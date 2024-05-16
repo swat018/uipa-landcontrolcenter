@@ -42,6 +42,8 @@ export const useMapStore = defineStore('mapManagement', () => {
     const imoNumberList = ref([])
     const shipDataList = ref([])
 
+    const vesselTrackStatus = ref(false)
+
     /**
      * 지도 위 클릭한 선박 정보 조회
      * @returns
@@ -130,6 +132,7 @@ export const useMapStore = defineStore('mapManagement', () => {
       imoNumberList,
       shipDataList,
       clickedShipInfo,
+      vesselTrackStatus,
       selectedPopMenu,
       fetchShipSummary,
       fetchShipAisInfo,

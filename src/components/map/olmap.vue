@@ -46,11 +46,11 @@ import emitter from '@/composables/eventbus'
 import { TileWMS } from 'ol/source'
 import { useMapStore } from '@/stores/mapStore'
 import { getShipData } from '@/api/worldMap'
+import { storeToRefs } from 'pinia'
 
 
 const urlBefore = 'http://navioncorp.asuscomm.com:8080/TileMap/';
 const urlAfter = '/{z}/{x}/{-y}.png';
-
 
 export default {
   name: "olmap",
@@ -65,7 +65,7 @@ export default {
     imoNumbers: [],
     isClick: false,
   }),
-  props: ['propsdata'],
+  props: ['propsdata', 'isShow', "vesselTrack"],
   computed: {
     brightSelected: {
       set(value) {
@@ -92,7 +92,14 @@ export default {
     propsdata: function() {
       this.imoNumbers = this.propsdata;
       this.setShipLayer();
+    },
+    isShow: function() {
+      this.shipSelectEvent();
+    },
+    vesselTrack: function() {
+      this.vesselTrackCurrent();
     }
+
   },
   mounted: async function() {
     this.layerBright = 'Day';
@@ -109,6 +116,7 @@ export default {
     this.initMap();
     this.$emit('init', this.map);
     this.shipSelectEvent();
+    this.vesselTrackCurrent();
   },
   methods: {
     initMap: function() {
@@ -405,6 +413,12 @@ export default {
           this.map.addLayer(this.shipLayer);
         })
       });
+    },
+    vesselTrackCurrent: function() {
+      const mapStore = useMapStore();
+      const { vesselTrackStatus } = storeToRefs(mapStore)
+
+      console.log('vesselTrackStatus', vesselTrackStatus);
     }
   }
 }

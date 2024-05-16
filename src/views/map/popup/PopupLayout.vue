@@ -138,7 +138,7 @@
               </div>
               <div class="d-flex justify-space-between align-center">
                 <div class="sub-title">CII Rating</div>
-                <div style="font-size : 1.1rem"> 
+                <div style="font-size : 1.1rem">
                   <span style="font-size: 0.8em;">{{ totalInfo.worldMapCiiMonitoring.ciiRating }}</span> <span class="unit">%</span></div>
               </div>
               <div class="d-flex justify-space-between">
@@ -205,7 +205,7 @@
             <div class="justify-space-between mb-3">
               <div class="d-flex justify-space-between">
                 <div class="sub-title">Total Power</div>
-                <div class="emphasis-text" style="font-size: 1rem;">{{ totalInfo.worldMapGeneratorEngineInfo.totalGeneratedPowerValue }} <span class="unit">/ </span>{{ totalInfo.worldMapGeneratorEngineInfo.totalMaxPowerValue }} 
+                <div class="emphasis-text" style="font-size: 1rem;">{{ totalInfo.worldMapGeneratorEngineInfo.totalGeneratedPowerValue }} <span class="unit">/ </span>{{ totalInfo.worldMapGeneratorEngineInfo.totalMaxPowerValue }}
                   <span class="unit"><span class="unit">kw</span></span></div>
               </div>
               <div class="w-100 d-flex align-center ga-4">
@@ -247,7 +247,7 @@
               <div class="d-flex ga-4">
                 <div class="sub-title align-center" style="width : 15%">HFO</div>
                 <div class="d-flex justify-end ga-2" style="width: 85%;">
-                  <v-slider class="generator-power mx-0" v-model="remainingHfo" :thumb-size="0" :track-size="10" 
+                  <v-slider class="generator-power mx-0" v-model="remainingHfo" :thumb-size="0" :track-size="10"
                   height="15" color="#b9c8ef" rounded readonly hide-details>
                   </v-slider>
                   <div class="d-flex align-center">{{ remainingHfo }}<span class="unit">%</span></div>
@@ -264,8 +264,8 @@
               </div>
               <div v-if="remainingMdo > 0" class="d-flex ga-4" >
                 <div class="sub-title align-center" style="width : 15%">MDO</div>
-                <div class="d-flex justify-end ga-2" style="width: 85%;"> 
-                  <v-slider class="generator-power mx-0" v-model="remainingMdo" :thumb-size="0" :track-size="10" 
+                <div class="d-flex justify-end ga-2" style="width: 85%;">
+                  <v-slider class="generator-power mx-0" v-model="remainingMdo" :thumb-size="0" :track-size="10"
                   height="15" color="#b9c8ef" rounded readonly hide-details>
                   </v-slider>
                   <div class="d-flex align-center">{{ remainingMdo }}<span class="unit">%</span></div>
@@ -273,8 +273,8 @@
               </div>
               <div v-if="remainingMgo > 0" class="d-flex ga-4">
                 <div class="sub-title align-center" style="width : 15%">MGO</div>
-                <div class="d-flex justify-end ga-2" style="width: 85%;"> 
-                  <v-slider class="generator-power mx-0" v-model="remainingMgo" :thumb-size="0" :track-size="10" 
+                <div class="d-flex justify-end ga-2" style="width: 85%;">
+                  <v-slider class="generator-power mx-0" v-model="remainingMgo" :thumb-size="0" :track-size="10"
                   height="15" color="#b9c8ef" rounded readonly hide-details>
                   </v-slider>
                   <div class="d-flex align-center">{{ remainingMgo }}<span class="unit">%</span></div>
@@ -282,8 +282,8 @@
               </div>
               <div v-if="remainingLpg > 0" class="d-flex ga-4">
                 <div class="sub-title align-center" style="width : 15%">LPG</div>
-                <div class="d-flex justify-end ga-2" style="width: 85%;"> 
-                  <v-slider class="generator-power mx-0" v-model="remainingLpg" :thumb-size="0" :track-size="10" 
+                <div class="d-flex justify-end ga-2" style="width: 85%;">
+                  <v-slider class="generator-power mx-0" v-model="remainingLpg" :thumb-size="0" :track-size="10"
                   height="15" color="#b9c8ef" rounded readonly hide-details>
                   </v-slider>
                   <div class="d-flex align-center">{{ remainingLpg }}<span class="unit">%</span></div>
@@ -291,8 +291,8 @@
               </div>
               <div v-if="remainingLng > 0" class="d-flex ga-4">
                 <div class="sub-title align-center" style="width : 15%">LNG</div>
-                <div class="d-flex justify-end ga-2" style="width: 85%;"> 
-                  <v-slider class="generator-power mx-0" v-model="remainingLng" :thumb-size="0" :track-size="10" 
+                <div class="d-flex justify-end ga-2" style="width: 85%;">
+                  <v-slider class="generator-power mx-0" v-model="remainingLng" :thumb-size="0" :track-size="10"
                   height="15" color="#b9c8ef" rounded readonly hide-details>
                   </v-slider>
                   <div class="d-flex align-center">{{ remainingLng }}<span class="unit">%</span></div>
@@ -332,7 +332,7 @@ import PanamaLogo from '@/assets/images/panama_logo.png'
 import AISProgressInfo from '@/views/map/part/shipinfo/AISProgressInfo.vue'
 
 const mapStore = useMapStore()
-const { clickedShipInfo, selectedPopMenu } = storeToRefs(mapStore);
+const { clickedShipInfo, selectedPopMenu, vesselTrackStatus } = storeToRefs(mapStore);
 
 const props = defineProps({
   isShow: {
@@ -354,7 +354,7 @@ let remainingMgo = ref(0)
 let remainingLpg = ref(0)
 let remainingLng = ref(0)
 
-const trackStatus = ref(true)
+const trackStatus = ref(false)
 const tab = ref(null)
 
 const emit = defineEmits(['closePopup'])
@@ -504,7 +504,7 @@ const fetchTotalInfo = async() => {
   if (result.worldMapFuelRemainingInfo.fuelRemainingMap.hasOwnProperty('LFO')){
     remainingLfo = parseInt(result.worldMapFuelRemainingInfo.fuelRemainingMap.LFO)
   }
-  
+
   if (result.worldMapFuelRemainingInfo.fuelRemainingMap.hasOwnProperty('MDO')){
     remainingMdo = parseInt(result.worldMapFuelRemainingInfo.fuelRemainingMap.MDO)
   }
@@ -512,7 +512,7 @@ const fetchTotalInfo = async() => {
   if (result.worldMapFuelRemainingInfo.fuelRemainingMap.hasOwnProperty('MGO')){
     remainingMgo = parseInt(result.worldMapFuelRemainingInfo.fuelRemainingMap.MGO)
   }
-  
+
   if (result.worldMapFuelRemainingInfo.fuelRemainingMap.hasOwnProperty('LPG')){
     remainingLpg = parseInt(result.worldMapFuelRemainingInfo.fuelRemainingMap.LPG)
   }
@@ -556,6 +556,9 @@ onUnmounted(() => {
   clearInterval(interval)
 })
 
+watch(trackStatus, (value) => {
+  emitter.emit('clickTrackStatus', value)
+})
 
 </script>
 

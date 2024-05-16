@@ -2,7 +2,7 @@
   <div class="map-container">
     <div class="map" ref="map">
         <!-- 지도 컴포넌트 -->
-        <OlMap v-bind:propsdata="imoNumberList"  />
+        <OlMap :propsdata="imoNumberList"  :isShow="isShow" :vesselTrack="vesselTrack" />
     </div>
     <PopupLayout ref="popupLayout" v-model="isShow" :isShow="isShow" @closePopup="isShow = false"></PopupLayout>
     <PopupMenu class="popMenu" ref="popupMenu"></PopupMenu>
@@ -11,14 +11,13 @@
 
 <script setup>
 /* eslint-disable */
-import { ref, inject } from "vue";
+import { ref, inject, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from "@/stores/authStore";
 import { useMapStore } from '@/stores/mapStore'
 import { changeShipByImoNumber } from '@/api/worldMap.js'
 import emitter from '@/composables/eventbus.js'
 import OlMap from "@/components/map/OlMap.vue";
-
 
 /**
  * 팝업 레이아웃 import
@@ -29,17 +28,18 @@ import PopupMenu from '@/views/map/popup/PopupMenu.vue'
 const authStore = useAuthStore()
 const { userInfo } = storeToRefs(authStore)
 const mapStore = useMapStore()
-const { clickedShipInfo, imoNumberList } = storeToRefs(mapStore)
+const { clickedShipInfo, imoNumberList, vesselTrackStatus } = storeToRefs(mapStore)
 
 const popupLayout = ref(null);
 const popupMenu = ref(null)
 const isShow = ref(false)
 
+let vesselTrack = ref(false);
+
 const openPopup = () => {
   isShow.value = true;
   return isShow.value;
 }
-
 
 /**
  * 좌측 사이드바에서 선박 선택했을 때, 선박 imoNumber 전달받는 함수
@@ -85,6 +85,15 @@ const clickShip = async (imoNumber) => {
   }
 }
 
+emitter.on('clickTrackStatus', (status) => {
+  console.log(status, clickedShipInfo.value.imoNumber);
+  vesselTrackStatus.value = status;
+})
+
+watch(vesselTrackStatus, (value) => {
+  console.log(value)
+  vesselTrack = value;
+})
 
 </script>
 
