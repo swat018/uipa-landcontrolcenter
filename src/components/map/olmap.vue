@@ -38,12 +38,12 @@ import VectorLayer from 'ol/layer/Vector'
 import { Style, Icon, Fill, Stroke } from 'ol/style'
 import Feature from 'ol/Feature'
 import Point from 'ol/geom/Point.js';
-import { GeoJSON } from 'ol/format'
 import Select from 'ol/interaction/Select'
 import emitter from '@/composables/eventbus'
 import { TileWMS } from 'ol/source'
 import { useMapStore } from '@/stores/mapStore'
 import { getShipData, getShipWakeCurrent, getShipWakePast } from '@/api/worldMap'
+import { getAisData } from '@/api/aisData'
 import { storeToRefs } from 'pinia'
 import { singleClick } from 'ol/events/condition'
 
@@ -124,6 +124,7 @@ export default {
     this.shipSelectEvent();
     this.vesselTrackCurrent();
     this.vesselTrackPast();
+    this.aisData();
   },
   methods: {
     initMap: function() {
@@ -504,6 +505,11 @@ export default {
       // } else {
       //   this.map.removeLayer(this.shipWakeLayer);
       // }
+    },
+    aisData: function() {
+      getAisData().then((response) => {
+        console.log(response);
+      });
     }
   }
 }

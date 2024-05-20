@@ -27,5 +27,5 @@ coverage
 *.njsproj
 *.sln
 *.sw?
-src/plugins/devExtreme.js
+#src/plugins/devExtreme.js
 package-lock.json
