@@ -35,7 +35,7 @@ import VectorSource from 'ol/source/Vector'
 import { defaults as defaultControls } from 'ol/control'
 import { transform } from 'ol/proj'
 import VectorLayer from 'ol/layer/Vector'
-import { Style, Icon, Fill, Stroke } from 'ol/style'
+import { Style, Icon, Fill, Stroke, Circle, RegularShape } from 'ol/style'
 import Feature from 'ol/Feature'
 import Point from 'ol/geom/Point.js';
 import Select from 'ol/interaction/Select'
@@ -61,6 +61,9 @@ export default {
     shipLayer: VectorLayer,
     shipWakeLayer: VectorLayer,
     shipPastWakeLayer: VectorLayer,
+    aisAtonLayer: VectorLayer,
+    aisBasestationLayer: VectorLayer,
+    aisClassLayer: VectorLayer,
     layerBright: String,
     layerMode: String,
     mapTypeId: String,
@@ -202,13 +205,14 @@ export default {
         this.makeSld("worldcountries", "Polygon1_2", "1E1E1E", null);
       }
       this.setShipLayer();
+      this.aisData();
     },
     setShipLayer: function() {
       this.map.removeLayer(this.shipLayer);
       var temp;
-      if(this.propsdata.length !== 0) {
+      if (this.propsdata.length !== 0) {
         this.propsdata.forEach((imoNumber) => {
-          if (temp !== undefined) temp = temp + ',' +imoNumber;
+          if (temp !== undefined) temp = temp + ',' + imoNumber;
           else temp = imoNumber;
         });
         this.shipData(temp);
@@ -218,7 +222,7 @@ export default {
       this.isClick = !this.isClick;
       if (this.isClick) {
         var select = new Select({
-          condition: singleClick
+            condition: singleClick
           }
         );
         this.map.addInteraction(select);
@@ -394,15 +398,15 @@ export default {
       const mapStore = useMapStore();
       await mapStore.fetchShipData(imoNumbers);
       getShipData(imoNumbers).then((response) => {
-        if(response.data.data.length === 0) return;
+        if (response.data.data.length === 0) return;
         var shipDataList = response.data.data;
 
         shipDataList.forEach((shipData) => {
           var pointFeature = new Feature({
-            geometry: new Point([Number(shipData.longitude),Number(shipData.latitude)]),
+            geometry: new Point([Number(shipData.longitude), Number(shipData.latitude)]),
             name: shipData.imoNumber,
           });
-          pointFeature.getGeometry().transform( 'EPSG:4326',  'EPSG:3857');
+          pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
 
           this.shipLayer = new VectorLayer({
             source: new VectorSource({
@@ -428,18 +432,18 @@ export default {
       const mapStore = useMapStore();
       const { clickedShipInfo, vesselTrackStatus } = storeToRefs(mapStore);
 
-      if(vesselTrackStatus._value) {
+      if (vesselTrackStatus._value) {
         console.log('clickedShipInfo', clickedShipInfo.value.imoNumber);
         getShipWakeCurrent(clickedShipInfo.value.imoNumber).then((response) => {
           var shipWakeList = response.data.data;
           console.log(shipWakeList);
           shipWakeList.forEach((shipData) => {
             var pointFeature = new Feature({
-              geometry: new Point([Number(shipData.longitude),Number(shipData.latitude)]),
+              geometry: new Point([Number(shipData.longitude), Number(shipData.latitude)]),
               name: shipData.imoNumber,
               label: shipData.time
             });
-            pointFeature.getGeometry().transform( 'EPSG:4326',  'EPSG:3857');
+            pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
 
             this.shipWakeLayer = new VectorLayer({
               source: new VectorSource({
@@ -507,8 +511,132 @@ export default {
       // }
     },
     aisData: function() {
-      getAisData().then((response) => {
-        console.log(response);
+      getAisData().then((data) => {
+        let aisAton = data.ais_aton[0];
+        let ais_basestation = data.ais_basestation[0];
+        let ais_class_a = data.ais_class_a[0];
+        let ais_class_b = data.ais_class_b[0];
+        let vpass_class_b = data.vpass_class_a[0];
+        let stroke = new Stroke({color: 'black', width: 2});
+        let fill = new Fill({color: 'red'});
+        aisAton.forEach((aisAtonData) => {
+          var pointFeature = new Feature({
+            geometry: new Point([Number(aisAtonData.longitude), Number(aisAtonData.latitude)])
+          });
+          pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+
+          this.aisAtonLayer = new VectorLayer({
+            source: new VectorSource({
+              features: [pointFeature]
+            }),
+            style: new Style({
+              image: new RegularShape({
+                fill: fill,
+                stroke: stroke,
+                points: 4,
+                radius: 10,
+                angle: 0,
+              }),
+            })
+          });
+          this.map.addLayer(this.aisAtonLayer);
+        })
+
+        fill = new Fill({color: 'blue'});
+        ais_basestation.forEach((aisBaseData) => {
+          var pointFeature = new Feature({
+            geometry: new Point([Number(aisBaseData.longitude), Number(aisBaseData.latitude)])
+          });
+          pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+
+          this.aisBasestationLayer = new VectorLayer({
+            source: new VectorSource({
+              features: [pointFeature]
+            }),
+            style: new Style({
+              image: new RegularShape({
+                fill: fill,
+                stroke: stroke,
+                points: 4,
+                radius: 10,
+                angle: Math.PI / 4,
+              }),
+            })
+          });
+          this.map.addLayer(this.aisBasestationLayer);
+        })
+
+        fill = new Fill({color: 'yellow'});
+        ais_class_a.forEach((aisClassAData) => {
+          var pointFeature = new Feature({
+            geometry: new Point([Number(aisClassAData.longitude), Number(aisClassAData.latitude)])
+          });
+          pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+
+          this.aisClassLayer = new VectorLayer({
+            source: new VectorSource({
+              features: [pointFeature]
+            }),
+            style: new Style({
+              image: new RegularShape({
+                fill: fill,
+                stroke: stroke,
+                points: 3,
+                radius: 8,
+                rotation: aisClassAData.heading,
+                angle: 5,
+              }),
+            })
+          });
+          this.map.addLayer(this.aisClassLayer);
+        })
+        ais_class_b.forEach((aisClassBData) => {
+          var pointFeature = new Feature({
+            geometry: new Point([Number(aisClassBData.longitude), Number(aisClassBData.latitude)])
+          });
+          pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+
+          this.aisClassLayer = new VectorLayer({
+            source: new VectorSource({
+              features: [pointFeature]
+            }),
+            style: new Style({
+              image: new RegularShape({
+                fill: fill,
+                stroke: stroke,
+                points: 3,
+                radius: 8,
+                rotation: aisClassBData.heading,
+                angle: 5,
+              }),
+            })
+          });
+          this.map.addLayer(this.aisClassLayer);
+        })
+        vpass_class_b.forEach((vpassClassBData) => {
+          var pointFeature = new Feature({
+            geometry: new Point([Number(vpassClassBData.longitude), Number(vpassClassBData.latitude)])
+          });
+          pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+
+          this.aisClassLayer = new VectorLayer({
+            source: new VectorSource({
+              features: [pointFeature]
+            }),
+            style:  new Style({
+              image: new RegularShape({
+                fill: fill,
+                stroke: stroke,
+                points: 3,
+                radius: 8,
+                rotation: vpassClassBData.heading,
+                angle: 5,
+              }),
+            })
+          });
+          this.map.addLayer(this.aisClassLayer);
+        })
+
       });
     }
   }
