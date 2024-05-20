@@ -89,7 +89,10 @@ let interval = null
 onMounted(async () => {
   let selectedShip = ''
   userRole.value = userInfo.value.role
-  fleetsInstance.value = getDxGridInstance(fleetsGrid)
+
+  // fleetsInstance.value = getDxGridInstance(fleetsGrid)
+  console.log('instance')
+  console.dir(fleetsInstance.value)
 
   if (userRole.value != 'ROLE_LCC_ADMIN') {
     await fetchVocc()
@@ -134,6 +137,9 @@ const fetchFleetAndShipByVocc = async () => {
   const result = await voccStore.fetchFleetAndShipByVocc(test)
   // 결과값 반환
   initFleetsAndShip.value = [...fleetsAndShip.value]
+
+  console.log('fleets and Ship')
+  console.dir(initFleetsAndShip.value)
 }
 
 /**
@@ -151,8 +157,8 @@ const fetchShipAlarm = async () => {
 }
 
 /**
- * 알람 상태 
- * @param {} status 
+ * 알람 상태
+ * @param {} status
  */
 const getStatus = (status) => {
   let colorClass = ''
@@ -183,7 +189,7 @@ const getStatus = (status) => {
 
 /**
  * 선사, 선단인 경우, 체크박스 숨김 처리
- * @param {*} e 
+ * @param {*} e
  */
 const hideCheckBox = (e) => {
   if (e.rowType == 'header') {
@@ -206,7 +212,7 @@ const hideCheckBox = (e) => {
 
 /**
  * 선박 선택할 경우, 상세페이지에 imoNumber 전달
- * @param {*} e 
+ * @param {*} e
  */
 
 let isChanged = false;

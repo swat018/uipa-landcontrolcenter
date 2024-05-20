@@ -119,7 +119,7 @@
                   <div class="voyage-datepicker"><input type="date" v-model="endDate" />
                   </div>
                   <div class="d-flex align-center">
-                    <i-btn class="align-self-center search-text" color="#555555" @click="periodData()" text="항차에서 조회"
+                    <i-btn class="align-self-center search-text" color="#555555" @click="periodData" text="항차에서 조회"
                       height="35" style="font-size : 0.75rem"></i-btn>
                   </div>
                   <!-- <i-btn @click="periodData()" class="px-0 search-text" text="조회" width="15" height="20"></i-btn> -->
@@ -332,7 +332,7 @@ import PanamaLogo from '@/assets/images/panama_logo.png'
 import AISProgressInfo from '@/views/map/part/shipinfo/AISProgressInfo.vue'
 
 const mapStore = useMapStore()
-const { clickedShipInfo, selectedPopMenu, vesselTrackStatus } = storeToRefs(mapStore);
+const { clickedShipInfo } = storeToRefs(mapStore);
 
 const props = defineProps({
   isShow: {
@@ -356,6 +356,9 @@ let remainingLng = ref(0)
 
 const trackStatus = ref(false)
 const tab = ref(null)
+
+const startDate = ref(null)
+const endDate = ref(null)
 
 const emit = defineEmits(['closePopup'])
 
@@ -459,7 +462,9 @@ let arrivalTime = null
 const SECOND_IN_ONE_MINUTE = 1000 * 60
 let interval = null
 
-
+// const periodData = () => {
+//   props.isPeriodData = true;
+// }
 
 const closePopup = () => {
   emit('closePopup')
@@ -560,6 +565,14 @@ watch(trackStatus, (value) => {
   emitter.emit('clickTrackStatus', value)
 })
 
+watch(startDate, (value) => {
+  emitter.emit('inputStartDate', value)
+})
+
+watch(endDate, (value) => {
+  emitter.emit('inputEndDate', value)
+})
+
 </script>
 
 <style scoped>
@@ -646,7 +659,7 @@ watch(trackStatus, (value) => {
 }
 
 .grade-icon{
-  color : '#fff';
+  color : #fff;
   padding : 1px 5px;
   border-radius: 5px;
 }
@@ -714,7 +727,7 @@ watch(trackStatus, (value) => {
 }
 
 .track-bg {
-  color: "#b9c8ef"
+  color: #b9c8ef;
 }
 
 .gap-2 {

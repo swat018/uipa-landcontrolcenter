@@ -2,9 +2,9 @@
   <div class="map-container">
     <div class="map" ref="map">
         <!-- 지도 컴포넌트 -->
-        <OlMap :propsdata="imoNumberList"  :isShow="isShow" :vesselTrack="vesselTrack" />
+        <OlMap :propsdata="imoNumberList"  :isShow="isShow" :vesselTrack="vesselTrackStatus" :startDate="startDate" :endDate="endDate" :isPastVesselTracks="isPastVesselTracks" />
     </div>
-    <PopupLayout ref="popupLayout" v-model="isShow" :isShow="isShow" @closePopup="isShow = false"></PopupLayout>
+    <PopupLayout ref="popupLayout" v-model="isShow" :isShow="isShow" @closePopup="isShow = false"  ></PopupLayout>
     <PopupMenu class="popMenu" ref="popupMenu"></PopupMenu>
   </div>
 </template>
@@ -28,13 +28,15 @@ import PopupMenu from '@/views/map/popup/PopupMenu.vue'
 const authStore = useAuthStore()
 const { userInfo } = storeToRefs(authStore)
 const mapStore = useMapStore()
-const { clickedShipInfo, imoNumberList, vesselTrackStatus } = storeToRefs(mapStore)
+const { clickedShipInfo, imoNumberList, vesselTrackStatus, startDate, endDate } = storeToRefs(mapStore)
 
 const popupLayout = ref(null);
 const popupMenu = ref(null)
 const isShow = ref(false)
 
-let vesselTrack = ref(false);
+const vesselTrack = ref(false);
+
+const isPastVesselTracks = ref(false);
 
 const openPopup = () => {
   isShow.value = true;
@@ -86,13 +88,28 @@ const clickShip = async (imoNumber) => {
 }
 
 emitter.on('clickTrackStatus', (status) => {
-  console.log(status, clickedShipInfo.value.imoNumber);
+  // console.log(status, clickedShipInfo.value.imoNumber);
   vesselTrackStatus.value = status;
 })
 
+emitter.on('inputStartDate', (value) => {
+  startDate.value = value;
+})
+
+emitter.on('inputEndDate', (value) => {
+  endDate.value = value;
+})
+
 watch(vesselTrackStatus, (value) => {
-  console.log(value)
-  vesselTrack = value;
+  console.log(value);
+})
+
+watch(startDate, (value) => {
+  console.log(value);
+})
+
+watch(endDate, (value) => {
+  console.log(value);
 })
 
 </script>

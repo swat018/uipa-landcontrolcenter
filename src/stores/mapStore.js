@@ -44,6 +44,9 @@ export const useMapStore = defineStore('mapManagement', () => {
 
     const vesselTrackStatus = ref(false)
 
+    const startDate = ref('')
+    const endDate = ref('')
+
     /**
      * 지도 위 클릭한 선박 정보 조회
      * @returns
@@ -110,7 +113,6 @@ export const useMapStore = defineStore('mapManagement', () => {
           data: { data }
         } = response
 
-        console.log(data)
         shipDataList.value = data.data
       } catch (error) {
         console.error(error)
@@ -133,6 +135,8 @@ export const useMapStore = defineStore('mapManagement', () => {
       shipDataList,
       clickedShipInfo,
       vesselTrackStatus,
+      startDate,
+      endDate,
       selectedPopMenu,
       fetchShipSummary,
       fetchShipAisInfo,

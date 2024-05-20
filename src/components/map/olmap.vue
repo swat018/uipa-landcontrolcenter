@@ -27,8 +27,6 @@
 </template>
 
 <script>
-import "ol/ol.css";
-import "ol-ext/dist/ol-ext.css";
 import { Map, View } from "ol";
 import TileLayer from 'ol/layer/Tile'
 import XYZ from 'ol/source/XYZ'
@@ -37,7 +35,7 @@ import VectorSource from 'ol/source/Vector'
 import { defaults as defaultControls } from 'ol/control'
 import { transform } from 'ol/proj'
 import VectorLayer from 'ol/layer/Vector'
-import { Style, Icon } from 'ol/style'
+import { Style, Icon, Fill, Stroke } from 'ol/style'
 import Feature from 'ol/Feature'
 import Point from 'ol/geom/Point.js';
 import { GeoJSON } from 'ol/format'
@@ -45,11 +43,14 @@ import Select from 'ol/interaction/Select'
 import emitter from '@/composables/eventbus'
 import { TileWMS } from 'ol/source'
 import { useMapStore } from '@/stores/mapStore'
-import { getShipData } from '@/api/worldMap'
+import { getShipData, getShipWakeCurrent, getShipWakePast } from '@/api/worldMap'
 import { storeToRefs } from 'pinia'
+import { singleClick } from 'ol/events/condition'
 
 
-const urlBefore = 'http://navioncorp.asuscomm.com:8080/TileMap/';
+// const urlBefore = 'http://navioncorp.asuscomm.com:8080/TileMap/'
+// const urlAfter = '/{z}/{x}/{-y}.png?v='+ Math.random();
+const urlBefore = import.meta.env.VITE_TILE_MAP_URL + '/';
 const urlAfter = '/{z}/{x}/{-y}.png';
 
 export default {
@@ -58,6 +59,8 @@ export default {
     baselayers: LayerGroup,
     shipSource: VectorSource,
     shipLayer: VectorLayer,
+    shipWakeLayer: VectorLayer,
+    shipPastWakeLayer: VectorLayer,
     layerBright: String,
     layerMode: String,
     mapTypeId: String,
@@ -65,7 +68,7 @@ export default {
     imoNumbers: [],
     isClick: false,
   }),
-  props: ['propsdata', 'isShow', "vesselTrack"],
+  props: ['propsdata', 'isShow', 'vesselTrack', 'startDate', 'endDate', 'isPastVesselTracks' ],
   computed: {
     brightSelected: {
       set(value) {
@@ -98,6 +101,9 @@ export default {
     },
     vesselTrack: function() {
       this.vesselTrackCurrent();
+    },
+    isPastVesselTracks: function() {
+      this.vesselTrackCurrent();
     }
 
   },
@@ -117,6 +123,7 @@ export default {
     this.$emit('init', this.map);
     this.shipSelectEvent();
     this.vesselTrackCurrent();
+    this.vesselTrackPast();
   },
   methods: {
     initMap: function() {
@@ -198,20 +205,23 @@ export default {
     setShipLayer: function() {
       this.map.removeLayer(this.shipLayer);
       var temp;
-      this.propsdata.forEach((imoNumber) => {
-        if (temp !== undefined) temp = temp + ',' +imoNumber;
-        else temp = imoNumber;
-      });
-      this.shipData(temp);
+      if(this.propsdata.length !== 0) {
+        this.propsdata.forEach((imoNumber) => {
+          if (temp !== undefined) temp = temp + ',' +imoNumber;
+          else temp = imoNumber;
+        });
+        this.shipData(temp);
+      }
     },
     shipSelectEvent: function() {
       this.isClick = !this.isClick;
       if (this.isClick) {
-        var select = new Select();
+        var select = new Select({
+          condition: singleClick
+          }
+        );
         this.map.addInteraction(select);
         select.on('select', function(e) {
-          // console.log(e.selected[0]);
-          // console.log(e.selected[0].values_.name)
           e.selected[0].setStyle(new Style({
             image: new Icon({
               src: import.meta.env.DEV ? 'src/assets/images/shipicons/shipIcon_red.png' : '/assets/images/shipicons/shipIcon_red.png',
@@ -383,11 +393,10 @@ export default {
       const mapStore = useMapStore();
       await mapStore.fetchShipData(imoNumbers);
       getShipData(imoNumbers).then((response) => {
+        if(response.data.data.length === 0) return;
         var shipDataList = response.data.data;
-        console.log(shipDataList);
 
         shipDataList.forEach((shipData) => {
-          console.log(shipData.imoNumber, shipData.longitude, shipData.latitude)
           var pointFeature = new Feature({
             geometry: new Point([Number(shipData.longitude),Number(shipData.latitude)]),
             name: shipData.imoNumber,
@@ -416,9 +425,85 @@ export default {
     },
     vesselTrackCurrent: function() {
       const mapStore = useMapStore();
-      const { vesselTrackStatus } = storeToRefs(mapStore)
+      const { clickedShipInfo, vesselTrackStatus } = storeToRefs(mapStore);
 
-      console.log('vesselTrackStatus', vesselTrackStatus);
+      if(vesselTrackStatus._value) {
+        console.log('clickedShipInfo', clickedShipInfo.value.imoNumber);
+        getShipWakeCurrent(clickedShipInfo.value.imoNumber).then((response) => {
+          var shipWakeList = response.data.data;
+          console.log(shipWakeList);
+          shipWakeList.forEach((shipData) => {
+            var pointFeature = new Feature({
+              geometry: new Point([Number(shipData.longitude),Number(shipData.latitude)]),
+              name: shipData.imoNumber,
+              label: shipData.time
+            });
+            pointFeature.getGeometry().transform( 'EPSG:4326',  'EPSG:3857');
+
+            this.shipWakeLayer = new VectorLayer({
+              source: new VectorSource({
+                features: [pointFeature]
+              }),
+              // style: new Style({
+              //   text: new Text({
+              //     font: 'bold 11px "Open Sans", "Arial Unicode MS", "sans-serif"',
+              //     placement: 'line',
+              //     fill: new Fill({
+              //       color: 'white'
+              //     })
+              //   })
+              // })
+            });
+            this.map.addLayer(this.shipWakeLayer);
+          })
+        });
+      } else {
+        this.map.removeLayer(this.shipWakeLayer);
+      }
+    },
+    vesselTrackPast: function() {
+      const mapStore = useMapStore();
+      const { clickedShipInfo, vesselTrackStatus, startDate, endDate } = storeToRefs(mapStore);
+
+      const startDateTime = startDate._value + ' ' + '16:00';
+      const endDateTime = endDate._value + ' ' + '18:00';
+
+      console.log(startDateTime);
+      console.log(endDateTime);
+
+      // if(vesselTrackStatus._value) {
+      //   console.log('clickedShipInfo', clickedShipInfo.value.imoNumber);
+      //   getShipWakePast(clickedShipInfo.value.imoNumber).then((response) => {
+      //     var shipWakeList = response.data.data;
+      //     console.log(shipWakeList);
+      //     shipWakeList.forEach((shipData) => {
+      //       var pointFeature = new Feature({
+      //         geometry: new Point([Number(shipData.longitude),Number(shipData.latitude)]),
+      //         name: shipData.imoNumber,
+      //         label: shipData.time
+      //       });
+      //       pointFeature.getGeometry().transform( 'EPSG:4326',  'EPSG:3857');
+      //
+      //       this.shipWakeLayer = new VectorLayer({
+      //         source: new VectorSource({
+      //           features: [pointFeature]
+      //         }),
+      //         // style: new Style({
+      //         //   text: new Text({
+      //         //     font: 'bold 11px "Open Sans", "Arial Unicode MS", "sans-serif"',
+      //         //     placement: 'line',
+      //         //     fill: new Fill({
+      //         //       color: 'white'
+      //         //     })
+      //         //   })
+      //         // })
+      //       });
+      //       this.map.addLayer(this.shipWakeLayer);
+      //     })
+      //   });
+      // } else {
+      //   this.map.removeLayer(this.shipWakeLayer);
+      // }
     }
   }
 }
