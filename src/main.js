@@ -10,7 +10,7 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import router from './routes/'
 import vuetify from './plugins/vuetify'
 import customPlugins from '@/plugins/custom'
-// import devExtreamPlugins from './plugins/devextreme'
+import devExtreamPlugins from './plugins/devextreme'
 import '@/plugins/dxDataGridEnvs'
 
 import Echarts from 'vue-echarts'
@@ -32,7 +32,7 @@ app.use(pinia)
 app.use(vuetify)
 app.use(router)
 app.use(customPlugins)
-// app.use(devExtreamPlugins)
+app.use(devExtreamPlugins)
 app.use(jspdf)
 app.use(moment)
 
