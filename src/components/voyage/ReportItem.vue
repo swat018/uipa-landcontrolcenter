@@ -34,7 +34,7 @@ const convertText = (key, names) =>{
 <style scoped>
 .item-container:not(:last-child){
   border-bottom: 1px dashed #ffffff34;
-}1
+}
 
 .item-container{
   padding-top : 12px;

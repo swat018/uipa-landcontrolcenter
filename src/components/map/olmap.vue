@@ -50,7 +50,7 @@ import { singleClick } from 'ol/events/condition'
 
 // const urlBefore = 'http://navioncorp.asuscomm.com:8080/TileMap/'
 // const urlAfter = '/{z}/{x}/{-y}.png?v='+ Math.random();
-const urlBefore = import.meta.env.VITE_TILE_MAP_URL + '/';
+const urlBefore = import.meta.env.TILE_MAP_URL + '/';
 const urlAfter = '/{z}/{x}/{-y}.png';
 
 export default {
