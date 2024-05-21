@@ -4,7 +4,7 @@
         <!-- 지도 컴포넌트 -->
         <OlMap :propsdata="imoNumberList"  :isShow="isShow" :vesselTrack="vesselTrackStatus" :startDate="startDate" :endDate="endDate" :isPastVesselTracks="isPastVesselTracks" />
     </div>
-    <PopupLayout ref="popupLayout" v-model="isShow" :isShow="isShow" @closePopup="isShow = false"  ></PopupLayout>
+    <PopupLayout ref="popupLayout" v-model="isShow" :isShow="isShow" @closePopup="isShow = false" ></PopupLayout>
     <PopupMenu class="popMenu" ref="popupMenu"></PopupMenu>
   </div>
 </template>
@@ -28,15 +28,12 @@ import PopupMenu from '@/views/map/popup/PopupMenu.vue'
 const authStore = useAuthStore()
 const { userInfo } = storeToRefs(authStore)
 const mapStore = useMapStore()
-const { clickedShipInfo, imoNumberList, vesselTrackStatus, startDate, endDate } = storeToRefs(mapStore)
+const { clickedShipInfo, imoNumberList, vesselTrackStatus, startDate, endDate, isPastVesselTracks } = storeToRefs(mapStore)
 
 const popupLayout = ref(null);
 const popupMenu = ref(null)
 const isShow = ref(false)
 
-const vesselTrack = ref(false);
-
-const isPastVesselTracks = ref(false);
 
 const openPopup = () => {
   isShow.value = true;
@@ -100,6 +97,10 @@ emitter.on('inputEndDate', (value) => {
   endDate.value = value;
 })
 
+emitter.on('clickPastVesselTracks', (value) => {
+  isPastVesselTracks.value = value;
+})
+
 watch(vesselTrackStatus, (value) => {
   console.log(value);
 })
@@ -111,6 +112,10 @@ watch(startDate, (value) => {
 watch(endDate, (value) => {
   console.log(value);
 })
+watch(isPastVesselTracks, (value) => {
+  console.log(value);
+})
+
 
 </script>
 

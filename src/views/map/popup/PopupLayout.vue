@@ -332,7 +332,7 @@ import PanamaLogo from '@/assets/images/panama_logo.png'
 import AISProgressInfo from '@/views/map/part/shipinfo/AISProgressInfo.vue'
 
 const mapStore = useMapStore()
-const { clickedShipInfo } = storeToRefs(mapStore);
+const { clickedShipInfo, isPastVesselTracks } = storeToRefs(mapStore);
 
 const props = defineProps({
   isShow: {
@@ -462,9 +462,9 @@ let arrivalTime = null
 const SECOND_IN_ONE_MINUTE = 1000 * 60
 let interval = null
 
-// const periodData = () => {
-//   props.isPeriodData = true;
-// }
+const periodData = () => {
+  isPastVesselTracks.value = true;
+}
 
 const closePopup = () => {
   emit('closePopup')
@@ -571,6 +571,10 @@ watch(startDate, (value) => {
 
 watch(endDate, (value) => {
   emitter.emit('inputEndDate', value)
+})
+
+watch(isPastVesselTracks, (value) => {
+  emitter.emit('clickPastVesselTracks', value);
 })
 
 </script>

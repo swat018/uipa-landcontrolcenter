@@ -106,9 +106,8 @@ export default {
       this.vesselTrackCurrent();
     },
     isPastVesselTracks: function() {
-      this.vesselTrackCurrent();
-    }
-
+      this.vesselTrackPast();
+    },
   },
   mounted: async function() {
     this.layerBright = 'Day';
@@ -219,24 +218,26 @@ export default {
       }
     },
     shipSelectEvent: function() {
-      this.isClick = !this.isClick;
-      if (this.isClick) {
-        var select = new Select({
+      var select = new Select({
             condition: singleClick
-          }
-        );
-        this.map.addInteraction(select);
-        select.on('select', function(e) {
+      }
+      );
+      this.map.addInteraction(select);
+
+      select.on('select', function(e) {
+        if(e.selected[0].values_.layer === 'shipLayer') {
           e.selected[0].setStyle(new Style({
             image: new Icon({
               src: import.meta.env.DEV ? 'src/assets/images/shipicons/shipIcon_red.png' : '/assets/images/shipicons/shipIcon_red.png',
               scale: 0.3,
               anchor: [0.5, 0.5],
+              rotateWithView: true,
+              rotation: e.selected[0].values_.course
             })
           }));
           emitter.emit('clickShipName', e.selected[0].values_.name);
-        });
-      }
+        }
+      });
     },
     makeSld: function(lynm, type, color1, color2) {
       var text_SLD = "\
@@ -405,14 +406,15 @@ export default {
           var pointFeature = new Feature({
             geometry: new Point([Number(shipData.longitude), Number(shipData.latitude)]),
             name: shipData.imoNumber,
+            layer: 'shipLayer',
+            course: shipData.course
           });
           pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
 
           this.shipLayer = new VectorLayer({
+            name: 'shipLayer',
             source: new VectorSource({
               features: [pointFeature]
-              // url: import.meta.env.DEV ? 'src/assets/mockup/sship.geojson' : '/assets/mockup/sship.geojson',
-              // format: new GeoJSON()
             }),
             style: new Style({
               image: new Icon({
@@ -430,14 +432,60 @@ export default {
     },
     vesselTrackCurrent: function() {
       const mapStore = useMapStore();
-      const { clickedShipInfo, vesselTrackStatus } = storeToRefs(mapStore);
+      const { clickedShipInfo, vesselTrackStatus, isPastVesselTracks } = storeToRefs(mapStore);
 
-      if (vesselTrackStatus._value) {
-        console.log('clickedShipInfo', clickedShipInfo.value.imoNumber);
+      if (vesselTrackStatus._value === true) {
+        console.log(vesselTrackStatus._value);
+        // console.log('clickedShipInfo', clickedShipInfo.value.imoNumber);
         getShipWakeCurrent(clickedShipInfo.value.imoNumber).then((response) => {
           var shipWakeList = response.data.data;
-          console.log(shipWakeList);
           shipWakeList.forEach((shipData) => {
+            var pointFeature = new Feature({
+              geometry: new Point([Number(shipData.longitude), Number(shipData.latitude)]),
+              name: shipData.imoNumber,
+              text: shipData.time
+            });
+            pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+            const stroke = new Stroke({color: 'black', width: 2});
+            const fill = new Fill({color: 'green'});
+            this.shipWakeLayer = new VectorLayer({
+              name: 'shipWakeLayer',
+              source: new VectorSource({
+                features: [pointFeature]
+              }),
+              style: new Style({
+                image: new RegularShape({
+                  fill: fill,
+                  stroke: stroke,
+                  points: 3,
+                  radius: 8,
+                  angle: 5,
+                }),
+              })
+            });
+            this.map.addLayer(this.shipWakeLayer);
+          })
+        });
+      } else if (vesselTrackStatus._value === false){
+        this.map.getLayers().getArray()
+          .filter(layer => layer.get('name') === 'shipWakeLayer')
+          .forEach(layer => this.map.removeLayer(layer));
+        this.map.getLayers().getArray()
+          .filter(layer => layer.get('name') === 'shipPastWakeLayer')
+          .forEach(layer => this.map.removeLayer(layer));
+      }
+    },
+    vesselTrackPast: function() {
+      const mapStore = useMapStore();
+      const { clickedShipInfo, vesselTrackStatus, startDate, endDate,  isPastVesselTracks } = storeToRefs(mapStore);
+
+      console.log(startDate._value, endDate._value)
+      console.log(vesselTrackStatus._value, isPastVesselTracks._value)
+      if(vesselTrackStatus._value === true && isPastVesselTracks._value === true) {
+        getShipWakePast(clickedShipInfo.value.imoNumber, startDate._value, endDate._value).then((response) => {
+          var shipWaskPastList = response.data.data;
+          if(response.data.data === null) return;
+          shipWaskPastList.forEach((shipData) => {
             var pointFeature = new Feature({
               geometry: new Point([Number(shipData.longitude), Number(shipData.latitude)]),
               name: shipData.imoNumber,
@@ -445,70 +493,28 @@ export default {
             });
             pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
 
-            this.shipWakeLayer = new VectorLayer({
+            const stroke = new Stroke({color: 'black', width: 2});
+            const fill = new Fill({color: 'red'});
+            this.shipPastWakeLayer = new VectorLayer({
+              name: 'shipPastWakeLayer',
               source: new VectorSource({
                 features: [pointFeature]
               }),
-              // style: new Style({
-              //   text: new Text({
-              //     font: 'bold 11px "Open Sans", "Arial Unicode MS", "sans-serif"',
-              //     placement: 'line',
-              //     fill: new Fill({
-              //       color: 'white'
-              //     })
-              //   })
-              // })
+              style: new Style({
+                image: new RegularShape({
+                  fill: fill,
+                  stroke: stroke,
+                  points: 3,
+                  radius: 8,
+                  angle: 5,
+                }),
+              })
             });
-            this.map.addLayer(this.shipWakeLayer);
+            this.map.addLayer(this.shipPastWakeLayer);
           })
-        });
-      } else {
-        this.map.removeLayer(this.shipWakeLayer);
+        })
       }
-    },
-    vesselTrackPast: function() {
-      const mapStore = useMapStore();
-      const { clickedShipInfo, vesselTrackStatus, startDate, endDate } = storeToRefs(mapStore);
-
-      const startDateTime = startDate._value + ' ' + '16:00';
-      const endDateTime = endDate._value + ' ' + '18:00';
-
-      console.log(startDateTime);
-      console.log(endDateTime);
-
-      // if(vesselTrackStatus._value) {
-      //   console.log('clickedShipInfo', clickedShipInfo.value.imoNumber);
-      //   getShipWakePast(clickedShipInfo.value.imoNumber).then((response) => {
-      //     var shipWakeList = response.data.data;
-      //     console.log(shipWakeList);
-      //     shipWakeList.forEach((shipData) => {
-      //       var pointFeature = new Feature({
-      //         geometry: new Point([Number(shipData.longitude),Number(shipData.latitude)]),
-      //         name: shipData.imoNumber,
-      //         label: shipData.time
-      //       });
-      //       pointFeature.getGeometry().transform( 'EPSG:4326',  'EPSG:3857');
-      //
-      //       this.shipWakeLayer = new VectorLayer({
-      //         source: new VectorSource({
-      //           features: [pointFeature]
-      //         }),
-      //         // style: new Style({
-      //         //   text: new Text({
-      //         //     font: 'bold 11px "Open Sans", "Arial Unicode MS", "sans-serif"',
-      //         //     placement: 'line',
-      //         //     fill: new Fill({
-      //         //       color: 'white'
-      //         //     })
-      //         //   })
-      //         // })
-      //       });
-      //       this.map.addLayer(this.shipWakeLayer);
-      //     })
-      //   });
-      // } else {
-      //   this.map.removeLayer(this.shipWakeLayer);
-      // }
+      isPastVesselTracks._value = false;
     },
     aisData: function() {
       getAisData().then((data) => {
@@ -518,7 +524,7 @@ export default {
         let ais_class_b = data.ais_class_b[0];
         let vpass_class_b = data.vpass_class_a[0];
         let stroke = new Stroke({color: 'black', width: 2});
-        let fill = new Fill({color: 'red'});
+        let fill = new Fill({color: 'green'});
         aisAton.forEach((aisAtonData) => {
           var pointFeature = new Feature({
             geometry: new Point([Number(aisAtonData.longitude), Number(aisAtonData.latitude)])
@@ -582,9 +588,10 @@ export default {
                 fill: fill,
                 stroke: stroke,
                 points: 3,
-                radius: 8,
+                radius: 12,
                 rotation: aisClassAData.heading,
-                angle: 5,
+                // angle: 5,
+                scale: [0.5, 1],
               }),
             })
           });
@@ -605,9 +612,10 @@ export default {
                 fill: fill,
                 stroke: stroke,
                 points: 3,
-                radius: 8,
+                radius: 12,
                 rotation: aisClassBData.heading,
-                angle: 5,
+                // angle: 5,
+                scale: [0.5, 1],
               }),
             })
           });
@@ -628,9 +636,10 @@ export default {
                 fill: fill,
                 stroke: stroke,
                 points: 3,
-                radius: 8,
+                radius: 12,
                 rotation: vpassClassBData.heading,
-                angle: 5,
+                // angle: 5,
+                scale: [0.5, 1],
               }),
             })
           });

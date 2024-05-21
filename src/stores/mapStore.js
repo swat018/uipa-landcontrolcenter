@@ -46,6 +46,7 @@ export const useMapStore = defineStore('mapManagement', () => {
 
     const startDate = ref('')
     const endDate = ref('')
+    const isPastVesselTracks = ref(false)
 
     /**
      * 지도 위 클릭한 선박 정보 조회
@@ -137,6 +138,7 @@ export const useMapStore = defineStore('mapManagement', () => {
       vesselTrackStatus,
       startDate,
       endDate,
+      isPastVesselTracks,
       selectedPopMenu,
       fetchShipSummary,
       fetchShipAisInfo,
