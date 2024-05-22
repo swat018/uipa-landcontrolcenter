@@ -100,7 +100,9 @@ export default {
       this.setShipLayer();
     },
     isShow: function() {
-      this.shipSelectEvent();
+      if (this.isShow === false) {
+        this.setShipLayer();
+      }
     },
     vesselTrack: function() {
       this.vesselTrackCurrent();
@@ -219,7 +221,7 @@ export default {
     },
     shipSelectEvent: function() {
       var select = new Select({
-            condition: singleClick
+          condition: singleClick
       }
       );
       this.map.addInteraction(select);
@@ -228,14 +230,16 @@ export default {
         if(e.selected[0].values_.layer === 'shipLayer') {
           e.selected[0].setStyle(new Style({
             image: new Icon({
-              src: import.meta.env.DEV ? 'src/assets/images/shipicons/shipIcon_red.png' : '/assets/images/shipicons/shipIcon_red.png',
-              scale: 0.3,
+              src: import.meta.env.DEV ? 'src/assets/images/shipicons/shipIcon_yellow.png' : '/assets/images/shipicons/shipIcon_yellow.png',
+              scale: 0.2,
               anchor: [0.5, 0.5],
               rotateWithView: true,
               rotation: e.selected[0].values_.course
             })
           }));
           emitter.emit('clickShipName', e.selected[0].values_.name);
+        } else {
+          this.setShipLayer();
         }
       });
     },
@@ -419,7 +423,7 @@ export default {
             style: new Style({
               image: new Icon({
                 src: import.meta.env.DEV ? 'src/assets/images/shipicons/shipIcon_green.png' : '/assets/images/shipicons/shipIcon_green.png',
-                scale: 0.3,
+                scale: 0.2,
                 anchor: [0.5, 0.5],
                 rotateWithView: true,
                 rotation: shipData.course
@@ -522,6 +526,7 @@ export default {
         let ais_class_b = data.ais_class_b[0];
         let vpass_class_b = data.vpass_class_a[0];
         let fill = new Fill({color: 'green'});
+        let stroke = new Stroke({color: 'black', width: 2});
         aisAton.forEach((aisAtonData) => {
           var pointFeature = new Feature({
             geometry: new Point([Number(aisAtonData.longitude), Number(aisAtonData.latitude)])
@@ -568,7 +573,6 @@ export default {
           this.map.addLayer(this.aisBasestationLayer);
         })
 
-        fill = new Fill({color: 'yellow'});
         ais_class_a.forEach((aisClassAData) => {
           var pointFeature = new Feature({
             geometry: new Point([Number(aisClassAData.longitude), Number(aisClassAData.latitude)])
@@ -580,16 +584,14 @@ export default {
               features: [pointFeature]
             }),
             style: new Style({
-              image: new RegularShape({
-                fill: fill,
-                stroke: stroke,
-                points: 3,
-                radius: 12,
+              image: new Icon({
+                src: import.meta.env.DEV ? 'src/assets/images/shipicons/AIS.png' : '/assets/images/shipicons/AIS.png',
+                scale: 0.2,
+                anchor: [0.5, 0.5],
+                rotateWithView: true,
                 rotation: aisClassAData.heading,
-                // angle: 5,
-                scale: [0.5, 1],
-              }),
-            })
+              })
+            }),
           });
           this.map.addLayer(this.aisClassLayer);
         })
@@ -604,15 +606,13 @@ export default {
               features: [pointFeature]
             }),
             style: new Style({
-              image: new RegularShape({
-                fill: fill,
-                stroke: stroke,
-                points: 3,
-                radius: 12,
+              image: new Icon({
+                src: import.meta.env.DEV ? 'src/assets/images/shipicons/AIS.png' : '/assets/images/shipicons/AIS.png',
+                scale: 0.2,
+                anchor: [0.5, 0.5],
+                rotateWithView: true,
                 rotation: aisClassBData.heading,
-                // angle: 5,
-                scale: [0.5, 1],
-              }),
+              })
             })
           });
           this.map.addLayer(this.aisClassLayer);
@@ -627,16 +627,14 @@ export default {
             source: new VectorSource({
               features: [pointFeature]
             }),
-            style:  new Style({
-              image: new RegularShape({
-                fill: fill,
-                stroke: stroke,
-                points: 3,
-                radius: 12,
+            style: new Style({
+              image: new Icon({
+                src: import.meta.env.DEV ? 'src/assets/images/shipicons/AIS.png' : '/assets/images/shipicons/AIS.png',
+                scale: 0.2,
+                anchor: [0.5, 0.5],
+                rotateWithView: true,
                 rotation: vpassClassBData.heading,
-                // angle: 5,
-                scale: [0.5, 1],
-              }),
+              })
             })
           });
           this.map.addLayer(this.aisClassLayer);
