@@ -446,8 +446,7 @@ export default {
               text: shipData.time
             });
             pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
-            const stroke = new Stroke({color: 'black', width: 2});
-            const fill = new Fill({color: 'green'});
+            const fill = new Fill({color: 'yellow'});
             this.shipWakeLayer = new VectorLayer({
               name: 'shipWakeLayer',
               source: new VectorSource({
@@ -456,7 +455,6 @@ export default {
               style: new Style({
                 image: new RegularShape({
                   fill: fill,
-                  stroke: stroke,
                   points: 3,
                   radius: 8,
                   angle: 5,
@@ -523,7 +521,6 @@ export default {
         let ais_class_a = data.ais_class_a[0];
         let ais_class_b = data.ais_class_b[0];
         let vpass_class_b = data.vpass_class_a[0];
-        let stroke = new Stroke({color: 'black', width: 2});
         let fill = new Fill({color: 'green'});
         aisAton.forEach((aisAtonData) => {
           var pointFeature = new Feature({
@@ -538,7 +535,6 @@ export default {
             style: new Style({
               image: new RegularShape({
                 fill: fill,
-                stroke: stroke,
                 points: 4,
                 radius: 10,
                 angle: 0,
