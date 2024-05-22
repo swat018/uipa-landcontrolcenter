@@ -35,7 +35,8 @@ import VectorSource from 'ol/source/Vector'
 import { defaults as defaultControls } from 'ol/control'
 import { transform } from 'ol/proj'
 import VectorLayer from 'ol/layer/Vector'
-import { Style, Icon, Fill, Stroke, Circle, RegularShape } from 'ol/style'
+import { Style, Icon, Fill, Stroke, RegularShape } from 'ol/style'
+import CircleStyle from 'ol/style/Circle'
 import Feature from 'ol/Feature'
 import Point from 'ol/geom/Point.js';
 import Select from 'ol/interaction/Select'
@@ -46,6 +47,7 @@ import { getShipData, getShipWakeCurrent, getShipWakePast } from '@/api/worldMap
 import { getAisData } from '@/api/aisData'
 import { storeToRefs } from 'pinia'
 import { singleClick } from 'ol/events/condition'
+import { LineString } from 'ol/geom'
 
 
 // const urlBefore = 'http://navioncorp.asuscomm.com:8080/TileMap/'
@@ -428,7 +430,7 @@ export default {
                 rotateWithView: true,
                 rotation: shipData.course
               })
-            })
+            }),
           });
           this.map.addLayer(this.shipLayer);
         })
@@ -436,35 +438,49 @@ export default {
     },
     vesselTrackCurrent: function() {
       const mapStore = useMapStore();
-      const { clickedShipInfo, vesselTrackStatus, isPastVesselTracks } = storeToRefs(mapStore);
+      const { clickedShipInfo, vesselTrackStatus } = storeToRefs(mapStore);
 
       if (vesselTrackStatus._value === true) {
         console.log(vesselTrackStatus._value);
-        // console.log('clickedShipInfo', clickedShipInfo.value.imoNumber);
+
         getShipWakeCurrent(clickedShipInfo.value.imoNumber).then((response) => {
           var shipWakeList = response.data.data;
+          if(response.data.data === null) return;
+
+          var pointFeatures =[];
+
           shipWakeList.forEach((shipData) => {
+            if(isNaN(Number(shipData.longitude)) || isNaN(Number(shipData.latitude))) return;
             var pointFeature = new Feature({
               geometry: new Point([Number(shipData.longitude), Number(shipData.latitude)]),
               name: shipData.imoNumber,
               text: shipData.time
             });
-            pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
-            const fill = new Fill({color: 'yellow'});
+            pointFeatures.push(pointFeature);
+          })
+
+          pointFeatures.map((pointFeature, index) => {
+            if(index === 0) return;
+            if (pointFeatures[index] === null) return;
+            var lineFeature = new Feature({
+              geometry: new LineString([pointFeatures[index-1].getGeometry().getCoordinates(), pointFeatures[index].getGeometry().getCoordinates()])
+            });
+            lineFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+            var point = new Feature({
+              geometry: new Point([Number(pointFeatures[index].longitude), Number(pointFeatures[index].latitude)]),
+              name: shipWakeList[index].imoNumber,
+              label: shipWakeList[index].time
+            });
+            point.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+
             this.shipWakeLayer = new VectorLayer({
               name: 'shipWakeLayer',
               source: new VectorSource({
-                features: [pointFeature]
+                features: [lineFeature]
               }),
-              style: new Style({
-                image: new RegularShape({
-                  fill: fill,
-                  points: 3,
-                  radius: 8,
-                  angle: 5,
-                }),
-              })
+              style: this.styleFunction
             });
+
             this.map.addLayer(this.shipWakeLayer);
           })
         });
@@ -476,6 +492,45 @@ export default {
           .filter(layer => layer.get('name') === 'shipPastWakeLayer')
           .forEach(layer => this.map.removeLayer(layer));
       }
+    },
+    styleFunction: function (feature, resolution) {
+      const geometry = feature.getGeometry();
+      const styles = [
+        // linestring
+        new Style({
+          stroke: new Stroke({
+            color: '#ddae34',
+            width: 5,
+          }),
+        }),
+      ];
+
+      if (resolution < 50) {
+        geometry.forEachSegment(function (start, end) {
+          const dx = end[0] - start[0];
+          const dy = end[1] - start[1];
+          const rotation = Math.atan2(dy, dx);
+          // arrows
+          styles.push(
+            new Style({
+              geometry: new Point(end),
+              image: new CircleStyle({
+                radius: 7,
+                fill: new Fill({color: '#ddae34'}),
+                stroke: new Stroke({color: 'rgba(229,166,12,0.56)', width: 2}),
+              }),
+              // image: new Icon({
+              //   src: import.meta.env.DEV ? 'src/assets/images/shipicons/arrow.png' : '/assets/images/shipicons/arrow.png',
+              //   anchor: [0.75, 0.75],
+              //   rotateWithView: true,
+              //   rotation: -rotation,
+              // }),
+
+            }),
+          );
+        });
+      }
+      return styles;
     },
     vesselTrackPast: function() {
       const mapStore = useMapStore();
