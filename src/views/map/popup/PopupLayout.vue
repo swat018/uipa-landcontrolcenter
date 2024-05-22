@@ -469,6 +469,7 @@ const periodData = () => {
 const closePopup = () => {
   emit('closePopup')
   emitter.emit('closePopupMenu')
+  trackStatus.value = false
 }
 
 const displayImage = computed(() => {

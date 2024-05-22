@@ -112,6 +112,7 @@ export default {
     isPastVesselTracks: function() {
       this.vesselTrackPast();
     },
+
   },
   mounted: async function() {
     this.layerBright = 'Day';
@@ -212,6 +213,13 @@ export default {
     },
     setShipLayer: function() {
       this.map.removeLayer(this.shipLayer);
+      this.map.getLayers().getArray()
+        .filter(layer => layer.get('name') === 'shipWakeLayer')
+        .forEach(layer => this.map.removeLayer(layer));
+      this.map.getLayers().getArray()
+        .filter(layer => layer.get('name') === 'shipPastWakeLayer')
+        .forEach(layer => this.map.removeLayer(layer));
+
       var temp;
       if (this.propsdata.length !== 0) {
         this.propsdata.forEach((imoNumber) => {

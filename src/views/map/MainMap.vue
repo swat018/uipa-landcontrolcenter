@@ -67,8 +67,6 @@ const clickShip = async (imoNumber) => {
 
   await mapStore.fetchShipSummary(imoNumber);
 
-  console.log(!clickedShipInfo.value)
-
   if (clickedShipInfo.value) {
     const response = openPopup();
 
