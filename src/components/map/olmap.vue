@@ -35,7 +35,7 @@ import VectorSource from 'ol/source/Vector'
 import { defaults as defaultControls } from 'ol/control'
 import { transform } from 'ol/proj'
 import VectorLayer from 'ol/layer/Vector'
-import { Style, Icon, Fill, Stroke, RegularShape } from 'ol/style'
+import { Style, Icon, Fill, Stroke, RegularShape, Text } from 'ol/style'
 import CircleStyle from 'ol/style/Circle'
 import Feature from 'ol/Feature'
 import Point from 'ol/geom/Point.js';
@@ -428,7 +428,7 @@ export default {
                 scale: 0.2,
                 anchor: [0.5, 0.5],
                 rotateWithView: true,
-                rotation: shipData.course
+                rotation: (-90 + shipData.course) * Math.PI/180
               })
             }),
           });
@@ -463,7 +463,8 @@ export default {
             if(index === 0) return;
             if (pointFeatures[index] === null) return;
             var lineFeature = new Feature({
-              geometry: new LineString([pointFeatures[index-1].getGeometry().getCoordinates(), pointFeatures[index].getGeometry().getCoordinates()])
+              geometry: new LineString([pointFeatures[index-1].getGeometry().getCoordinates(), pointFeatures[index].getGeometry().getCoordinates()]),
+              id: shipWakeList[index].time
             });
             lineFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
             var point = new Feature({
@@ -500,36 +501,40 @@ export default {
         new Style({
           stroke: new Stroke({
             color: '#ddae34',
-            width: 5,
+            width: 2,
           }),
         }),
       ];
 
-      if (resolution < 50) {
+      if (resolution < 40) {
         geometry.forEachSegment(function (start, end) {
           const dx = end[0] - start[0];
           const dy = end[1] - start[1];
           const rotation = Math.atan2(dy, dx);
-          // arrows
           styles.push(
             new Style({
               geometry: new Point(end),
-              image: new CircleStyle({
-                radius: 7,
-                fill: new Fill({color: '#ddae34'}),
-                stroke: new Stroke({color: 'rgba(229,166,12,0.56)', width: 2}),
+              text: new Text({
+                text: feature.values_.id,
+                offsetX: 80,
+                offsetY: 20,
+                fill: new Fill({color: 'black'}),
+                stroke: new Stroke({color: 'white', width: 2}),
+                font: 'bold 10px sans-serif',
+                }),
+              image: new Icon({
+                src: import.meta.env.DEV ? 'src/assets/images/shipicons/arrow.png' : '/assets/images/shipicons/arrow.png',
+                anchor: [0.5, 0.5],
+                rotateWithView: true,
+                rotation: -rotation,
               }),
-              // image: new Icon({
-              //   src: import.meta.env.DEV ? 'src/assets/images/shipicons/arrow.png' : '/assets/images/shipicons/arrow.png',
-              //   anchor: [0.75, 0.75],
-              //   rotateWithView: true,
-              //   rotation: -rotation,
-              // }),
-
+              zIndex: 100,
             }),
           );
         });
       }
+
+
       return styles;
     },
     vesselTrackPast: function() {
@@ -580,6 +585,7 @@ export default {
         let ais_class_a = data.ais_class_a[0];
         let ais_class_b = data.ais_class_b[0];
         let vpass_class_b = data.vpass_class_a[0];
+
         let fill = new Fill({color: 'green'});
         let stroke = new Stroke({color: 'black', width: 2});
         aisAton.forEach((aisAtonData) => {
@@ -643,8 +649,10 @@ export default {
                 src: import.meta.env.DEV ? 'src/assets/images/shipicons/AIS.png' : '/assets/images/shipicons/AIS.png',
                 scale: 0.2,
                 anchor: [0.5, 0.5],
+                opacity: 0.7,
                 rotateWithView: true,
-                rotation: aisClassAData.heading,
+                rotation: (-90 + aisClassAData.heading) * Math.PI/180
+                ,
               })
             }),
           });
@@ -665,8 +673,9 @@ export default {
                 src: import.meta.env.DEV ? 'src/assets/images/shipicons/AIS.png' : '/assets/images/shipicons/AIS.png',
                 scale: 0.2,
                 anchor: [0.5, 0.5],
+                opacity: 0.7,
                 rotateWithView: true,
-                rotation: aisClassBData.heading,
+                rotation: (-90 + aisClassBData.heading) * Math.PI/180
               })
             })
           });
@@ -687,8 +696,9 @@ export default {
                 src: import.meta.env.DEV ? 'src/assets/images/shipicons/AIS.png' : '/assets/images/shipicons/AIS.png',
                 scale: 0.2,
                 anchor: [0.5, 0.5],
+                opacity: 0.7,
                 rotateWithView: true,
-                rotation: vpassClassBData.heading,
+                rotation: (-90 + vpassClassBData.heading) * Math.PI/180
               })
             })
           });
