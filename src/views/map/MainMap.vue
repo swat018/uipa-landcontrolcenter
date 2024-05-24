@@ -9,9 +9,13 @@
                :layerBright="layerBright" :layerMode="layerMode"
         />
     </div>
+
+    <!-- 팝업 컴포넌트 -->
     <PopupLayout ref="popupLayout" v-model="isShow" :isShow="isShow" @closePopup="isShow = false" ></PopupLayout>
     <PopupMenu class="popMenu" ref="popupMenu"></PopupMenu>
-    <div class="menuBar" style="background-color:rgba(4,82,137,0.5); position: absolute">
+
+    <!-- 배경맵 선택 -->
+    <div class="menuBar" style="background-color:rgba(4,82,137,0.3); position: absolute">
       <table class="menuTable">
         <tr>
           <td width="20px"></td>

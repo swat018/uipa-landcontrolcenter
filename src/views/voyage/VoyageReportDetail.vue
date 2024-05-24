@@ -2,7 +2,9 @@
 
   <div class="d-flex ga-4 voyageDetail" v-if="detailInfo != null">
 
-    <div class="mapImage-container"><v-img :src="mapBg" cover min-width="450"></v-img></div>
+    <div class="mapImage-container">
+      <VoyageOlmap style="min-width: 450px" :imoNumber="imoNumber" :departureTime="departureTime" :arrivalTime="arrivalTime" ></VoyageOlmap>
+    </div>
 
     <DxDataGrid id="voyageDetailGrid" ref="voyageGrid" :data-source="detailInfo" key-expr="id">
       <DxColumn data-field="load" caption="Load(%)" alignment="center" :allow-edting="false"></DxColumn>
@@ -26,8 +28,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import mapBg from '@/assets/images/mapBg.png'
-import voyageReportData from '@/assets/mockup/voyageReportData.json'
+import VoyageOlmap from '@/views/voyage/VoyageOlmap.vue'
 import { getVoyageTrack } from '@/api/voyage'
 
 import { convertFloatFormatObject } from '@/composables/util'
@@ -38,11 +39,22 @@ const props = defineProps({
   }
 })
 
-const detailInfo = ref(null) 
+const detailInfo = ref(null)
+
+let imoNumber = ref(null)
+let departureTime = ref(null)
+let arrivalTime = ref(null)
 
 
 onMounted(()=>{
-  console.dir(props.templateData.key)
+  // console.dir(props.templateData.data.imoNumber)
+  // console.dir(props.templateData.data.departureTime.slice(0, 10))
+  // console.dir(props.templateData.data.arrivalTime.slice(0, 10))
+  imoNumber = props.templateData.data.imoNumber
+  departureTime = props.templateData.data.departureTime.slice(0, 10)
+  arrivalTime = props.templateData.data.arrivalTime.slice(0, 10)
+
+  // console.dir(props.templateData.key)
   let key = props.templateData.key
   fetchReportDetail(key)
 })
@@ -53,6 +65,9 @@ const fetchReportDetail = async (voyageId) => {
 
   detailInfo.value = data.map((track)=> convertFloatFormatObject(track))
 }
+
+
+
 </script>
 
 <style>
@@ -67,9 +82,6 @@ const fetchReportDetail = async (voyageId) => {
 
 .mapImage-container{
   width : 60%;
-}
-.mapImage-container img{
-  width: 100%;
 }
 
 .desc{
