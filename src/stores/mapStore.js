@@ -48,6 +48,9 @@ export const useMapStore = defineStore('mapManagement', () => {
     const endDate = ref('')
     const isPastVesselTracks = ref(false)
 
+    const layerBright = ref('Day')
+    const layerMode = ref('Base')
+
     /**
      * 지도 위 클릭한 선박 정보 조회
      * @returns
@@ -140,6 +143,8 @@ export const useMapStore = defineStore('mapManagement', () => {
       endDate,
       isPastVesselTracks,
       selectedPopMenu,
+      layerBright,
+      layerMode,
       fetchShipSummary,
       fetchShipAisInfo,
       fetchVoyageList,

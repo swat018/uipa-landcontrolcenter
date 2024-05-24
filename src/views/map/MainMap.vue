@@ -2,16 +2,45 @@
   <div class="map-container">
     <div class="map" ref="map">
         <!-- 지도 컴포넌트 -->
-        <OlMap :propsdata="imoNumberList"  :isShow="isShow" :vesselTrack="vesselTrackStatus" :startDate="startDate" :endDate="endDate" :isPastVesselTracks="isPastVesselTracks" />
+        <OlMap :propsdata="imoNumberList"
+               :isShow="isShow"
+               :vesselTrack="vesselTrackStatus"
+               :startDate="startDate" :endDate="endDate" :isPastVesselTracks="isPastVesselTracks"
+               :layerBright="layerBright" :layerMode="layerMode"
+        />
     </div>
     <PopupLayout ref="popupLayout" v-model="isShow" :isShow="isShow" @closePopup="isShow = false" ></PopupLayout>
     <PopupMenu class="popMenu" ref="popupMenu"></PopupMenu>
+    <div class="menuBar" style="background-color:rgba(4,82,137,0.5); position: absolute">
+      <table class="menuTable">
+        <tr>
+          <td width="20px"></td>
+          <td>
+            <select id="brightSelect" v-model="layerBright" style='background-color: black; color: white'>
+              <option value='Day' selected>Day</option>
+              <option value='Dusk'>Dusk</option>
+              <option value='Night'>Night</option>
+              <option value='Black'>Black Theme</option>
+            </select>
+          </td>
+          <td width="5px">
+          </td>
+          <td>
+            <select id="modeSelect" v-model="layerMode" style='background-color: black; color: white'>
+              <option value='Base' selected>Base</option>
+              <option value='Standard'>Standard</option>
+              <option value='Full'>Full</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+    </div>
   </div>
 </template>
 
 <script setup>
 /* eslint-disable */
-import { ref, inject, watch } from 'vue'
+import { ref, inject, watch, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from "@/stores/authStore";
 import { useMapStore } from '@/stores/mapStore'
@@ -28,17 +57,23 @@ import PopupMenu from '@/views/map/popup/PopupMenu.vue'
 const authStore = useAuthStore()
 const { userInfo } = storeToRefs(authStore)
 const mapStore = useMapStore()
-const { clickedShipInfo, imoNumberList, vesselTrackStatus, startDate, endDate, isPastVesselTracks } = storeToRefs(mapStore)
+const { clickedShipInfo, imoNumberList, vesselTrackStatus, startDate, endDate, isPastVesselTracks, layerBright, layerMode } = storeToRefs(mapStore)
 
-const popupLayout = ref(null);
+const popupLayout = ref(null)
 const popupMenu = ref(null)
 const isShow = ref(false)
+
 
 
 const openPopup = () => {
   isShow.value = true;
   return isShow.value;
 }
+
+// onMounted(() => {
+//   layerBright.value = 'Day'
+//   layerMode.value = 'Base'
+// });
 
 /**
  * 좌측 사이드바에서 선박 선택했을 때, 선박 imoNumber 전달받는 함수
@@ -120,5 +155,23 @@ watch(isPastVesselTracks, (value) => {
 <style scoped>
 .map-container{
   position: relative;
+}
+.menuBar {
+  width: 100%;
+  height: 25px;
+  background: #82837f96;
+}
+.menuBar select {
+  -webkit-appearance: listbox;
+  border-style: solid;
+  background: #82837f96;
+}
+.menuBar select option {
+  background: #82837f96;
+}
+.menuTable {
+  display: inline-block;
+  float: right;
+  margin-right: 1em;
 }
 </style>

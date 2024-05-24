@@ -1,28 +1,4 @@
 <template>
-  <div class="menuBar" style="background-color:#b1b1b180">
-    <table class="menuTable">
-      <tr>
-        <td width="20px"></td>
-        <td>
-          <select id="brightSelect" v-model="brightSelected" style='background-color: black; color: white'>
-            <option value='Day' selected>Day</option>
-            <option value='Dusk'>Dusk</option>
-            <option value='Night'>Night</option>
-            <option value='Black'>Black Theme</option>
-          </select>
-        </td>
-        <td width="5px">
-        </td>
-        <td>
-          <select id="modeSelect" v-model="modeSelected" style='background-color: black; color: white'>
-            <option value='Base' selected>Base</option>
-            <option value='Standard'>Standard</option>
-            <option value='Full'>Full</option>
-          </select>
-        </td>
-      </tr>
-    </table>
-  </div>
   <div id="map" class="map" ref="rootmap"></div>
 </template>
 
@@ -36,7 +12,6 @@ import { defaults as defaultControls } from 'ol/control'
 import { transform } from 'ol/proj'
 import VectorLayer from 'ol/layer/Vector'
 import { Style, Icon, Fill, Stroke, RegularShape, Text } from 'ol/style'
-import CircleStyle from 'ol/style/Circle'
 import Feature from 'ol/Feature'
 import Point from 'ol/geom/Point.js';
 import Select from 'ol/interaction/Select'
@@ -66,36 +41,12 @@ export default {
     aisAtonLayer: VectorLayer,
     aisBasestationLayer: VectorLayer,
     aisClassLayer: VectorLayer,
-    layerBright: String,
-    layerMode: String,
     mapTypeId: String,
     map: null,
     imoNumbers: [],
     isClick: false,
   }),
-  props: ['propsdata', 'isShow', 'vesselTrack', 'startDate', 'endDate', 'isPastVesselTracks' ],
-  computed: {
-    brightSelected: {
-      set(value) {
-        this.setMapType(value, this.layerMode);
-        this.layerBright = value;
-        return value;
-      },
-      get() {
-        return this.layerBright;
-      }
-    },
-    modeSelected: {
-      set(value) {
-        this.setMapType(this.layerBright, value);
-        this.layerMode = value;
-        return value;
-      },
-      get() {
-        return this.layerMode;
-      }
-    },
-  },
+  props: [ 'propsdata', 'isShow', 'vesselTrack', 'startDate', 'endDate', 'isPastVesselTracks', 'layerMode', 'layerBright' ],
   watch: {
     propsdata: function() {
       this.imoNumbers = this.propsdata;
@@ -112,21 +63,16 @@ export default {
     isPastVesselTracks: function() {
       this.vesselTrackPast();
     },
-
+    layerMode: function() {
+      this.setMapType(this.layerBright, this.layerMode);
+    },
+    layerBright: function() {
+      this.setMapType(this.layerBright, this.layerMode);
+    }
   },
   mounted: async function() {
-    this.layerBright = 'Day';
-    this.layerMode = 'Base';
-    this.mapTypeId = 'Day_Base';
-    this.baselayers =
-      new TileLayer({
-        source: new XYZ({
-          url: urlBefore + 'Day_Base' + urlAfter
-        }),
-        name: 'Day_Base',
-        visible: true
-      })
     this.initMap();
+    this.setMapType(this.layerBright, this.layerMode);
     this.$emit('init', this.map);
     this.shipSelectEvent();
     this.vesselTrackCurrent();
@@ -137,7 +83,6 @@ export default {
     initMap: function() {
       this.map = new Map({
         target: "map",
-        layers: [this.baselayers],
         view: new View({
           center: transform([128.100, 36.000], 'EPSG:4326', 'EPSG:3857'),
           zoom: 2,
@@ -449,13 +394,11 @@ export default {
       const { clickedShipInfo, vesselTrackStatus } = storeToRefs(mapStore);
 
       if (vesselTrackStatus._value === true) {
-        console.log(vesselTrackStatus._value);
-
         getShipWakeCurrent(clickedShipInfo.value.imoNumber).then((response) => {
           var shipWakeList = response.data.data;
           if(response.data.data === null) return;
 
-          var pointFeatures =[];
+          var currentPointFeatures =[];
 
           shipWakeList.forEach((shipData) => {
             if(isNaN(Number(shipData.longitude)) || isNaN(Number(shipData.latitude))) return;
@@ -464,19 +407,19 @@ export default {
               name: shipData.imoNumber,
               text: shipData.time
             });
-            pointFeatures.push(pointFeature);
+            currentPointFeatures.push(pointFeature);
           })
 
-          pointFeatures.map((pointFeature, index) => {
+          currentPointFeatures.map((pointFeature, index) => {
             if(index === 0) return;
-            if (pointFeatures[index] === null) return;
+            if (currentPointFeatures[index] === null) return;
             var lineFeature = new Feature({
-              geometry: new LineString([pointFeatures[index-1].getGeometry().getCoordinates(), pointFeatures[index].getGeometry().getCoordinates()]),
+              geometry: new LineString([currentPointFeatures[index-1].getGeometry().getCoordinates(), currentPointFeatures[index].getGeometry().getCoordinates()]),
               id: shipWakeList[index].time
             });
             lineFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
             var point = new Feature({
-              geometry: new Point([Number(pointFeatures[index].longitude), Number(pointFeatures[index].latitude)]),
+              geometry: new Point([Number(currentPointFeatures[index].longitude), Number(currentPointFeatures[index].latitude)]),
               name: shipWakeList[index].imoNumber,
               label: shipWakeList[index].time
             });
@@ -487,7 +430,7 @@ export default {
               source: new VectorSource({
                 features: [lineFeature]
               }),
-              style: this.styleFunction
+              style: this.styleCurrent
             });
 
             this.map.addLayer(this.shipWakeLayer);
@@ -502,14 +445,14 @@ export default {
           .forEach(layer => this.map.removeLayer(layer));
       }
     },
-    styleFunction: function (feature, resolution) {
+    styleCurrent: function (feature, resolution) {
       const geometry = feature.getGeometry();
       const styles = [
         // linestring
         new Style({
           stroke: new Stroke({
             color: '#ddae34',
-            width: 2,
+            width: 4,
           }),
         }),
       ];
@@ -551,40 +494,94 @@ export default {
 
       console.log(startDate._value, endDate._value)
       console.log(vesselTrackStatus._value, isPastVesselTracks._value)
-      if(vesselTrackStatus._value === true && isPastVesselTracks._value === true) {
+
+      if(vesselTrackStatus._value === true) {
         getShipWakePast(clickedShipInfo.value.imoNumber, startDate._value, endDate._value).then((response) => {
           var shipWaskPastList = response.data.data;
           if(response.data.data === null) return;
+
+          var pointFeatures =[];
           shipWaskPastList.forEach((shipData) => {
+            if(isNaN(Number(shipData.longitude)) || isNaN(Number(shipData.latitude))) return;
             var pointFeature = new Feature({
               geometry: new Point([Number(shipData.longitude), Number(shipData.latitude)]),
               name: shipData.imoNumber,
-              label: shipData.time
+              text: shipData.time
             });
-            pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+            pointFeatures.push(pointFeature);
+          })
 
-            const stroke = new Stroke({color: 'black', width: 2});
-            const fill = new Fill({color: 'red'});
+          pointFeatures.map((pointFeature, index) => {
+            if(index === 0) return;
+            if (pointFeatures[index] === null) return;
+            var lineFeature = new Feature({
+              geometry: new LineString([pointFeatures[index-1].getGeometry().getCoordinates(), pointFeatures[index].getGeometry().getCoordinates()]),
+              id: shipWaskPastList[index].time
+            });
+            lineFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+            var point = new Feature({
+              geometry: new Point([Number(pointFeatures[index].longitude), Number(pointFeatures[index].latitude)]),
+              name: shipWaskPastList[index].imoNumber,
+              label: shipWaskPastList[index].time
+            });
+            point.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+
             this.shipPastWakeLayer = new VectorLayer({
               name: 'shipPastWakeLayer',
               source: new VectorSource({
-                features: [pointFeature]
+                features: [lineFeature]
               }),
-              style: new Style({
-                image: new RegularShape({
-                  fill: fill,
-                  stroke: stroke,
-                  points: 3,
-                  radius: 8,
-                  angle: 5,
-                }),
-              })
+              style: this.stylePast
             });
+
             this.map.addLayer(this.shipPastWakeLayer);
           })
         })
       }
       isPastVesselTracks._value = false;
+    },
+    stylePast: function (feature, resolution) {
+      const geometry = feature.getGeometry();
+      const styles = [
+        // linestring
+        new Style({
+          stroke: new Stroke({
+            color: '#32d218',
+            width: 4,
+          }),
+        }),
+      ];
+
+      if (resolution < 40) {
+        geometry.forEachSegment(function (start, end) {
+          const dx = end[0] - start[0];
+          const dy = end[1] - start[1];
+          const rotation = Math.atan2(dy, dx);
+          styles.push(
+            new Style({
+              geometry: new Point(end),
+              text: new Text({
+                text: feature.values_.id,
+                offsetX: 80,
+                offsetY: 20,
+                fill: new Fill({color: 'black'}),
+                stroke: new Stroke({color: 'white', width: 2}),
+                font: 'bold 10px sans-serif',
+              }),
+              image: new Icon({
+                src: import.meta.env.DEV ? 'src/assets/images/shipicons/arrow.png' : '/assets/images/shipicons/arrow.png',
+                anchor: [0.5, 0.5],
+                rotateWithView: true,
+                rotation: -rotation,
+              }),
+              zIndex: 100,
+            }),
+          );
+        });
+      }
+
+
+      return styles;
     },
     aisData: function() {
       getAisData().then((data) => {
@@ -724,23 +721,5 @@ export default {
   position: fixed;
   width: 100%;
   height: 100%;
-}
-.menuBar {
-  width: 100%;
-  height: 25px;
-  background: #82837f96;
-}
-.menuBar select {
-  -webkit-appearance: listbox;
-  border-style: solid;
-  background: #82837f96;
-}
-.menuBar select option {
-  background: #82837f96;
-}
-.menuTable {
-  display: inline-block;
-  float: right;
-  margin-right: 1em;
 }
 </style>

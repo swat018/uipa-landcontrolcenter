@@ -583,7 +583,7 @@ watch(isPastVesselTracks, (value) => {
 <style scoped>
 .popupLayout {
   position: absolute;
-  top: 15px;
+  top: 35px;
   z-index: 999;
   left: 15px;
   height: calc(100% - 24px);
