@@ -18,6 +18,7 @@ import { getShipData, getShipWakePast } from '@/api/worldMap'
 import { LineString } from 'ol/geom'
 
 import shipIcon from '@/assets/images/shipicons/shipIcon_green.png'
+import arrowIcon from '@/assets/images/shipicons/arrow.png'
 
 
 // const urlBefore = 'http://navioncorp.asuscomm.com:8080/TileMap/'
@@ -88,8 +89,6 @@ export default {
           course: shipData.course
         });
         pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
-
-        console.log(pointFeature)
 
         this.shipLayer = new VectorLayer({
           name: 'shipLayer',
@@ -198,7 +197,7 @@ export default {
                 font: 'bold 10px sans-serif',
               }),
               image: new Icon({
-                src: import.meta.env.DEV ? 'src/assets/images/shipicons/arrow.png' : '/assets/images/shipicons/arrow.png',
+                src: arrowIcon,
                 anchor: [0.5, 0.5],
                 rotateWithView: true,
                 rotation: -rotation,

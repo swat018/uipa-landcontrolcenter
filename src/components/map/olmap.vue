@@ -29,9 +29,10 @@ import { LineString } from 'ol/geom'
 // const urlAfter = '/{z}/{x}/{-y}.png?v='+ Math.random();
 const urlBefore = import.meta.env.VITE_TILE_MAP_URL + '/';
 const urlAfter = '/{z}/{x}/{-y}.png';
+
 import shipIcon from '@/assets/images/shipicons/shipIcon_green.png'
 import selectShipIcon from '@/assets/images/shipicons/shipIcon_yellow.png'
-
+import arrowIcon from '@/assets/images/shipicons/arrow.png'
 
 export default {
   name: "olmap",
@@ -479,7 +480,7 @@ export default {
                 font: 'bold 10px sans-serif',
                 }),
               image: new Icon({
-                src: import.meta.env.DEV ? 'src/assets/images/shipicons/arrow.png' : '/assets/images/shipicons/arrow.png',
+                src: arrowIcon,
                 anchor: [0.5, 0.5],
                 rotateWithView: true,
                 rotation: -rotation,
