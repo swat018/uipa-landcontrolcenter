@@ -9,7 +9,7 @@ import XYZ from 'ol/source/XYZ'
 import LayerGroup from 'ol/layer/Group'
 import VectorSource from 'ol/source/Vector'
 import { defaults as defaultControls } from 'ol/control'
-import { transform } from 'ol/proj'
+import { fromLonLat, transform } from 'ol/proj'
 import VectorLayer from 'ol/layer/Vector'
 import { Style, Icon, Fill, Stroke, RegularShape, Text } from 'ol/style'
 import Feature from 'ol/Feature'
@@ -29,6 +29,10 @@ import { LineString } from 'ol/geom'
 // const urlAfter = '/{z}/{x}/{-y}.png?v='+ Math.random();
 const urlBefore = import.meta.env.VITE_TILE_MAP_URL + '/';
 const urlAfter = '/{z}/{x}/{-y}.png';
+
+import shipIcon from '@/assets/images/shipicons/shipIcon_green.png'
+import selectShipIcon from '@/assets/images/shipicons/shipIcon_yellow.png'
+import arrowIcon from '@/assets/images/shipicons/arrow.png'
 
 export default {
   name: "olmap",
@@ -84,9 +88,11 @@ export default {
       this.map = new Map({
         target: "map",
         view: new View({
-          center: transform([128.100, 36.000], 'EPSG:4326', 'EPSG:3857'),
-          zoom: 2,
-          minZoom: 2, // 최소 줌 설정
+          // center: transform([128.100, 36.000], 'EPSG:4326', 'EPSG:3857')
+          center:fromLonLat([128.100,36.000]),
+          zoom: 4,
+          //zoom: 7,
+          maxResolution: 21600,
           constrainResolution: true,
         }),
         controls: defaultControls({
@@ -185,7 +191,7 @@ export default {
         if(e.selected[0].values_.layer === 'shipLayer') {
           e.selected[0].setStyle(new Style({
             image: new Icon({
-              src: import.meta.env.DEV ? 'src/assets/images/shipicons/shipIcon_yellow.png' : '/assets/images/shipicons/shipIcon_yellow.png',
+              src: selectShipIcon,
               scale: 0.2,
               anchor: [0.5, 0.5],
               rotateWithView: true,
@@ -377,7 +383,7 @@ export default {
             }),
             style: new Style({
               image: new Icon({
-                src: import.meta.env.DEV ? 'src/assets/images/shipicons/shipIcon_green.png' : '/assets/images/shipicons/shipIcon_green.png',
+                src: shipIcon,
                 scale: 0.2,
                 anchor: [0.5, 0.5],
                 rotateWithView: true,
@@ -474,7 +480,7 @@ export default {
                 font: 'bold 10px sans-serif',
                 }),
               image: new Icon({
-                src: import.meta.env.DEV ? 'src/assets/images/shipicons/arrow.png' : '/assets/images/shipicons/arrow.png',
+                src: arrowIcon,
                 anchor: [0.5, 0.5],
                 rotateWithView: true,
                 rotation: -rotation,
