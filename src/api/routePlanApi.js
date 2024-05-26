@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-// const baseUrl = 'http://192.168.45.158:8080/emapMin'
+//const baseUrl = 'http://192.168.45.158:8080/emapMin'
 const baseUrl = 'http://localhost:8080/emapMin_war'
 
 
@@ -74,12 +74,13 @@ export const getRouteD = (id) => {
   })
 }
 
-export const saveRouteD = (id, a_lon, a_lat) => {
+export const saveRouteD = (id, a_lon, a_lat, cnt) => {
   return axios.get(baseUrl+"/api/route/detailsave",{
     params: {
       id: id,
       arr_lon: a_lon,
-      arr_lat: a_lat
+      arr_lat: a_lat,
+      cnt: cnt
     }}).then((response) => {
     if (response.data.length != 0) {
       const result = response.data;
