@@ -88,12 +88,9 @@ export default {
       this.map = new Map({
         target: "map",
         view: new View({
-          // center: transform([128.100, 36.000], 'EPSG:4326', 'EPSG:3857')
           center:fromLonLat([128.100,36.000]),
           zoom: 4,
-          //zoom: 7,
           maxResolution: 21600,
-          constrainResolution: true,
         }),
         controls: defaultControls({
           attribution: false,
@@ -502,7 +499,7 @@ export default {
       console.log(vesselTrackStatus._value, isPastVesselTracks._value)
 
       if(vesselTrackStatus._value === true) {
-        getShipWakePast(clickedShipInfo.value.imoNumber, startDate._value, endDate._value).then((response) => {
+        getShipWakePast(clickedShipInfo.value.imoNumber, startDate._value, endDate._value).then((response) => {wn
           var shipWaskPastList = response.data.data;
           if(response.data.data === null) return;
 

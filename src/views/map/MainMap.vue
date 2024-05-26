@@ -16,7 +16,18 @@
 
     <!-- 배경맵 선택 -->
     <div class="menuBar" style="background-color:rgba(4,82,137,0.3); position: absolute">
-      <table class="menuTable">
+      <table class="menuTable-0" >
+        <tr>
+          <td>
+            <input type="radio" id="checkWind" name="weatherOption" class="customRadio"> 풍향/풍속
+            <input type="radio" id="checkFlow" name="weatherOption" class="customRadio"> 유향/유속
+            <input type="radio" id="checkWave" name="weatherOption" class="customRadio"> 파향/파주기
+            <input type="radio" id="checkTempair" name="weatherOption" class="customRadio"> 기온
+            <input type="radio" id="checkTempwater" name="weatherOption" class="customRadio"> 수온
+          </td>
+        </tr>
+      </table>
+      <table class="menuTable-1">
         <tr>
           <td width="20px"></td>
           <td>
@@ -38,6 +49,7 @@
           </td>
         </tr>
       </table>
+
     </div>
   </div>
 </template>
@@ -173,7 +185,13 @@ watch(isPastVesselTracks, (value) => {
 .menuBar select option {
   background: #82837f96;
 }
-.menuTable {
+.menuTable-0 {
+  padding-left: 1em;
+  display: inline-block;
+  float: left;
+  margin-right: 1em;
+}
+.menuTable-1 {
   display: inline-block;
   float: right;
   margin-right: 1em;
