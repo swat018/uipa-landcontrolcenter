@@ -1,6 +1,7 @@
 import axios from 'axios'
 
-const baseUrl = 'http://192.168.45.158:8080/emapMin'
+// const baseUrl = 'http://192.168.45.158:8080/emapMin'
+const baseUrl = 'http://localhost:8080/emapMin_war'
 
 
 

@@ -185,7 +185,7 @@ watch(isPastVesselTracks, (value) => {
 
 function getRouteplan() {
       getPlanList().then((response) => {
-        routelist.value = response 
+        routelist.value = response
         console.log(routelist);
         openRoutePopup();
       });

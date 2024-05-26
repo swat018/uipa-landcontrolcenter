@@ -37,7 +37,7 @@
             <colgroup><col width="96"><col width="96"><col width="96"><col width="96"><col width="32"><col width="32"></colgroup>
             <tbody>
               <tr>
-                <th class="text-center">항로계획명</th><th colspan="5"><input v-model="txt_routenm" placeholder="항로계획명을 입력하세요">{{txt_routenm}}</th>
+                <th class="text-center">항로계획명</th><th colspan="5"><input v-model="routeMaster.routename" placeholder="항로계획명을 입력하세요"></th>
               </tr>
               <tr>
                 <th class="text-center">편집자</th><th><input v-model="makename" placeholder="편집자명을 입력하세요"></th>
@@ -60,9 +60,7 @@ import { storeToRefs } from 'pinia'
 import { useRouteStore } from '@/stores/routeStore'
 
 const routeStore = useRouteStore()
-const { routelist } = storeToRefs(routeStore);
-
-
+const { routelist, routeMaster } = storeToRefs(routeStore);
 
 const props = defineProps({
   isRouteShow: {
@@ -71,16 +69,21 @@ const props = defineProps({
   }
 })
 
+let a = ref('')
+
 const emit = defineEmits(['closePopup'])
+
+watch(routeMaster, (val) => {
+  a.value = routeMaster.value.routename
+})
+
 const closePopup = () => {
   emit('closePopup')
   emitter.emit('closePopupMenu')
 }
 
 const route_choice = (id) => {
-  const result = routeStore.fetchRouteInfoById(id)
-  this.txt_routenm = result[0].routename
-  console.log(result);
+  routeStore.fetchRouteInfoById(id)
 }
 
 const route_reset = () => {

@@ -25,10 +25,8 @@ export const useRouteStore = defineStore(
 
         const fetchRouteInfoById = async (id) => {
             const result = await getRouteInfoById(id)
-            console.log(result)
-            return result
+            routeMaster.value = result[0];
         }
-
         return {
             routeMaster,
             routeDetail,

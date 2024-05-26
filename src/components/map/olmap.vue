@@ -50,7 +50,7 @@ export default {
     imoNumbers: [],
     isClick: false,
   }),
-  props: [ 'propsdata', 'isShow', 'vesselTrack', 'startDate', 'endDate', 'isPastVesselTracks', 'layerMode', 'layerBright' ],
+  props: [ 'propsdata', 'isShow', 'isRouteShow', 'vesselTrack', 'startDate', 'endDate', 'isPastVesselTracks', 'layerMode', 'layerBright' ],
   watch: {
     propsdata: function() {
       this.imoNumbers = this.propsdata;
@@ -58,6 +58,11 @@ export default {
     },
     isShow: function() {
       if (this.isShow === false) {
+        this.setShipLayer();
+      }
+    },
+    isRouteShow: function() {
+      if (this.isRouteShow === false) {
         this.setShipLayer();
       }
     },
