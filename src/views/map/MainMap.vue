@@ -211,13 +211,11 @@ watch(isPastVesselTracks, (value) => {
   console.log(value);
 })
 
-function getRouteplan() {
-      getPlanList().then((response) => {
-        routelist.value = response
-        console.log(routelist);
-        openRoutePopup();
-      });
-    }
+const getRouteplan = () => {
+  openRoutePopup()
+  routeplanStore.getRouteList()
+}
+
 </script>
 
 <style scoped>

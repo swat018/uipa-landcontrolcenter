@@ -45,6 +45,8 @@ export default {
     aisAtonLayer: VectorLayer,
     aisBasestationLayer: VectorLayer,
     aisClassLayer: VectorLayer,
+    routePLayer: VectorLayer,
+    routeLLayer: VectorLayer,
     mapTypeId: String,
     map: null,
     imoNumbers: [],
