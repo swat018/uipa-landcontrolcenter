@@ -65,7 +65,7 @@
       <table class="menuTable-2">
         <tr>
           <td>
-            <select id="brightSelect" v-model="layerBright" style='background-color: rgba(4,82,137,0.5); color: white'>
+            <select id="brightSelect" v-model="layerBright">
               <option value='Day' selected>Day</option>
               <option value='Dusk'>Dusk</option>
               <option value='Night'>Night</option>
@@ -75,7 +75,7 @@
           <td width="5px">
           </td>
           <td>
-            <select id="modeSelect" v-model="layerMode" style='background-color: rgba(4,82,137,0.5); color: white'>
+            <select id="modeSelect" v-model="layerMode">
               <option value='Base' selected>Base</option>
               <option value='Standard'>Standard</option>
               <option value='Full'>Full</option>
@@ -278,6 +278,10 @@ function getRouteplan() {
   align-content: center;
   height: 30px;
 }
+.menuTable-1 button {
+  margin: 0;
+  display: inline-table;
+}
 
 .menuTable-2 {
   display: inline-block;
@@ -294,9 +298,9 @@ function getRouteplan() {
 }
 .menuTable-2 select {
   display: inline-table;
+  height: 30px;
+  background-color: rgba(4,82,137,0.5);
+  color: white;
 }
-.menuTable-2 button {
-  margin: 0;
-  display: inline-table;
-}
+
 </style>
