@@ -20,23 +20,52 @@
     <div class="menuBar" style="background-color:rgba(4,82,137,0.3); position: absolute">
       <table class="menuTable-0" >
         <tr>
+          <td style="display: flex">
+            <input type="radio" id="checkWind" name="weatherOption" class="customRadio">&nbsp; <p>풍향/풍속</p> &nbsp;
+            <input type="radio" id="checkFlow" name="weatherOption" class="customRadio">&nbsp; <p>유향/유속</p> &nbsp;
+            <input type="radio" id="checkWave" name="weatherOption" class="customRadio">&nbsp; <p>파향/파주기</p> &nbsp;
+            <input type="radio" id="checkTempair" name="weatherOption" class="customRadio">&nbsp; <p>기온</p> &nbsp;
+            <input type="radio" id="checkTempwater" name="weatherOption" class="customRadio">&nbsp; <p>수온</p> &nbsp;
+          </td>
+          <td width="10px"></td>
           <td>
-            <input type="radio" id="checkWind" name="weatherOption" class="customRadio"> 풍향/풍속
-            <input type="radio" id="checkFlow" name="weatherOption" class="customRadio"> 유향/유속
-            <input type="radio" id="checkWave" name="weatherOption" class="customRadio"> 파향/파주기
-            <input type="radio" id="checkTempair" name="weatherOption" class="customRadio"> 기온
-            <input type="radio" id="checkTempwater" name="weatherOption" class="customRadio"> 수온
+            <div id="weatherTime"></div>
+          </td>
+          <td width="2px"></td>
+          <td>
+            <div>
+              <input type="date" id="selectDate" style="appearance: none; border: none; background-color: black; color:white">
+            </div>
+          </td>
+          <td width="10px"></td>
+          <td>
+            <table>
+              <tr height="2px"><td></td></tr>
+              <tr>
+                <td>
+                  <button id="timeMinus12" style="background-color: black; color: white; border-width: 1px; border-style: solid; border-color: white">&nbsp; << &nbsp;</button>
+                  <button id="timeMinus3" style="background-color: black; color: white; border-width: 1px; border-style: solid; border-color: white">&nbsp; < &nbsp;</button>
+                  <button id="timeNow" style="background-color: black; color: white; border-width: 1px; border-style: solid; border-color: white">&nbsp;현재&nbsp;</button>
+                  <button id="timePlus3" style="background-color: black; color: white; border-width: 1px; border-style: solid; border-color: white">&nbsp; > &nbsp;</button>
+                  <button id="timePlus12" style="background-color: black; color: white; border-width: 1px; border-style: solid; border-color: white">&nbsp; >> &nbsp;</button>
+                </td>
+              </tr>
+            </table>
           </td>
         </tr>
+
       </table>
       <table class="menuTable-1">
         <tr>
           <td>
-            <button @click="getRouteplan()">항로계획</button>
+            <button @click="getRouteplan()"> 항로계획 &nbsp;</button>
           </td>
-          <td width="20px"></td>
+        </tr>
+      </table>
+      <table class="menuTable-2">
+        <tr>
           <td>
-            <select id="brightSelect" v-model="layerBright" style='background-color: black; color: white'>
+            <select id="brightSelect" v-model="layerBright" style='background-color: rgba(4,82,137,0.5); color: white'>
               <option value='Day' selected>Day</option>
               <option value='Dusk'>Dusk</option>
               <option value='Night'>Night</option>
@@ -46,7 +75,7 @@
           <td width="5px">
           </td>
           <td>
-            <select id="modeSelect" v-model="layerMode" style='background-color: black; color: white'>
+            <select id="modeSelect" v-model="layerMode" style='background-color: rgba(4,82,137,0.5); color: white'>
               <option value='Base' selected>Base</option>
               <option value='Standard'>Standard</option>
               <option value='Full'>Full</option>
@@ -54,7 +83,6 @@
           </td>
         </tr>
       </table>
-
     </div>
   </div>
 </template>
@@ -198,7 +226,7 @@ function getRouteplan() {
 }
 .menuBar {
   width: 100%;
-  height: 25px;
+  height: 32px;
   background: #82837f96;
 }
 .menuBar select {
@@ -215,9 +243,60 @@ function getRouteplan() {
   float: left;
   margin-right: 1em;
 }
+.menuTable-0 tr {
+  display: flex;
+  align-content: center;
+}
+.menuTable-0 td {
+  display: flex;
+  align-content: center;
+}
+.menuTable-0 input {
+  margin: 0;
+  padding: 0 1em;
+  display: inline-table;
+}
+.menuTable-0 p {
+  margin: 0;
+  display: inline-table;
+}
+
+.menuTable-0 button {
+  margin: 0;
+  display: inline-table;
+}
+
 .menuTable-1 {
+  display: inline-block;
+}
+.menuTable-1 tr {
+  display: flex;
+  align-content: center;
+}
+.menuTable-1 td {
+  display: flex;
+  align-content: center;
+  height: 30px;
+}
+
+.menuTable-2 {
   display: inline-block;
   float: right;
   margin-right: 1em;
+}
+.menuTable-2 tr {
+  display: flex;
+  align-content: center;
+}
+.menuTable-2 td {
+  display: flex;
+  align-content: center;
+}
+.menuTable-2 select {
+  display: inline-table;
+}
+.menuTable-2 button {
+  margin: 0;
+  display: inline-table;
 }
 </style>
