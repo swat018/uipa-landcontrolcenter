@@ -4,6 +4,7 @@
         <!-- 지도 컴포넌트 -->
         <OlMap :propsdata="imoNumberList"
                :isShow="isShow"
+               :isRouteShow="isRouteShow"
                :vesselTrack="vesselTrackStatus"
                :startDate="startDate" :endDate="endDate" :isPastVesselTracks="isPastVesselTracks"
                :layerBright="layerBright" :layerMode="layerMode"
@@ -12,12 +13,16 @@
 
     <!-- 팝업 컴포넌트 -->
     <PopupLayout ref="popupLayout" v-model="isShow" :isShow="isShow" @closePopup="isShow = false" ></PopupLayout>
+    <PopupRoute ref="popupRoute" v-model="isRouteShow" :isRouteShow="isRouteShow" @closePopup="isRouteShow = false" ></PopupRoute>
     <PopupMenu class="popMenu" ref="popupMenu"></PopupMenu>
 
     <!-- 배경맵 선택 -->
     <div class="menuBar" style="background-color:rgba(4,82,137,0.3); position: absolute">
       <table class="menuTable">
         <tr>
+          <td>
+            <button @click="getRouteplan()">항로계획</button>
+          </td>
           <td width="20px"></td>
           <td>
             <select id="brightSelect" v-model="layerBright" style='background-color: black; color: white'>
@@ -48,6 +53,8 @@ import { ref, inject, watch, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from "@/stores/authStore";
 import { useMapStore } from '@/stores/mapStore'
+import { useRouteStore } from '@/stores/routeStore'
+import { getPlanList } from '@/api/routePlanApi'
 import { changeShipByImoNumber } from '@/api/worldMap.js'
 import emitter from '@/composables/eventbus.js'
 import OlMap from "@/components/map/OlMap.vue";
@@ -56,22 +63,33 @@ import OlMap from "@/components/map/OlMap.vue";
  * 팝업 레이아웃 import
  */
 import PopupLayout from "@/views/map/popup/PopupLayout.vue";
-import PopupMenu from '@/views/map/popup/PopupMenu.vue'
+import PopupMenu from '@/views/map/popup/PopupMenu.vue';
+import PopupRoute from "@/views/map/popup/PopupRoute.vue";
 
 const authStore = useAuthStore()
 const { userInfo } = storeToRefs(authStore)
 const mapStore = useMapStore()
 const { clickedShipInfo, imoNumberList, vesselTrackStatus, startDate, endDate, isPastVesselTracks, layerBright, layerMode } = storeToRefs(mapStore)
 
+const routeplanStore = useRouteStore()
+const { routeMaster, routeDetail, routelist } = storeToRefs(routeplanStore)
+
 const popupLayout = ref(null)
 const popupMenu = ref(null)
+const popupRoute = ref(null)
 const isShow = ref(false)
+const isRouteShow = ref(false)
 
 
 
 const openPopup = () => {
   isShow.value = true;
   return isShow.value;
+}
+
+const openRoutePopup = () => {
+  isRouteShow.value = true;
+  return isRouteShow.value;
 }
 
 // onMounted(() => {
@@ -153,7 +171,13 @@ watch(isPastVesselTracks, (value) => {
   console.log(value);
 })
 
-
+function getRouteplan() {
+      getPlanList().then((response) => {
+        routelist.value = response 
+        console.log(routelist);
+        openRoutePopup();
+      });
+    }
 </script>
 
 <style scoped>
