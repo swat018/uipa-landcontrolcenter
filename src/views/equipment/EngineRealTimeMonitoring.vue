@@ -1,317 +1,424 @@
 <template>
-  <!-- <v-sheet> -->
-  <v-container fluid style="height : 100vh; max-height : calc(100vh - 65px - 48px - 62px - 40px )">
-    <v-sheet class="px-6 py-6  mb-6 rounded-lg" color="#333334">
-      <i-selectbox v-model="equipmentName" :items="equipments" item-title="name" item-value="id" variant="solo-filled"
-        density="compact" return-object class="equipmentSelector" bg-color="#434348" :hide-details="true"></i-selectbox>
+  <v-sheet class="pa-3 rounded-lg mt-6 engine-monitoring-page" color="#333334">
+    <i-selectbox
+      v-model="selectedEngineName"
+      :items="engineKeys"
+      item-title="name"
+      item-value="id"
+      variant="solo-filled"
+      density="compact"
+      return-object
+      class="equipmentSelector"
+      bg-color="#434348"
+      :hide-details="true"
+    ></i-selectbox>
+  </v-sheet>
+
+  <v-sheet class="real-time-container mt-6">
+    <v-sheet class="rounded-lg d-flex flex-column ga-3 justify-center align-center" color="#333334">
+      <div class="text-center">
+        <div class="rh-title">Running Hour</div>
+        <div class="rh-value">
+          {{ selectedEngineData.runningHours }} <span class="unit">h</span>
+        </div>
+      </div>
+
+      <div class="text-center">
+        <div class="rh-title">Power</div>
+        <div class="rh-value">{{ selectedEngineData.power }} <span class="unit">kw</span></div>
+      </div>
+    </v-sheet>
+    <v-sheet class="h-100 rounded-lg" color="#333334">
+      <EChart :option="powerBarOption" autoresize />
+    </v-sheet>
+    <v-sheet class="h-100 rounded-lg" color="#333334" style="grid-column: 3 / 5">
+      <EChart :option="rpmGuageChartOption" autoresize />
     </v-sheet>
 
-    <v-row no-gutters class="mt-4 engine-data-item" style="height : 100vh; max-height : calc(100% / 2)">
-      <v-col cols="6" class="px-1 h-100">
-        <v-row class="h-100">
-          <v-col cols="3" class="h-100">
-            <v-sheet height="100%" class="rounded-lg d-flex flex-column justify-center align-center" color="#333334">
+    <v-sheet
+      class="h-100 justify-center rounded-lg ga-4 pa-6 align-center"
+      color="#333334"
+      style="display: grid; grid-template-columns: 1fr 1fr; grid-column: 5 / 7"
+    >
+      <div class="d-flex flex-column align-center justify-center">
+        <div class="rh-title">Scav.Air Press</div>
+        <div class="rh-value">
+          {{ selectedEngineData.scavAirPress }} <span class="unit">bar</span>
+        </div>
+      </div>
+      <div class="d-flex flex-column align-center justify-center">
+        <div class="rh-title">Scav.Air Temp</div>
+        <div class="rh-value">{{ selectedEngineData.scavAirTemp }} <span class="unit">℃</span></div>
+      </div>
+      <div class="d-flex flex-column align-center justify-center">
+        <div class="rh-title">L.O Inlet Press</div>
+        <div class="rh-value">
+          {{ selectedEngineData.loInletPress }} <span class="unit">bar</span>
+        </div>
+      </div>
+      <div class="d-flex flex-column align-center justify-center">
+        <div class="rh-title">L.O Inlet Temp</div>
+        <div class="rh-value">{{ selectedEngineData.loInletTemp }} <span class="unit">℃</span></div>
+      </div>
+    </v-sheet>
 
-              <div class="rh-title">Engine Running Hour</div>
-              <div class="rh-value">25550 <span>h</span></div>
+    <v-sheet
+      class="h-100 rounded-lg ga-4 pa-6"
+      style="display: grid; grid-template-columns: 1fr 1fr; grid-column: 7 / 9"
+      color="#333334"
+    >
+      <div class="d-flex flex-column justify-center align-center">
+        <div class="rh-title">F.G Mass Flow</div>
+        <div class="rh-value">
+          {{ selectedEngineData.fgMassFlow }} <span class="unit">kg/h</span>
+        </div>
+      </div>
+      <div class="d-flex flex-column justify-center align-center">
+        <div class="rh-title">F.O Inlet Press</div>
+        <div class="rh-value">
+          {{ selectedEngineData.foInletPress }} <span class="unit">bar</span>
+        </div>
+      </div>
+      <div class="d-flex flex-column justify-center align-center">
+        <div class="rh-title">F.O Inlet Temp</div>
+        <div class="rh-value">{{ selectedEngineData.foInletTemp }} <span class="unit">℃</span></div>
+      </div>
+      <div class="d-flex flex-column justify-center align-center">
+        <div class="rh-title">F.O Inlet Viscosity</div>
+        <div class="rh-value">
+          {{ selectedEngineData.foInletVelocity }} <span class="unit">Cst</span>
+        </div>
+      </div>
+    </v-sheet>
 
-              <div class="rh-title">Engine Power</div>
-              <div class="rh-value">1080 <span>kw</span></div>
-            </v-sheet>
-          </v-col>
-          <v-col cols="3" class="h-100">
-            <EChart :option="powerBarOption" autoresize />
-          </v-col>
-          <v-col cols="6" class="h-100">
-            <EChart :option="rpmGuageChartOption" autoresize />
+    <v-sheet class="rounded-lg" style="grid-column: 1 / 3; grid-row: 2 / 3" color="#333334">
+      <EChart :option="turboChargerChartOption" autoresize style="80%" />
+    </v-sheet>
+    <v-sheet class="rounded-lg" style="grid-column: 3 / 9; grid-row: 2 / 3" color="#333334">
+      <EChart :option="cylinderChartOption" autoresize
+    /></v-sheet>
+  </v-sheet>
+
+  <!-- 
+    <v-sheet>
+      <v-container
+        fluid 
+        style="height: 100vh; max-height: calc(100vh - 65px - 24px - 62px - 24px - 62px - 24px)"
+      >
+        <v-row no-gutters class="mt-4 engine-data-item">
+          <v-col cols="6" class="px-1 h-100">
+            <v-row class="h-100">
+              <v-col cols="3" class="h-100">
+                <v-sheet
+                  height="100%"
+                  class="rounded-lg d-flex flex-column ga-3 justify-center align-center"
+                  color="#333334"
+                >
+                  <div class="text-center">
+                    <div class="rh-title">Running Hour</div>
+                    <div class="rh-value">
+                      {{ selectedEngineData.runningHours }} <span class="unit">h</span>
+                    </div>
+                  </div>
+
+                  <div class="text-center">
+                    <div class="rh-title">Power</div>
+                    <div class="rh-value">
+                      {{ selectedEngineData.power }} <span class="unit">kw</span>
+                    </div>
+                  </div>
+                </v-sheet>
+                  <v-sheet class="h-100 rounded-lg" color="#333334">
+                  <EChart :option="powerBarOption" autoresize />
+                </v-sheet>
+                 <v-sheet class="h-100 rounded-lg" color="#333334">
+                  <EChart :option="rpmGuageChartOption" autoresize />
+                </v-sheet>
+              </v-col>
+          <v-col cols="6" class="px-1 py-2 chart-bg h-100">
+            <v-row class="h-100">
+              <v-col class="h-100">
+                <v-sheet
+                  class="h-100 justify-center rounded-lg ga-4 pa-6 align-center"
+                  color="#333334"
+                  style="display: grid; grid-template-columns: 1fr 1fr"
+                >
+                  <div class="d-flex flex-column align-center justify-center">
+                    <div class="rh-title">Scav.Air Press</div>
+                    <div class="rh-value">
+                      {{ selectedEngineData.scavAirPress }} <span class="unit">bar</span>
+                    </div>
+                  </div>
+                  <div class="d-flex flex-column align-center justify-center">
+                    <div class="rh-title">Scav.Air Temp</div>
+                    <div class="rh-value">
+                      {{ selectedEngineData.scavAirTemp }} <span class="unit">℃</span>
+                    </div>
+                  </div>
+                  <div class="d-flex flex-column align-center justify-center">
+                    <div class="rh-title">L.O Inlet Press</div>
+                    <div class="rh-value">
+                      {{ selectedEngineData.loInletPress }} <span class="unit">bar</span>
+                    </div>
+                  </div>
+                  <div class="d-flex flex-column align-center justify-center">
+                    <div class="rh-title">L.O Inlet Temp</div>
+                    <div class="rh-value">
+                      {{ selectedEngineData.loInletTemp }} <span class="unit">℃</span>
+                    </div>
+                  </div>
+                </v-sheet>
+              </v-col>
+              <v-col>
+                <v-sheet
+                  class="h-100 rounded-lg ga-4 pa-6"
+                  style="display: grid; grid-template-columns: 1fr 1fr"
+                  color="#333334"
+                >
+                  <div class="d-flex flex-column justify-center align-center">
+                    <div class="rh-title">F.G Mass Flow</div>
+                    <div class="rh-value">
+                      {{ selectedEngineData.fgMassFlow }} <span class="unit">kg/h</span>
+                    </div>
+                  </div>
+                  <div class="d-flex flex-column justify-center align-center">
+                    <div class="rh-title">F.O Inlet Press</div>
+                    <div class="rh-value">
+                      {{ selectedEngineData.foInletPress }} <span class="unit">bar</span>
+                    </div>
+                  </div>
+                  <div class="d-flex flex-column justify-center align-center">
+                    <div class="rh-title">F.O Inlet Temp</div>
+                    <div class="rh-value">
+                      {{ selectedEngineData.foInletTemp }} <span class="unit">℃</span>
+                    </div>
+                  </div>
+                  <div class="d-flex flex-column justify-center align-center">
+                    <div class="rh-title">F.O Inlet Viscosity</div>
+                    <div class="rh-value">
+                      {{ selectedEngineData.foInletVelocity }} <span class="unit">Cst</span>
+                    </div>
+                  </div>
+                </v-sheet>
+              </v-col>
+            </v-row>
           </v-col>
         </v-row>
-      </v-col>
-      <!-- L.O TEMP / Press -->
 
-      <v-col cols="6" class="px-1 py-2 chart-bg h-100">
-        <v-row class="h-100">
-          <v-col class="h-100">
-            <v-sheet class="d-flex flex-column h-100 justify-center rounded-lg ga-4" color="#333334">
-              <div class="d-flex flex-wrap justify-space-between">
-                <div>Scav.Air Press</div>
-                <div>0.4 <span>bar</span></div>
-              </div>
-              <div class="d-flex justify-space-between">
-                <div>Scav.Air Temp</div>
-                <div>0.4 <span>℃</span></div>
-              </div>
-              <div class="d-flex justify-space-between">
-                <div>L.O Inlet Press</div>
-                <div>0.4 <span>bar</span></div>
-              </div>
-              <div class="d-flex justify-space-between">
-                <div>L.O Inlet Temp</div>
-                <div>0.4 <span>℃</span></div>
-              </div>
-            </v-sheet>
+        <v-row style="height: 100vh; max-height: calc(100% * 0.6)">
+          <v-col cols="3" class="px-1 py-2 chart-bg">
+            <EChart :option="turboChargerChartOption" autoresize />
           </v-col>
-          <v-col>
-            <v-sheet class="d-flex flex-column h-100 justify-center rounded-lg ga-4" color="#333334">
-              <div class="d-flex flex-column justify-space-between align-center">
-                <div>Scav.Air Press</div>
-                <div>0.4 <span>bar</span></div>
-              </div>
-              <div class="d-flex flex-column justify-space-between align-center">
-                <div>Scav.Air Temp</div>
-                <div>0.4 <span>℃</span></div>
-              </div>
-              <div class="d-flex flex-column justify-space-between align-center">
-                <div>L.O Inlet Press</div>
-                <div>0.4 <span>bar</span></div>
-              </div>
-              <div class="d-flex flex-column justify-space-between align-center">
-                <div>L.O Inlet Temp</div>
-                <div>0.4 <span>℃</span></div>
-              </div>
-            </v-sheet>
+          <v-col cols="9" class="px-1 py-2 chart-bg">
+            <EChart :option="cylinderChartOption" autoresize />
           </v-col>
         </v-row>
-      </v-col>
-    </v-row>
-    <v-row style="height : 100vh; max-height : calc(100% / 2)">
-      <v-col cols="4" class="px-1 py-2 chart-bg">
-        <EChart :option="tcChartOption" autoresize />
-      </v-col>
-      <v-col cols="8" class="px-1 py-2 chart-bg">
-        <EChart :option="rpmOption" autoresize />
-      </v-col>
-
-      <!-- <v-col v-for="i in 8" :key="i" cols="4" class="pa-0">
-      <EChart :option="rpmOption" autoresize />
-    </v-col> -->
-
-      <!-- <div class="engine-data-item d-flex">
-      <div class="running-hour-container d-flex flex-wrap w-100">
-        <div class="runing-hour-item">
-          <div class="rh-title">ME1 Running Hours</div>
-          <div class="rh-value">25550</div>
-        </div>
-        <div class="runing-hour-item">
-          <div class="rh-title">ME2 Running Hours</div>
-          <div class="rh-value">25550</div>
-        </div>
-        <div class="runing-hour-item">
-          <div class="rh-title">ME3 Running Hours</div>
-          <div class="rh-value">25550</div>
-        </div>
-        <div class="runing-hour-item">
-          <div class="rh-title">ME4 Running Hours</div>
-          <div class="rh-value">25550</div>
-        </div>
-      </div>
-    </div>
-    <div class="engine-data-item">
-      <EChart :option="rpmOption" autoresize />
-    </div>
-    <div class="engine-data-item">
-      <EChart :option="rpmOption" autoresize />
-    </div>
-    <div class="engine-data-item">
-      <EChart :option="rpmOption" autoresize />
-    </div>
-    <div class="engine-data-item">
-      <EChart :option="rpmOption" autoresize />
-    </div>
-    <div class="engine-data-item">
-      <EChart :option="rpmOption" autoresize />
-    </div>
-    <div class="engine-data-item">
-      <EChart :option="rpmOption" autoresize />
-    </div>
-    <div class="engine-data-item">
-      <EChart :option="rpmOption" autoresize />
-    </div>
-    <div class="engine-data-item">
-      <EChart :option="rpmOption" autoresize />
-    </div> -->
-
-      <!-- display : grid -->
-      <!-- <div class="container w-100">
-      <div class="d-flex flex-wrap h-3">
-        <div class="item d-flex flex-column justify-center">
-          <div>ME2 Running Hours</div>
-          <div>1550 h</div>
-        </div>
-        <div class="item d-flex flex-column justify-center">
-          <div>ME2 Running Hours</div>
-          <div>1550 h</div>
-        </div>
-        <div class="item d-flex flex-column justify-center">
-          <div>ME2 Running Hours</div>
-          <div>1550 h</div>
-        </div>
-        <div class="item d-flex flex-column justify-center">
-          <div>ME2 Running Hours</div>
-          <div>1550 h</div>
-        </div>
-      </div>
-      <div class="h-3">
-        <EChart :option="rpmOption" autoresize />
-
-      </div>
-      <div class="h-3">
-        <EChart :option="rpmOption" autoresize />
-      </div>
-      <div class="h-3">
-        <EChart :option="rpmOption" autoresize />
-      </div>
-      <div class="h-3">
-        <EChart :option="rpmOption" autoresize />
-      </div>
-      <div class="h-3">
-        <EChart :option="rpmOption" autoresize />
-      </div>
-      <div class="h-3">
-        <EChart :option="rpmOption" autoresize />
-      </div>
-      <div class="h-3">
-        <EChart :option="rpmOption" autoresize />
-      </div>
-      <div class="h-3">
-        <EChart :option="rpmOption" autoresize />
-      </div>
-    </div> -->
-
-
-      <!-- v-row v-col row 1개 -->
-      <!-- <v-container class="fill-height" fluid>
-      <v-row class="fill-height">
-        <v-col cols="4" class="d-flex flex-wrap ga-4">
-          <div class="rh-item d-flex flex-column justify-center align-center ">
-            <div class="rh-title">ME1 Running Hours</div>
-            <div class="rh-value">30</div>
-          </div>
-          <div class="rh-item d-flex flex-column justify-center align-center ">
-            <div class="rh-title">ME2 Running Hours</div>
-            <div class="rh-value">30</div>
-          </div>
-          <div class="rh-item d-flex flex-column justify-center align-center ">
-            <div class="rh-title">ME3 Running Hours</div>
-            <div class="rh-value">30</div>
-          </div>
-          <div class="rh-item d-flex flex-column justify-center align-center ">
-            <div class="rh-title">ME4 Running Hours</div>
-            <div class="rh-value">30</div>
-          </div>
-        </v-col>
-        <v-col cols="4">
-          <EChart :option="rpmOption" autoresize />
-        </v-col>
-        <v-col cols="4">
-          <EChart :option="rpmOption" autoresize />
-        </v-col>
-
-
-        <v-col cols="4">
-          <EChart :option="rpmOption" autoresize />
-        </v-col>
-        <v-col cols="4">
-          <EChart :option="rpmOption" autoresize />
-        </v-col>
-        <v-col cols="4">
-          <EChart :option="rpmOption" autoresize />
-        </v-col>
-
-        <v-col cols="4">
-          <EChart :option="rpmOption" autoresize />
-        </v-col>
-        <v-col cols="4">
-          <EChart :option="rpmOption" autoresize />
-        </v-col>
-        <v-col cols="4">
-          <EChart :option="rpmOption" autoresize />
-        </v-col>
-      </v-row>
-    </v-container> -->
-
-      <!-- v-row v-col row 여러개 -->
-      <!-- <v-container class="h-100" fluid>
-      <v-row style="height : calc(100% / 3)">
-        <v-col class="test" style="display : grid; grid-template-columns : repeat(2, 1fr); gap : 12px">
-          <div class="rh-item d-flex flex-column justify-center align-center ">
-            <div class="rh-title">ME1 Running Hours</div>
-            <div class="rh-value">30</div>
-          </div>
-          <div class="rh-item d-flex flex-column justify-center align-center ">
-            <div class="rh-title">ME2 Running Hours</div>
-            <div class="rh-value">30</div>
-          </div>
-          <div class="rh-item d-flex flex-column justify-center align-center ">
-            <div class="rh-title">ME3 Running Hours</div>
-            <div class="rh-value">30</div>
-          </div>
-          <div class="rh-item d-flex flex-column justify-center align-center ">
-            <div class="rh-title">ME4 Running Hours</div>
-            <div class="rh-value">30</div>
-          </div>
-        </v-col>
-        <v-col>
-          <EChart :option="rpmOption" autoresize />
-        </v-col>
-        <v-col>
-          <EChart :option="rpmOption" autoresize />
-        </v-col>
-      </v-row>
-      <v-row style="height : calc(100% / 3)">
-        <v-col>
-          <EChart :option="rpmOption" autoresize />
-        </v-col>
-        <v-col>
-          <EChart :option="rpmOption" autoresize />
-        </v-col>
-        <v-col>
-          <EChart :option="rpmOption" autoresize />
-        </v-col>
-      </v-row>
-      <v-row style="height : calc(100% / 3)">
-        <v-col>
-          <EChart :option="rpmOption" autoresize />
-        </v-col>
-        <v-col>
-          <EChart :option="rpmOption" autoresize />
-        </v-col>
-        <v-col>
-          <EChart :option="rpmOption" autoresize />
-        </v-col>
-      </v-row>
-    </v-container> -->
-
-      <div>
-
-      </div>
-    </v-row>
-  </v-container>
-  <!-- </v-sheet> -->
+      </v-container>
+    </v-sheet>
+  </v-sheet> -->
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import EChart from '@/components/echart/Echarts.vue'
 
-const powerBarOption = ref({
+import { convertFloatValueFromObject } from '@/composables/util'
+import { useShipStore } from '@/stores/shipStore'
+import { getMonitoring } from '@/api/engineApi'
+
+const shipStore = useShipStore()
+const { selectedShip, shipMachineInfo } = storeToRefs(shipStore)
+
+const SECOND_IN_ONE_MINUTE = 1000 * 60
+let interval = null
+
+let engineKeys = ref(['ME1', 'ME2', 'ME3', 'ME4', 'GE1', 'GE2', 'GE3', 'GE4'])
+
+let selectedEngineName = ref(null)
+
+let engineDataMap = ref(null)
+
+let selectedEngineData = ref({
+  runningHours: 0,
+  power: 0,
+  powerPercent: 0,
+  load: 0,
+  speed: 0,
+  scavAirPress: 0,
+  scavAirTemp: 0,
+  loInletPress: 0,
+  loInletTemp: 0,
+  fgMassFlow: 0,
+  foInletPress: 0,
+  foInletTemp: 0,
+  foInletVelocity: 0,
+  turboChargerDataList: [],
+  cylinderDataList: []
+})
+
+const changeDisplayEngine = async () => {
+  if (!Object.is(engineDataMap, null)) {
+    selectedEngineData.value = engineDataMap.value[selectedEngineName.value]
+
+    powerBarOption.value.series[0].data[0] = selectedEngineData.value.powerPercent
+
+    rpmGuageChartOption.value.series[0].data[0].value = selectedEngineData.value.speed
+    rpmGuageChartOption.value.series[0].data[1].value = selectedEngineData.value.load
+
+    turboChargerChartOption.value.yAxis[0].data = []
+    cylinderChartOption.value.xAxis[0].data = []
+
+    for (let count = 0; count < turboChargerChartOption.value.series.length; ++count) {
+      turboChargerChartOption.value.series[count].data = []
+    }
+
+    for (let count = 0; count < turboChargerChartOption.value.series.length; ++count) {
+      cylinderChartOption.value.series[count].data = []
+    }
+
+    for (let count = 0; count < selectedEngineData.value.turboChargerDataList.length; ++count) {
+      let order = count + 1
+      turboChargerChartOption.value.yAxis[0].data.push('TC' + order)
+    }
+
+    for (let count = 0; count < selectedEngineData.value.cylinderDataList.length; ++count) {
+      let order = count + 1
+      cylinderChartOption.value.xAxis[0].data.push('CYL' + order)
+    }
+
+    for (let count = 0; count < selectedEngineData.value.turboChargerDataList.length; ++count) {
+      turboChargerChartOption.value.series[0].data[count] =
+        selectedEngineData.value.turboChargerDataList[count].speed
+      turboChargerChartOption.value.series[1].data[count] =
+        selectedEngineData.value.turboChargerDataList[count].exhGasInletTemp
+      turboChargerChartOption.value.series[2].data[count] =
+        selectedEngineData.value.turboChargerDataList[count].exhGasOutletTemp
+      turboChargerChartOption.value.series[3].data[count] =
+        selectedEngineData.value.turboChargerDataList[count].exhGasTempDiff
+      turboChargerChartOption.value.series[4].data[count] =
+        selectedEngineData.value.turboChargerDataList[count].pressAirClrOutlet
+    }
+
+    for (let count = 0; count < selectedEngineData.value.cylinderDataList.length; ++count) {
+      cylinderChartOption.value.series[0].data[count] =
+        selectedEngineData.value.cylinderDataList[count].exhGasTemp
+      cylinderChartOption.value.series[1].data[count] =
+        selectedEngineData.value.cylinderDataList[count].pcoTemp
+      cylinderChartOption.value.series[2].data[count] =
+        selectedEngineData.value.cylinderDataList[count].jcwOutTemp
+      cylinderChartOption.value.series[3].data[count] =
+        selectedEngineData.value.cylinderDataList[count].pmax
+      cylinderChartOption.value.series[4].data[count] =
+        selectedEngineData.value.cylinderDataList[count].pcomp
+      cylinderChartOption.value.series[5].data[count] =
+        selectedEngineData.value.cylinderDataList[count].deltaP
+      cylinderChartOption.value.series[6].data[count] =
+        selectedEngineData.value.cylinderDataList[count].pi
+    }
+  }
+}
+
+const clearChart = async () => {
+  selectedEngineData.value = null
+
+  turboChargerChartOption.value.yAxis[0].data = []
+  cylinderChartOption.value.xAxis[0].data = []
+
+  rpmGuageChartOption.value.series[0].data[0].value = 0
+  rpmGuageChartOption.value.series[0].data[1].value = 0
+
+  for (let count = 0; count < turboChargerChartOption.value.series.length; ++count) {
+    turboChargerChartOption.value.series[count].data = []
+  }
+
+  for (let count = 0; count < turboChargerChartOption.value.series.length; ++count) {
+    cylinderChartOption.value.series[count].data = []
+  }
+}
+
+const fetchEngineMonitoringInfo = async () => {
+  let imoNumber = selectedShip.value
+  if (imoNumber) {
+    const response = await getMonitoring(imoNumber)
+
+    if (response.status == 200) {
+      let {
+        data: { data }
+      } = response
+      let result = convertFloatValueFromObject(data)
+      engineKeys.value = Object.keys(data)
+      engineDataMap.value = result
+      selectedEngineName.value = 'ME1'
+
+      changeDisplayEngine()
+
+      clearInteval(interval)
+      interval = setInterval(fetchEngineMonitoringInfo, SECOND_IN_ONE_MINUTE)
+    }
+  } else {
+    clearChart()
+  }
+}
+
+onMounted(() => {
+  fetchEngineMonitoringInfo()
+})
+
+onUnmounted(() => {
+  if (interval != null) {
+    clearInteval(interval)
+    interval = null
+  }
+})
+
+// 선박이 변경 되었을 경우 감지
+watch(selectedShip, fetchEngineMonitoringInfo)
+
+// 엔진이 변경 되었을 경우 감지
+watch(selectedEngineName, changeDisplayEngine)
+
+let powerBarOption = ref({
   grid: {
-    top: '5%',
-    bottom: '5%',
-    left: '15%'
+    top: '12%',
+    bottom: '15%',
+    left: '20%'
   },
   xAxis: {
     type: 'category',
-    data: ['RPM']
+    data: ['Power (%)'],
+    splitLine: {
+      lineStyle: {
+        width: 1,
+        type: 'dashed',
+        color: '#5C5C5E',
+        opacity: 0.5
+      }
+    }
   },
   yAxis: {
     type: 'value',
-    max: 100
+    max: 100,
+    splitLine: {
+      lineStyle: {
+        width: 1,
+        type: 'dashed',
+        color: '#5C5C5E',
+        opacity: 0.5
+      }
+    }
   },
   series: [
     {
-      data: [50],
+      data: [0],
       type: 'bar',
+      label: {
+        show: true,
+        color: '#FFD700',
+        fontSize: '1.25rem',
+        formatter: '{c} %',
+        fontWeight: 'bold'
+      },
       showBackground: true,
       backgroundStyle: {
         color: 'rgba(180, 180, 180, 0.2)'
@@ -320,320 +427,317 @@ const powerBarOption = ref({
   ]
 })
 
-const rpmOption = ref({
-  tooltip: {
-    trigger: 'axis'
-  },
+const rpmGuageChartOption = ref({
   grid: {
-    left: '5%',
-    top: '15%',
-    right: '13%',
-    bottom: '15%',
-    show: false
-  },
-
-  legend: {
-    orient: 'vertical',
-    top: 45,
-    // type: 'scroll',
-    right: 15,
-    // right: 45,
-
-    // padding: 1,
-    // height: 1,
-    itemGap: 6,
-    // // right: 5,
-    // textStyle: {
-    //   fontSize: 5,
-    //   lineHeight: 1,
-    //   height: 1
-    // },
-    data: ['ME1 RPM', 'ME2 RPM', 'ME3 RPM', 'ME4 RPM']
-  },
-  title: {
-    text: "RPM",
-    left: 'left',
-    // top: 10,
-    textStyle: {
-      color: '#fff',
-      fontSize: '16px'
-    }
-  },
-  xAxis: {
-    type: 'category',
-    boundaryGap: false,
-    data: ['13:00', '13:15', '13:30', '13:45', '14:00', '14:15', '14:20', '14:30', '14:45', '15:00', '15:15', '15:30', '15:45', '16:00'],
-    // splitLine: {
-    //   show: true,
-    //   lineStyle: {
-    //     color: '#54565F'
-    //   }
-    // }
-  },
-  yAxis: {
-    type: 'value',
-    splitLine: {
-      lineStyle: {
-        width: 1,
-        type: "dashed",
-        color: "#5C5C5E",
-        opacity: 0.5
-      },
-    },
-    interval: 20,
-    max: 80
+    top: '0%',
+    left: '0%',
+    right: '10%',
+    bottom: '5%'
   },
   series: [
     {
-      name: 'ME1 RPM',
-      type: 'line',
-      smooth: true,
-      center: ['50%', '60%'],
-      data: [50, 55, 53, 52, 50, 52, 53, 50, 55, 53, 52, 50, 52, 53, 55]
-    },
-    {
-      name: 'ME2 RPM',
-      type: 'line',
-      smooth: true,
-      center: ['50%', '60%'],
-      data: [40, 45, 40, 50, 45, 40, 35, 40, 45, 40, 45, 40, 45, 38, 40]
-    },
-    {
-      name: 'ME3 RPM',
-      type: 'line',
-      smooth: true,
-      // center: ['50%', '60%'],
-      data: [60, 55, 65, 60, 65, 60, 55, 60, 65, 55, 60, 65, 60, 65, 60]
-    },
-    {
-      name: 'ME4 RPM',
-      type: 'line',
-      smooth: true,
-      // center: ['50%', '60%'],
-      data: [25, 35, 40, 35, 25, 30, 25, 30, 35, 20, 35, 30, 35, 40, 35]
-    },
+      type: 'gauge',
+      startAngle: 90,
+      endAngle: -270,
+      pointer: {
+        show: false
+      },
+      progress: {
+        show: true,
+        overlap: false,
+        roundCap: true,
+        clip: false,
+        itemStyle: {
+          borderWidth: 1,
+          borderColor: '#464646'
+        }
+      },
+      axisLine: {
+        lineStyle: {
+          width: 20
+        }
+      },
+      splitLine: {
+        show: false,
+        distance: 0,
+        length: 10
+      },
+      axisTick: {
+        show: false
+      },
+      axisLabel: {
+        show: false,
+        distance: 50
+      },
+      data: [
+        {
+          value: 0,
+          name: 'RPM',
+          title: {
+            offsetCenter: ['0%', '-45%'],
+            color: '#5590FF'
+          },
+          detail: {
+            valueAnimation: true,
+            offsetCenter: ['0%', '-15%'],
+            formatter: '{value} rpm',
+            fontSize: '1.5rem',
+            color: '#5590FF'
+          }
+        },
+        {
+          value: 0,
+          name: 'LOAD',
+          title: {
+            offsetCenter: ['0%', '15%'],
+            color: '#FFCF1B'
+          },
+          detail: {
+            valueAnimation: true,
+            offsetCenter: ['0%', '40%'],
+            formatter: '{value} %',
+            color: '#FFCF1B'
+          }
+        }
+      ],
+      title: {
+        fontSize: 14,
+        color: '#fff'
+      },
+      detail: {
+        width: 50,
+        height: 20,
+        fontSize: '1.5rem',
+        color: '#fff',
+        formatter: '{value}%'
+      }
+    }
   ]
 })
 
-const labelOption = {
+const labelOption = ref({
   show: true,
   distance: 15,
   verticalAlign: 'middle',
-  formatter: '{c}  {name|{a}}',
-  fontSize: 16,
+  fontSize: 32,
+  // color: 'rgba(200,81,81,1)',
   rich: {
     name: {}
   }
-};
+})
 
-const tcChartOption = ref({
+let turboChargerChartOption = ref({
   tooltip: {
     trigger: 'axis',
     axisPointer: {
       type: 'shadow'
     }
   },
+  grid: {
+    top: '25%',
+    right: '10%',
+    bottom: '15%'
+  },
   legend: {
-    data: ['RPM', 'LOAD', 'TEMP', 'PRESS']
+    data: [
+      'Speed',
+      'Exh.gas Inlet Temp',
+      'Exh.gas Outlet Temp',
+      'Exh.gas Temp Diff',
+      'Press Air CLR Outlet'
+    ],
+    left: '2%',
+    top: '4%'
   },
   toolbox: {
     show: true,
     orient: 'vertical',
     left: 'right',
-    top: 'center',
+    top: 'center'
   },
   xAxis: [
     {
-      type: 'value'
+      type: 'value',
+      splitLine: {
+        lineStyle: {
+          width: 1,
+          type: 'dashed',
+          color: '#5C5C5E',
+          opacity: 0.5
+        }
+      }
     }
   ],
   yAxis: [
     {
       type: 'category',
       axisTick: { show: false },
-      data: ['TC1', 'TC2']
+      data: []
     }
-
   ],
   series: [
     {
-      name: 'RPM',
+      name: 'Speed',
       type: 'bar',
-      barGap: 0,
-      label: labelOption,
+      barGap: 0.1,
       emphasis: {
         focus: 'series'
       },
-      data: [320, 332]
+      data: []
     },
     {
-      name: 'LOAD',
+      name: 'Exh.gas Inlet Temp',
       type: 'bar',
-      label: labelOption,
       emphasis: {
         focus: 'series'
       },
-      data: [220, 182]
+      data: []
     },
     {
-      name: 'TEMP',
+      name: 'Exh.gas Outlet Temp',
       type: 'bar',
-      label: labelOption,
       emphasis: {
         focus: 'series'
       },
-      data: [150, 232]
+      data: []
     },
     {
-      name: 'PRESS',
+      name: 'Exh.gas Temp Diff',
       type: 'bar',
-      label: labelOption,
       emphasis: {
         focus: 'series'
       },
-      data: [98, 77]
+      data: []
+    },
+    {
+      name: 'Press Air CLR Outlet',
+      type: 'bar',
+      emphasis: {
+        focus: 'series'
+      },
+      data: []
     }
   ]
 })
 
-const rpmGuageChartOption = ref({
+let cylinderChartOption = ref({
+  tooltip: {
+    trigger: 'axis',
+    axisPointer: {
+      type: 'shadow'
+    }
+  },
   grid: {
-    left: '0%',
-    right: '10%',
-    bottom: 0
-  }, series: [
+    left: '5%',
+    right: '2%',
+    bottom: '15%'
+  },
+  legend: {
+    top: '4%',
+    data: [
+      'Exh.Gas Temp (℃)',
+      'P.C.O Temp (℃)',
+      'JCW Out Temp (℃)',
+      'Pmax (bar)',
+      'Pcomp (bar)',
+      '△P (bar)',
+      'Pi (bar)'
+    ]
+  },
+  toolbox: {
+    show: true,
+    orient: 'vertical',
+    left: 'right',
+    top: 'center'
+  },
+  xAxis: [
     {
-      type: 'gauge',
-      center: ['50%', '60%'],
-      startAngle: 200,
-      endAngle: -20,
-      min: 0,
-      max: 60,
-      splitNumber: 12,
-      itemStyle: {
-        color: '#FFAB91'
-      },
-      progress: {
-        show: true,
-        width: 30
-      },
-      pointer: {
-        show: false
-      },
-      axisLine: {
-        lineStyle: {
-          width: 30
-        }
-      },
-      axisTick: {
-        distance: -45,
-        splitNumber: 5,
-        lineStyle: {
-          width: 2,
-          color: '#999'
-        }
-      },
+      type: 'category',
+      axisTick: { show: false },
+      data: [],
       splitLine: {
-        distance: -52,
-        length: 14,
         lineStyle: {
-          width: 3,
-          color: '#999'
+          width: 1,
+          type: 'dashed',
+          color: '#5C5C5E',
+          opacity: 0.5
         }
-      },
-      axisLabel: {
-        distance: -20,
-        color: '#999',
-        fontSize: 16
-      },
-      anchor: {
-        show: false
-      },
-      title: {
-        show: false
-      },
-      detail: {
-        valueAnimation: true,
-        width: '60%',
-        lineHeight: 40,
-        borderRadius: 8,
-        offsetCenter: [0, '-15%'],
-        fontSize: 50,
-        fontWeight: 'bolder',
-        formatter: '{value} °C',
-        color: 'inherit'
-      },
-      data: [
-        {
-          value: 20
+      }
+    }
+  ],
+  yAxis: [
+    {
+      type: 'value',
+      splitLine: {
+        lineStyle: {
+          width: 1,
+          type: 'dashed',
+          color: '#5C5C5E',
+          opacity: 0.5
         }
-      ]
+      }
+    }
+  ],
+  series: [
+    {
+      name: 'Exh.Gas Temp (℃)',
+      type: 'bar',
+      barGap: 0.1,
+      emphasis: {
+        focus: 'series'
+      },
+      data: []
     },
     {
-      type: 'gauge',
-      center: ['50%', '60%'],
-      startAngle: 200,
-      endAngle: -20,
-      min: 0,
-      max: 60,
-      itemStyle: {
-        color: '#FD7347'
+      name: 'P.C.O Temp (℃)',
+      type: 'bar',
+      emphasis: {
+        focus: 'series'
       },
-      progress: {
-        show: true,
-        width: 8
+      data: []
+    },
+    {
+      name: 'JCW Out Temp (℃)',
+      type: 'bar',
+      emphasis: {
+        focus: 'series'
       },
-      pointer: {
-        show: false
+      data: []
+    },
+    {
+      name: 'Pmax (bar)',
+      type: 'bar',
+      emphasis: {
+        focus: 'series'
       },
-      axisLine: {
-        show: false
+      data: []
+    },
+    {
+      name: 'Pcomp (bar)',
+      type: 'bar',
+      emphasis: {
+        focus: 'series'
       },
-      axisTick: {
-        show: false
+      data: []
+    },
+    {
+      name: '△P (bar)',
+      type: 'bar',
+      emphasis: {
+        focus: 'series'
       },
-      splitLine: {
-        show: false
+      data: []
+    },
+    {
+      name: 'Pi (bar)',
+      type: 'bar',
+      emphasis: {
+        focus: 'series'
       },
-      axisLabel: {
-        show: false
-      },
-      detail: {
-        show: false
-      },
-      data: [
-        {
-          value: 20
-        }
-      ]
+      data: []
     }
   ]
 })
-
-const equipments = [
-  {
-    id: 1,
-    name: 'ME1'
-  },
-  {
-    id: 2,
-    name: 'ME2'
-  },
-  {
-    id: 3,
-    name: 'GE1'
-  },
-  {
-    id: 4,
-    name: 'GE2'
-  },
-  {
-    id: 5,
-    name: 'GE3'
-  }
-]
-
-
 </script>
 
 <style lang="scss">
@@ -642,15 +746,13 @@ const equipments = [
 }
 
 .v-card.item {
-  background: #5F5F67
+  background: #5f5f67;
 }
-
 
 .container {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
 }
-
 
 .rh-item {
   background: #333334;
@@ -658,16 +760,18 @@ const equipments = [
 }
 
 .rh-title {
-  font-size: 1.2em;
+  font-size: 1.3em;
+  color: '#bababa';
 }
 
 .rh-value {
-  font-size: 2.5em;
+  font-size: 1.6rem;
   font-weight: bold;
+  color: #5789fe;
 }
 
 .engine-data-item {
-  >div {
+  > div {
     /* flex: 0 1 33.3%; */
     height: calc(100% / 3);
   }
@@ -686,7 +790,16 @@ const equipments = [
   background: #333334;
 }
 
-.chart-bg {
-  // background: #2d2d30;
+.real-time-container {
+  display: grid !important;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: 40% 60%;
+  gap: 24px;
+  height: 100vh;
+  max-height: calc(100vh - 65px - 62px - 24px - 64px - 24px - 24px - 24px - 24px);
+}
+
+.equipmentSelector {
+  width: 10%;
 }
 </style>

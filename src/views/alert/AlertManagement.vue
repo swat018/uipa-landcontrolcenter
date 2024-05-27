@@ -1,15 +1,15 @@
 <template>
   <v-sheet class="ma-6 px-6 rounded-lg tabs-container">
-    <v-tabs v-model="tab" color="#5789FE">
-      <v-tab value="monitoring">ALERT</v-tab>
-      <v-tab value="threshold">THRESHOLD</v-tab>
-      <v-tab value="simulation">HISTORY</v-tab>
+    <v-tabs v-model="tab" class="tabs-button" color="#5789FE">
+      <v-tab value="alertlist">Alert List</v-tab>
+      <v-tab value="threshold">Threshold</v-tab>
+      <v-tab value="history">History</v-tab>
     </v-tabs>
 
     <v-window v-model="tab" class="">
       <!-- Alert Monitoring-->
-      <v-window-item value="monitoring">
-        <AlertMonitoring />
+      <v-window-item value="alertlist">
+        <AlertList />
       </v-window-item>
 
       <!-- THRESHOLD -->
@@ -18,7 +18,7 @@
       </v-window-item>
 
       <!-- Alert History  -->
-      <v-window-item value="simulation">
+      <v-window-item value="history">
         <AlertHistory />
       </v-window-item>
     </v-window>
@@ -27,13 +27,11 @@
 
 <script setup>
 import { ref } from 'vue'
-import AlertMonitoring from '@/views/alert/AlertMonitoring.vue'
-import AlertThreshold from '@/views/alert/AlertThreshold.vue';
+import AlertList from '@/views/alert/AlertList.vue'
+import AlertThreshold from '@/views/alert/AlertThreshold.vue'
 import AlertHistory from '@/views/alert/AlertHistory.vue'
 
 const tab = ref(null)
 </script>
 
-<style>
-
-</style>
+<style></style>

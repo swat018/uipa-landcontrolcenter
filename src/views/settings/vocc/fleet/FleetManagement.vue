@@ -50,7 +50,7 @@
                   <div class="userName">{{ templateOptions.data.name }}</div>
                   <div class="groupName ml-2" v-if="templateOptions.data.fleetName != null"
                     :class="changeColor(templateOptions.data.fleetName)">
-                    {{ templateOptions.data.fleetName}}
+                    {{ templateOptions.data.fleetName }}
                   </div>
                   <div v-else class="groupName ml-2" :class="changeColor(templateOptions.data.fleetName)">선단 없음</div>
                 </div>
@@ -93,7 +93,7 @@ import { ref, onMounted, computed, provide } from 'vue'
 
 import ColTwoLayout from '@/layout/ColTwoLayout.vue'
 import NoSelectShip from '@/components/NoSelectShip.vue'
-import ShipInfoEditForm from '@/views/settings/vocc/ship/form/ShipInfoEditForm.vue'
+import ShipInfoEditByUserForm from '@/views/settings/vocc/ship/form/ShipInfoEditByUserForm.vue'
 import ShipInfoRegisterForm from '@/views/settings/vocc/ship/form/ShipInfoRegisterForm.vue'
 import AppModal from '@/components/modal/AppModal.vue'
 
@@ -231,14 +231,14 @@ const saveShipByFleet = () => {
   const fleetName = selectedFleet.value.name;
   // 기존 선단에 없는 선박 배열
   // 추가된 선박 배열
-  
+
   let newValue;
   let removedValue;
-  
-  if(oldShipKeys){
+
+  if (oldShipKeys) {
     newValue = selectedRowKeys.value.filter(x => !(oldShipKeys.includes(x)))
     removedValue = oldShipKeys.filter(x => !(selectedRowKeys.value.includes(x)))
-  }else{
+  } else {
     newValue = selectedRowKeys.value;
   }
   // 삭제된 배열 
@@ -259,7 +259,7 @@ const saveShipByFleet = () => {
 const currentComponent = ref('NoSelectShip')
 const componentList = {
   NoSelectShip,
-  ShipInfoEditForm,
+  ShipInfoEditByUserForm,
   ShipInfoRegisterForm
 }
 
@@ -301,13 +301,13 @@ const closeConfirmModal = () => {
 /**
  * 선단 삭제 
  */
-const removeFleet = async() => {
+const removeFleet = async () => {
   // if(selectedRowKeys.value.length > 0){
   //   return;
   // }
-  const result  = await fleetStore.removeFleet(selectedFleet.value.id)
-  
-  if(result == 200){
+  const result = await fleetStore.removeFleet(selectedFleet.value.id)
+
+  if (result == 200) {
     setTimeout(() => {
       showModal.value = false;
       const instance = getDxGridInstance(fleetGrid)

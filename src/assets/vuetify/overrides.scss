@@ -1,19 +1,17 @@
-@use "variable.scss" as v;
-
+@use 'variable.scss' as v;
 
 // Container
 .v-application__wrap {
   .v-container {
-    padding: v.$paddingGap
+    padding: v.$paddingGap;
   }
 
-  $switch-inset-track-height : "15px";
+  $switch-inset-track-height: '15px';
 
-  
   .v-card-title {
     padding: 1.5rem;
     height: 88px;
-  
+
     &.tab-title {
       height: 60px;
       font-size: 1rem;
@@ -37,7 +35,10 @@
       padding: 0.75rem 0px;
       height: 64px;
       &.cii-title {
-            height: auto;
+        height: auto;
+      }
+      &.cii-sub-title {
+        height: 50px;
       }
     }
 
@@ -58,16 +59,37 @@
     --v-tabs-height: 62px;
   }
 
+  .tabs-button .v-tab {
+    text-transform: none;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+  }
+
   /*
   * v-table 관련 속성
   */
-  .v-table>.v-table__wrapper>table>tbody>tr>td,
-  .v-table>.v-table__wrapper>table>tbody>tr>th,
-  .v-table>.v-table__wrapper>table>thead>tr>td,
-  .v-table>.v-table__wrapper>table>thead>tr>th,
-  .v-table>.v-table__wrapper>table>tfoot>tr>td,
-  .v-table>.v-table__wrapper>table>tfoot>tr>th {
+  .v-table > .v-table__wrapper > table > tbody > tr > td,
+  .v-table > .v-table__wrapper > table > tbody > tr > th,
+  .v-table > .v-table__wrapper > table > thead > tr > td,
+  .v-table > .v-table__wrapper > table > thead > tr > th,
+  .v-table > .v-table__wrapper > table > tfoot > tr > td,
+  .v-table > .v-table__wrapper > table > tfoot > tr > th {
     padding: 0 1.5rem;
+  }
+
+  .cii-table {
+    &.v-table--density-default.cii-table > .v-table__wrapper > table > tbody > tr > td,
+    &.v-table--density-default.cii-table > .v-table__wrapper > table > thead > tr > th {
+      border-right: 1px solid #ffffff1f;
+    }
+    .v-table > .v-table__wrapper > table > tbody > tr > td,
+    .v-table > .v-table__wrapper > table > tbody > tr > th,
+    .v-table > .v-table__wrapper > table > thead > tr > td,
+    .v-table > .v-table__wrapper > table > thead > tr > th,
+    .v-table > .v-table__wrapper > table > tfoot > tr > td,
+    .v-table > .v-table__wrapper > table > tfoot > tr > th {
+      padding: 0 0.8rem;
+    }
   }
 
   /**
@@ -87,7 +109,7 @@
     min-height: 25px;
   }
 
-  .v-slider.generator-power.v-input--horizontal>.v-input__control {
+  .v-slider.generator-power.v-input--horizontal > .v-input__control {
     min-height: 20px;
     display: flex;
     align-items: center;
@@ -112,7 +134,7 @@
   min-height: 10px;
 }
 
-.v-input input[type=date] {
+.v-input input[type='date'] {
   padding: 8px 15px;
   // cursor: pointer;
 }
@@ -123,11 +145,11 @@
 
 // V-Table
 .v-table__wrapper {
-  border: 1px solid #49494E;
+  border: 1px solid #49494e;
 
   tr {
     &:nth-child(odd) {
-      background-color: #2F2F32;
+      background-color: #2f2f32;
     }
 
     &:nth-child(even) {
@@ -148,12 +170,10 @@
     }
 
     td {
-
       // border-right: 1px solid #49494E;
       :not(:first-child) {
         text-align: center;
       }
-
     }
   }
 }
@@ -162,7 +182,6 @@
 // .v-card{
 //   padding : 8px;
 // }
-
 
 // Tab
 
@@ -187,8 +206,8 @@
 /**
 * Date Picker
 */
-input[type="date"] {
-  border: 1px solid #49494E;
+input[type='date'] {
+  border: 1px solid #49494e;
   padding: 10px 15px;
   border-radius: 8px;
   cursor: default;
@@ -203,7 +222,7 @@ input[type="date"] {
 /**
 * Slider
 */
-.v-slider.v-input--horizontal>.v-input__control {
+.v-slider.v-input--horizontal > .v-input__control {
   min-height: 20px;
 }
 
@@ -218,10 +237,10 @@ input[type="date"] {
 
 .v-slider-thumb__label {
   background: #fff !important;
-  color: #5789FE !important;
+  color: #5789fe !important;
   font-size: 0.825em !important;
   font-weight: 600;
-  width: 45px
+  width: 45px;
 }
 
 .cii-slider .v-slider.v-input--horizontal .v-slider-track__fill {
@@ -230,14 +249,14 @@ input[type="date"] {
 
 .cii-slider .v-slider-thumb__surface.elevation-2 {
   border: 2px solid #fff;
-  color: #5789FE
+  color: #5789fe;
 }
 
 .v-slider-thumb__ripple {
   cursor: pointer;
 }
 
-.v-slider.progressBar.v-input--horizontal>.v-input__control {
+.v-slider.progressBar.v-input--horizontal > .v-input__control {
   min-height: 32px;
   display: flex;
   align-items: center;

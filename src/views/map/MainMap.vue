@@ -2,7 +2,8 @@
   <div class="map-container">
     <div class="map" ref="map">
         <!-- 지도 컴포넌트 -->
-        <OlMap :propsdata="imoNumberList"
+        <OlMap :propsdata="checkedShips"
+               :curSelectedShip="curSelectedShip"
                :isShow="isShow"
                :isRouteShow="isRouteShow"
                :vesselTrack="vesselTrackStatus"
@@ -94,6 +95,7 @@ import { ref, inject, watch, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from "@/stores/authStore";
 import { useMapStore } from '@/stores/mapStore'
+import { useShipStore } from '@/stores/shipStore'
 import { useRouteStore } from '@/stores/routeStore'
 import { getPlanList } from '@/api/routePlanApi'
 import { changeShipByImoNumber } from '@/api/worldMap.js'
@@ -110,10 +112,23 @@ import PopupRoute from "@/views/map/popup/PopupRoute.vue";
 const authStore = useAuthStore()
 const { userInfo } = storeToRefs(authStore)
 const mapStore = useMapStore()
-const { clickedShipInfo, imoNumberList, vesselTrackStatus, startDate, endDate, isPastVesselTracks, layerBright, layerMode } = storeToRefs(mapStore)
+const {
+  clickedShipInfo,
+  imoNumberList,
+  vesselTrackStatus,
+  startDate,
+  endDate,
+  isPastVesselTracks,
+  layerBright,
+  layerMode
+} = storeToRefs(mapStore)
 
 const routeplanStore = useRouteStore()
 const { routeMaster, routeDetail, routelist } = storeToRefs(routeplanStore)
+
+const shipStore = useShipStore()
+const { checkedShips, curSelectedShip } = storeToRefs(shipStore)
+
 
 const popupLayout = ref(null)
 const popupMenu = ref(null)
@@ -133,40 +148,44 @@ const openRoutePopup = () => {
   return isRouteShow.value;
 }
 
-// onMounted(() => {
-//   layerBright.value = 'Day'
-//   layerMode.value = 'Base'
-// });
+const closePopup = () => {
+  isShow.value = false
+}
 
 /**
  * 좌측 사이드바에서 선박 선택했을 때, 선박 imoNumber 전달받는 함수
  * @param {} imoNumbers imoNumber 목록
  */
+const displayShipsOnMap = () => {}
 emitter.on('selectedShip', (imoNumbers) => {
   // alert(imoNumbers)
   // 지도에 선박 표시하는 함수 호출
-  imoNumberList.value = imoNumbers;
-  emitter.emit('imoNumberList', imoNumbers);
+  imoNumberList.value = imoNumbers
+
+  if (clickedShipInfo.value) {
+    if (!imoNumberList.value.includes(clickedShipInfo.value.imoNumber)) {
+      closePopup()
+    }
+  }
+
+  if (imoNumberList.value.length != 0) {
+    emitter.emit('imoNumberList', imoNumbers)
+  }
 })
 
-/**
- * 지도에서 선박 클릭했을 때, 선박 imoNumber 전달받는 함수
- * @param {} imoNumber imoNumber
- */
+const test = () => {
+  // alert(checkedShips.value)
+}
+
 emitter.on('clickShipName', (imoNumber) => {
   clickShip(imoNumber)
 })
 
-/**
- * 지도에서 선박 클릭했을 때, 팝업창 띄우는 함수
- * @param {} imoNumber imoNumber
- */
 const clickShip = async (imoNumber) => {
-
-  await mapStore.fetchShipSummary(imoNumber);
+  await mapStore.fetchShipSummary(imoNumber)
 
   if (clickedShipInfo.value) {
-    const response = openPopup();
+    const response = openPopup()
 
     // 팝업창 띄우는 함수
 
@@ -182,35 +201,37 @@ const clickShip = async (imoNumber) => {
 
 emitter.on('clickTrackStatus', (status) => {
   // console.log(status, clickedShipInfo.value.imoNumber);
-  vesselTrackStatus.value = status;
+  vesselTrackStatus.value = status
 })
 
 emitter.on('inputStartDate', (value) => {
-  startDate.value = value;
+  startDate.value = value
 })
 
 emitter.on('inputEndDate', (value) => {
-  endDate.value = value;
+  endDate.value = value
 })
 
 emitter.on('clickPastVesselTracks', (value) => {
-  isPastVesselTracks.value = value;
+  isPastVesselTracks.value = value
 })
 
 watch(vesselTrackStatus, (value) => {
-  console.log(value);
+  console.log(value)
 })
 
 watch(startDate, (value) => {
-  console.log(value);
+  console.log(value)
 })
 
 watch(endDate, (value) => {
-  console.log(value);
+  console.log(value)
 })
 watch(isPastVesselTracks, (value) => {
-  console.log(value);
+  console.log(value)
 })
+
+watch(checkedShips, displayShipsOnMap)
 
 const getRouteplan = () => {
   openRoutePopup()

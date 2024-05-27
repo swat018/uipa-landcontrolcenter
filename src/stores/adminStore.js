@@ -1,6 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { goPage } from '@/composables/util.js'
+import {
+  updateSettingInformation,
+  getCCTVSetting,
+  getDataSetting,
+  getPopupOpacitySetting
+} from '@/api/settingsApi.js'
 // import { useAxios } from '@/composables/useAxios'
 import {
   registerVocc,
@@ -13,7 +19,7 @@ import {
   getVoccUserListAll,
   getAdminsByVoccId,
   getVoccUser,
-  getVoccInfo,
+  getVoccInfoByVoccId,
   deleteVoccAdmin,
   joinVoccUser,
   deleteVoccUser,
@@ -26,6 +32,7 @@ import {
   updatePresidentAdmin,
   getUsersByVoccId
 } from '@/api/voccApi'
+
 import { useToast } from '@/composables/useToast'
 
 export const useAdminStore = defineStore(
@@ -57,6 +64,24 @@ export const useAdminStore = defineStore(
     // 선사 기초 정보
     const voccInfo = ref()
     const fleetsAndShip = ref([])
+
+    const cctvInterval = ref({
+      key: 'cctvRemoveInterval',
+      valueInt: null,
+      valueString: null
+    })
+
+    const dataInterval = ref({
+      key: 'dataRefreshInterval',
+      valueInt: null,
+      valueString: null
+    })
+
+    const popupOpacity = ref({
+      key: 'popupOpacity',
+      valueInt: null,
+      valueString: null
+    })
 
     const { showResMsg } = useToast()
 
@@ -109,21 +134,13 @@ export const useAdminStore = defineStore(
      * @returns
      */
 
-    const fetchVoccInfo = async () => {
+    const fetchVoccInfoByVoccId = async (voccId) => {
       try {
-        const response = await getVoccInfo()
-        ;({
-          data: { data: voccInfo.value }
-        } = response)
-
-        if (!voccInfo.value.address) {
-          voccInfo.value.address = ''
-        }
-
-        if (!voccInfo.value.ceoName) {
-          voccInfo.value.ceoName = ''
-        }
-        sessionStorage.setItem('voccInfo', JSON.stringify(voccInfo.value))
+        const response = await getVoccInfoByVoccId(voccId)
+        const {
+          data: { data }
+        } = response
+        return data
       } catch (error) {
         const errMsg = error.response.data.errorMsg
         showResMsg(errMsg)
@@ -174,11 +191,18 @@ export const useAdminStore = defineStore(
      * @param {*} param
      * @returns
      */
-    const joinVoccAdmin = async (registerForm) => {
+    const joinVoccAdmin = async (voccId, registerForm) => {
       try {
+        let role
+        if (voccId == 0) {
+          role = 'ROLE_LCC_ADMIN'
+        } else {
+          role = 'ROLE_VOCC_ADMIN'
+        }
+        registerForm.role = role
+
         const response = await registerVocc(registerForm)
         const { status, data } = response
-
         if (status == 200) {
           registerForm.id = data
           registerForm.activated = true
@@ -449,6 +473,65 @@ export const useAdminStore = defineStore(
       }
     }
 
+    const editSettingInformation = async (settingsForm) => {
+      try {
+        console.log('스토어')
+        console.dir(settingsForm)
+        const response = await updateSettingInformation(settingsForm)
+
+        if (response.status == 200) {
+          showResMsg('정보가 수정 되었습니다')
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    const fetchCCTVSetting = async () => {
+      try {
+        const {
+          status,
+          data: { data }
+        } = await getCCTVSetting(cctvInterval.value.key)
+
+        if (status == 200) {
+          cctvInterval.value = data
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    const fetchDataSetting = async () => {
+      try {
+        const {
+          status,
+          data: { data }
+        } = await getDataSetting(dataInterval.value.key)
+
+        if (status == 200) {
+          dataInterval.value = data
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    const fetchPopupOpacitySetting = async () => {
+      try {
+        const {
+          status,
+          data: { data }
+        } = await getPopupOpacitySetting(popupOpacity.value.key)
+
+        if (status == 200) {
+          popupOpacity.value = data
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
     return {
       voccInfo,
       voccsUsers,
@@ -456,8 +539,11 @@ export const useAdminStore = defineStore(
       voccAdminEditForm,
       voccUserInfo,
       fleetsAndShip,
+      dataInterval,
+      cctvInterval,
+      popupOpacity,
       joinVoccAdmin,
-      fetchVoccInfo,
+      fetchVoccInfoByVoccId,
       editVoccInfo,
       changeLogoImage,
       fetchVoccsWithoutAdmin,
@@ -477,7 +563,11 @@ export const useAdminStore = defineStore(
       fetchAdminsByVoccId,
       fetchUsersByVoccId,
       changePresidentAdmin,
-      fetchVoccAdminInfo
+      fetchVoccAdminInfo,
+      editSettingInformation,
+      fetchCCTVSetting,
+      fetchDataSetting,
+      fetchPopupOpacitySetting
     }
   },
   {

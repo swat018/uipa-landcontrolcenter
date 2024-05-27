@@ -47,7 +47,7 @@ emitter.on('changeVisibleMenu', () => {
   isPopMenuVisiable.value = !isPopMenuVisiable.value
 })
 
-emitter.on('closePopupMenu', ()=> {
+emitter.on('closePopupMenu', () => {
   closePopupMenu()
 })
 
@@ -98,7 +98,6 @@ const menus = ref([
 ])
 
 
-
 const dialogVisible = ref(true);
 
 </script>
@@ -119,18 +118,18 @@ const dialogVisible = ref(true);
 .popupMenu {
   position: absolute;
   /* top: 15px; */
-  top : 70px;
+  top: 70px;
   z-index: 999;
   /* left: 560px; */
-  left : 30px;
-  background : #262628
+  left: 30px;
+  background: #262628
 }
 
 .contentsPopup {
   background: #1d1d1e;
 }
 
-.contentsPopup>.v-list-item.v-list-item--active {
+.contentsPopup > .v-list-item.v-list-item--active {
   border-left: 3px solid #5789FE;
 }
 </style>

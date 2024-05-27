@@ -33,6 +33,8 @@ const urlAfter = '/{z}/{x}/{-y}.png';
 import shipIcon from '@/assets/images/shipicons/shipIcon_green.png'
 import selectShipIcon from '@/assets/images/shipicons/shipIcon_yellow.png'
 import arrowIcon from '@/assets/images/shipicons/arrow.png'
+import { getShipInfo } from '@/api/shipApi'
+import { isStausOk } from '@/composables/util'
 
 export default {
   name: "olmap",
@@ -51,11 +53,42 @@ export default {
     imoNumbers: [],
     isClick: false,
   }),
-  props: [ 'propsdata', 'isShow', 'isRouteShow', 'vesselTrack', 'startDate', 'endDate', 'isPastVesselTracks', 'layerMode', 'layerBright' ],
+  props: [ 'propsdata', 'curSelectedShip','isShow', 'isRouteShow', 'vesselTrack', 'startDate', 'endDate', 'isPastVesselTracks', 'layerMode', 'layerBright' ],
   watch: {
     propsdata: function() {
-      this.imoNumbers = this.propsdata;
+      map.getLayers().getArray()
+        .filter(layer => layer.get('name') === 'shipLayer')
+        .forEach(layer => map.removeLayer(layer));
+      map.getLayers().getArray()
+        .filter(layer => layer.get('name') === 'shipWakeLayer')
+        .forEach(layer => map.removeLayer(layer));
+      map.getLayers().getArray()
+        .filter(layer => layer.get('name') === 'shipPastWakeLayer')
+        .forEach(layer => map.removeLayer(layer));
+      this.imoNumbers = [];
+
+      var shipdataList =  this.propsdata;
+      shipdataList.map((shipData) => {
+        this.imoNumbers.push(shipData.imoNumber);
+      });
       this.setShipLayer();
+    },
+    curSelectedShip: async function() {
+      let imoNumber;
+      Object.keys(this.curSelectedShip).forEach((key) => {
+        if (key === 'imoNumber') imoNumber = this.curSelectedShip[key];
+      });
+      this.propsdata.map((shipData) => {
+        if (shipData.imoNumber === imoNumber) {
+          getShipData(imoNumber).then((response) => {
+            if(response.data.data === null) return;
+            var ship = response.data.data;
+            map.getView().setCenter(fromLonLat([Number(ship[0].longitude), Number(ship[0].latitude)]));
+            map.getView().setZoom(4);
+          });
+        }
+      });
+
     },
     isShow: function() {
       if (this.isShow === false) {
@@ -84,10 +117,53 @@ export default {
     this.initMap();
     this.setMapType(this.layerBright, this.layerMode);
     this.$emit('init', map);
+
+    // 오픈레이어스 좌우영역 제한
+    map.on('moveend', function() {
+      let view = map.getView(); // 지도의 뷰
+      // 지도의 크기를 가져옴
+      let mapSize = map.getSize();
+
+      // 화면의 왼쪽 중앙 좌표를 계산
+      let leftCoordinate = map.getCoordinateFromPixel([0, 0]); // 좌측 좌표
+      let rightPixel = mapSize[0]; // 우측 좌표(x)
+      let rightCoordinate = map.getCoordinateFromPixel([rightPixel, 0]); // 화면 좌표를 지도 좌표로 변환
+      // 화면상의 중심 좌표
+      var currentCenter = view.getCenter();
+
+      // 화면상의 중심 좌표와 왼쪽 좌표의 차이 계산
+      var dx = currentCenter[0] - leftCoordinate[0];
+
+      let lonLeft = ol.proj.transform([leftCoordinate[0], 0], 'EPSG:3857', 'EPSG:4326')[0];
+      let lonRight = ol.proj.transform([rightCoordinate[0], 0], 'EPSG:3857', 'EPSG:4326')[0];
+
+      // 경도 제한
+      let newCenter;
+      if (lonLeft < -180 || lonRight > 540) {
+        if (lonLeft < -180) {
+          lonLeft = 360 + (lonLeft % 360);
+
+          newCenter = ol.proj.transform([lonLeft, 0], 'EPSG:4326', 'EPSG:3857');
+          newCenter = [newCenter[0] + dx, currentCenter[1]];
+        } else {
+          lonRight = lonRight % 360;
+
+          newCenter = ol.proj.transform([lonRight, 0], 'EPSG:4326', 'EPSG:3857');
+          newCenter = [newCenter[0] - dx, currentCenter[1]];
+        }
+
+        view.setCenter(newCenter); // 변경된 경도로 지도 중심 재설정
+      }
+    });
+
     this.shipSelectEvent();
     this.vesselTrackCurrent();
     this.vesselTrackPast();
+
+    // ais 정보 시각화
     this.aisData();
+
+    // 기상정보 웹팩 관련 라이브러리 추가
     const bundleScript = document.createElement('script');
     bundleScript.src = '/src/components/map/canvasLayer/bundle.js';
     document.body.appendChild(bundleScript);
@@ -169,7 +245,9 @@ export default {
       this.aisData();
     },
     setShipLayer: function() {
-      map.removeLayer(this.shipLayer);
+      map.getLayers().getArray()
+        .filter(layer => layer.get('name') === 'shipLayer')
+        .forEach(layer => map.removeLayer(layer));
       map.getLayers().getArray()
         .filter(layer => layer.get('name') === 'shipWakeLayer')
         .forEach(layer => map.removeLayer(layer));
@@ -178,8 +256,8 @@ export default {
         .forEach(layer => map.removeLayer(layer));
 
       var temp;
-      if (this.propsdata.length !== 0) {
-        this.propsdata.forEach((imoNumber) => {
+      if (this.imoNumbers.length !== 0) {
+        this.imoNumbers.forEach((imoNumber) => {
           if (temp !== undefined) temp = temp + ',' + imoNumber;
           else temp = imoNumber;
         });
@@ -189,8 +267,7 @@ export default {
     shipSelectEvent: function() {
       var select = new Select({
           condition: singleClick
-      }
-      );
+      });
       map.addInteraction(select);
 
       select.on('select', function(e) {
@@ -205,6 +282,7 @@ export default {
             })
           }));
           emitter.emit('clickShipName', e.selected[0].values_.name);
+
         } else {
           this.setShipLayer();
         }
@@ -367,10 +445,7 @@ export default {
       return lyr;
     },
     shipData: async function(imoNumbers) {
-      const mapStore = useMapStore();
-      await mapStore.fetchShipData(imoNumbers);
       getShipData(imoNumbers).then((response) => {
-        if (response.data.data.length === 0) return;
         var shipDataList = response.data.data;
 
         shipDataList.forEach((shipData) => {

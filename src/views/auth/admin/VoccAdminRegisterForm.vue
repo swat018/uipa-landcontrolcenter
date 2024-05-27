@@ -6,7 +6,7 @@
     <v-card-text class="title-form-container">
       <v-form @submit.prevent v-model="isDisabled">
         <div class="mb-1">선사명</div>
-        <v-autocomplete :items="voccs" item-title="name" item-value="name" placeholder="선사명을 선택해주세요"
+        <v-autocomplete :items="voccs" item-title="name" item-value="id" placeholder="선사명을 선택해주세요"
           v-model="registerForm.voccName" variant="solo-filled" density="compact" bg-color="#434348">
         </v-autocomplete>
         <div class="mb-1">아이디</div>

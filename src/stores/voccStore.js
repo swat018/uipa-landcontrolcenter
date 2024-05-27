@@ -14,7 +14,6 @@ import {
   getAdminsByVoccId,
   getVoccUser,
   getMyVoccInfo,
-  getVoccInfo,
   deleteVoccAdmin,
   joinVoccUser,
   deleteVoccUser,
@@ -105,7 +104,7 @@ export const useVoccStore = defineStore(
 
     const fetchVoccInfo = async (voccId) => {
       try {
-        const response = await getVoccInfo(voccId)
+        const response = await getMyVoccInfo(voccId)
         ;({
           data: { data: voccInfo.value }
         } = response)
@@ -333,9 +332,9 @@ export const useVoccStore = defineStore(
      * @param
      * @returns
      */
-    const getVoccUsers = async () => {
+    const getVoccUsers = async (voccId) => {
       let result
-      await getVoccUserListAll()
+      await getUsersByVoccId(voccId)
         .then((response) => {
           result = response
           voccUsers.value = response

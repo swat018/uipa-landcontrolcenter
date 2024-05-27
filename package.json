@@ -21,7 +21,6 @@
     "mitt": "^3.0.1",
     "moment": "^2.29.4",
     "ol": "^5.3.3",
-    "ol-contextmenu": "^5.4.0",
     "ol-ext": "^4.0.18",
     "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^3.2.1",

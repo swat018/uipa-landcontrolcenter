@@ -1,4 +1,5 @@
 import instance from '@/composables/useAxios.js'
+import { method } from 'lodash'
 
 export const getCiiListByImoNumber = (imoNumber) => {
   return instance({
@@ -43,5 +44,13 @@ export const updateCiiFutureData = (form) => {
     url: '/ship/cii/get-cii-future',
     method: 'POST',
     data: form
+  })
+}
+
+export const getCiiBoundary = (imoNumber) => {
+  return instance({
+    url: '/ship/cii/get-cii-boundary',
+    method: 'GET',
+    params: { imoNumber }
   })
 }

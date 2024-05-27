@@ -132,7 +132,7 @@ onMounted(() => {
   }
 })
 const fetchVoccInformation = async () => {
-  await voccStore.fetchVoccInfo()
+  await voccStore.fetchMyVoccInfo()
   console.dir(voccInfo.value)
 }
 

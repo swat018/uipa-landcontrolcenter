@@ -20,6 +20,8 @@ import AccessLogs from '@/views/settings/logs/AccessLogs.vue'
 import VoccInfoManagement from '@/views/settings/vocc/VoccInfoManagement.vue'
 import TagManagement from '@/views/settings/tag/TagManagement.vue'
 import OperationManagement from '@/views/settings/operation/OperationManagement.vue'
+import SystemManagement from '@/views/superadmin/settings/system/SystemManagement.vue'
+import UserSystemManagement from '@/views/settings/system/UserSystemManagement.vue'
 
 const settingsRoutes = [
   {
@@ -110,10 +112,19 @@ const settingsRoutes = [
         name: 'OperationManagement',
         path: 'operation',
         component: OperationManagement
+      },
+      {
+        name: 'SystemManagement',
+        path: 'system',
+        component: SystemManagement
+      },
+      {
+        name: 'UserSystemManagement',
+        path: 'system/user',
+        component: UserSystemManagement
       }
     ]
   }
 ]
 
 export default settingsRoutes
-

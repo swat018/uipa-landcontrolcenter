@@ -26,9 +26,9 @@ export const getVoccs = () => {
  * @returns
  */
 
-export const getVoccInfo = (voccId) => {
+export const getVoccInfoByVoccId = (voccId) => {
   return instance({
-    url: '/vocc/get-my-basic-info',
+    url: '/vocc/get-basic-info',
     method: 'GET',
     params: { voccId }
   })
@@ -357,6 +357,14 @@ export const getFleetAndShipByVocc = (voccids) => {
     } = response
     const result = convertArray(data)
     return result
+  })
+}
+
+export const getShipsByVoccId = (voccId) => {
+  return instance({
+    url: '/vocc/get-ship-list-by-vocc',
+    method: 'GET',
+    params: { voccId }
   })
 }
 

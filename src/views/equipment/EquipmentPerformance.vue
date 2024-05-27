@@ -1,191 +1,202 @@
 <template>
-  <v-sheet class="performance-container rounded-lg ma-4 pa-4">
-    <div class="title">Main Engine Performance</div>
+  <v-sheet class="performance-container rounded-lg pt-3">
+    <v-sheet class="pa-3 mt-3 mb-6 rounded-lg" color="#333334">
+      <div class="d-flex justify-space-between align-center">
+        <!-- <div class="align-center">Equipment</div> -->
+        <div class="d-flex ga-2">
+          <i-selectbox
+            v-model="selectedEngineName"
+            :items="engineKeys"
+            item-title="name"
+            item-value="id"
+            variant="solo-filled"
+            density="compact"
+            return-object
+            class="equipmentSelector"
+            bg-color="#434348"
+            :hide-details="true"
+          ></i-selectbox>
+          <input class="noticeList-datePicker" type="datetime-local" v-model="startDate" />
+          <input class="noticeList-datePicker" type="datetime-local" v-model="endDate" />
+          <i-btn @click="fetchPeriodEngineData()" text="조회" height="43"></i-btn>
+
+          <i-btn
+            text="항차조회"
+            @click="openVoyagesPopup()"
+            :imoNumber="selectedShip"
+            color="#3D3D40"
+          ></i-btn>
+        </div>
+      </div>
+    </v-sheet>
+
     <v-row no-gutters class="engine-data-item performance-chart">
-      <v-col cols="4" class="pa-0">
-        <EChart :option="loadSpeedrOption">
-
-        </EChart>
+      <v-col cols="4" class="pa-0 pr-3 pb-3">
+        <v-sheet class="h-100 rounded-lg" color="#333334">
+          <EChart :option="loadSpeedrOption"> </EChart>
+        </v-sheet>
       </v-col>
-      <v-col cols="4" class="pa-0">
-        <EChart :option="loadPressOption"></EChart>
-      </v-col>
-
-      <v-col cols="4" class="pa-0">
-        <EChart :option="loadTcOption"></EChart>
+      <v-col cols="4" class="pa-0 px-3 pb-3">
+        <v-sheet class="h-100 rounded-lg" color="#333334">
+          <EChart :option="loadPressOption"></EChart>
+        </v-sheet>
       </v-col>
 
-      <v-col cols="4" class="pa-0">
-        <EChart :option="loadTcSpeedrOption"></EChart>
+      <v-col cols="4" class="pa-0 pl-3 pb-3">
+        <v-sheet class="h-100 rounded-lg" color="#333334">
+          <EChart :option="loadTcOption"></EChart>
+        </v-sheet>
       </v-col>
-      <v-col cols="4" class="pa-0">
-        <EChart :option="loadScavOption" autoresize />
+
+      <v-col cols="4" class="pa-0 pr-3 pt-3">
+        <v-sheet class="h-100 rounded-lg" color="#333334">
+          <EChart :option="loadTcSpeedrOption"></EChart>
+        </v-sheet>
+      </v-col>
+      <v-col cols="4" class="pa-0 px-3 pt-3">
+        <v-sheet class="h-100 rounded-lg" color="#333334">
+          <EChart :option="loadScavOption" autoresize />
+        </v-sheet>
       </v-col>
     </v-row>
   </v-sheet>
+  <VoyagesPopup
+    v-model="isShowPopupModal"
+    :imoNumber="selectedShip"
+    @selectVoyage="updateDate"
+    @close="closeVoyagesPopup"
+  />
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import ShipFilter from '@/components/ShipFilter.vue'
+import { ref, onMounted, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useShipStore } from '@/stores/shipStore'
 
+import moment from 'moment'
 import EChart from '@/components/echart/Echarts.vue'
+import { getEnginePerformanceData } from '@/api/engineApi'
+import { getAllVoyageByImoNumber } from '@/api/voyage.js'
+
+import { convertDateTimeType, convertDateType } from '@/composables/util.js'
+
+import VoyagesPopup from '@/components/voyage/VoyagesPopup.vue'
+
+const startDate = ref(null)
+const endDate = ref(null)
+const equipments = ref(['ME1', 'ME2', 'GE1'])
+const engineKeys = ref()
+let utcStartTime = ''
+let utcEndTime = ''
+
+const shipStore = useShipStore()
+const { selectedShip, shipMachineInfo } = storeToRefs(shipStore)
+
+let selectedEngineName = ref(null)
+onMounted(() => {
+  initFetchData()
+})
+
+const initFetchData = async () => {
+  const today = moment()
+  let parseEndTimeZone = moment.parseZone(today)
+  let sevenDaysAgo = today.subtract(4, 'hours')
+  let parseStartTimeZone = moment.parseZone(sevenDaysAgo)
+  utcStartTime = parseStartTimeZone.toISOString()
+  utcEndTime = parseEndTimeZone.toISOString()
+
+  console.log('초기화')
+  console.log(utcStartTime, utcEndTime)
+  fetchPerformanceData(utcStartTime, utcEndTime)
+}
+
+const convertSeries = (data) => {
+  const loadPressSeries = []
+  for (let i = 0; i < data.length; i++) {
+    const loadPressList = data[i]
+    loadPressSeries.push({
+      symbolSize: 10,
+      data: loadPressList.dataList,
+      name: loadPressList.dataName,
+      type: 'scatter'
+    })
+  }
+
+  return loadPressSeries
+}
+const fetchPerformanceData = async (utcStartTime, utcEndTime) => {
+  let periodForm = {
+    imoNumber: selectedShip.value,
+    startTime: utcStartTime,
+    endTime: utcEndTime,
+    intervalHours: 0
+  }
+
+  console.log('요청')
+  console.dir(periodForm)
+  const response = await getEnginePerformanceData(periodForm)
+
+  console.log('응답')
+  console.dir(response)
+
+  engineKeys.value = Object.keys(response.data.data)
+  selectedEngineName.value = engineKeys.value[0]
+
+  const {
+    data: { data }
+  } = response
+  // 로드율 차트
+  loadSpeedrOption.value.series[0].data = data.ME1.LOAD_SPEED[0].dataList
+  loadPressOption.value.series = convertSeries(data.ME1.LOAD_PRESS)
+  loadTcOption.value.series = convertSeries(data.ME1.LOAD_TC_GAS)
+  loadTcSpeedrOption.value.series[0].data = data.ME1.LOAD_TC_SPEED[0].dataList
+  loadScavOption.value.series[0].data = data.ME1.LOAD_SCAV_AIR_PRESSURE[0].dataList
+  // }
+
+  startDate.value = convertDateTimeType(utcStartTime)
+  endDate.value = convertDateTimeType(utcEndTime)
+}
 
 const loadSpeedrOption = ref({
   title: {
     text: 'Load - Speed',
-    top : '2%',
-    left: 'cebter',
+    top: '5%',
+    left: 'center',
     textStyle: {
       color: '#fff'
     }
-
   },
-  xAxis: { interval: 25,
+  xAxis: {
+    interval: 25,
     splitLine: {
       lineStyle: {
         width: 1,
-        type: "dashed",
-        color: "#5C5C5E",
+        type: 'dashed',
+        color: '#5C5C5E',
         opacity: 0.5
-      },
-    }, },
+      }
+    }
+  },
   yAxis: {
     splitLine: {
       lineStyle: {
         width: 1,
-        type: "dashed",
-        color: "#5C5C5E",
+        type: 'dashed',
+        color: '#5C5C5E',
         opacity: 0.5
-      },
-    },
+      }
+    }
   },
   legend: {
     data: ['Load-Speed'],
-    right : '10%',
-    bottom : '5%'
+    right: '10%',
+    bottom: '5%'
   },
   series: [
     {
       name: 'Load-Speed',
       symbolSize: 10,
-      data: [
-        [0,40],
-        [5, 35],
-        [5, 40],
-        [5, 45],
-        [10, 45],
-        [10, 40],
-        [15, 40],
-        [15, 45],
-        [15, 35],
-        [15, 50],
-        [15, 48],
-        [20, 40],
-        [20, 45],
-        [20, 50],
-        [20, 52],
-        [20, 55],
-        [25, 60],
-        [25, 58],
-        [25, 55],
-        [25, 50],
-        [30, 70],
-        [30, 54],
-        [30, 55],
-        [30, 57],
-        [30, 58],
-        [35, 60],
-        [35, 65],
-        [35, 62],
-        [35, 63],
-        [35, 55],
-        [35, 60],
-        [35, 70],
-        [40, 75],
-        [40, 60],
-        [40, 65],
-        [45, 80],
-        [45, 65],
-        [45, 70], [45, 73],
-        [45, 75],
-        [48, 75],
-        [48, 70],
-        [48, 65],
-        [48, 70],
-        [50, 70],
-        [50, 60],
-        [50, 65],
-        [50, 73],
-        [50, 71],
-        [50, 60],
-        [50, 65],
-        [50, 58],
-        [55, 50],
-        [55, 70],
-
-        [55, 57],
-        [55, 60],
-        [55, 65],
-        [55, 70],
-        [55, 60], [60, 70],
-        [60, 75],
-        [60, 50],
-        [60, 70],
-        [60, 54],
-        [60, 55],
-        [60, 66],
-        [65, 55],
-        [65, 65],
-        [65, 57],
-        [65, 70],
-        [65, 75],
-        [65, 50],
-        [65, 70],
-        [65, 54],
-        [65, 55],
-        [65, 66],
-        [65, 55],
-        [65, 65],
-        [65, 57],
-        [65, 70],
-        [65, 58],
-        [65, 85],
-        [65, 65],
-        [70, 65],
-        [70, 57],
-        [70, 70],
-        [70, 58],
-        [70, 85],
-        [70, 65],
-        [75, 88],
-        [75, 75],
-        [75, 87],
-        [75, 80],
-        [75, 70],
-        [75, 65],
-        
-        [70, 75],
-        [70, 82],
-        [75, 80],
-        [75, 83],
-        [75.0, 85],
-        [80, 88],
-        [80, 75],
-        [80, 87],
-        [80, 80],
-        [80, 70],
-        [80, 65],
-
-        [85, 70],
-        [85, 85],
-        [85, 79],
-        [85, 77],
-        [85, 75],
-        [85, 65],
-        [90, 85],
-        [90, 90],
-      ],
+      data: [],
       type: 'scatter'
     }
   ]
@@ -194,135 +205,49 @@ const loadSpeedrOption = ref({
 const loadPressOption = ref({
   title: {
     text: 'Load - Press',
-    top: '2%',
+    top: '5%',
     left: 'center',
     textStyle: {
       color: '#fff'
     }
   },
   legend: {
-    data: ['Load-Pmax', 'Load-Pcomp'],
+    data: ['Cyl Pmax (bar)', 'Cyl Pcomp (bar)'],
     right: '10%',
     bottom: '5%'
   },
-  xAxis: { interval: 25,
+  xAxis: {
+    interval: 25,
     splitLine: {
       lineStyle: {
         width: 1,
-        type: "dashed",
-        color: "#5C5C5E",
+        type: 'dashed',
+        color: '#5C5C5E',
         opacity: 0.5
-      },
-    }, },
+      }
+    }
+  },
   yAxis: {
     splitLine: {
       lineStyle: {
         width: 1,
-        type: "dashed",
-        color: "#5C5C5E",
+        type: 'dashed',
+        color: '#5C5C5E',
         opacity: 0.5
-      },
-    },
-},
-  series: [
-    {
-      name: 'Load-Pmax',
-      symbolSize: 10,
-      data: [
-        [25, 80],
-        [30, 85],
-        [35, 80],
-        [35, 85],
-        [40, 90],
-        [40, 95],
-        [40, 65],
-        [45, 75],
-        [48, 85],
-        [45, 80],
-        [45, 75],
-        [48, 75],
-        [48, 70],
-        [48, 65],
-        [48, 70],
-        [50, 80],
-        [55, 85],
-        [60, 80],
-        [60, 85],
-        [50, 71],
-        [50, 60],
-        [50, 65],
-        [55, 85],
-        [60, 70],
-        [65, 65], [60, 70],
-        [65, 80],
-        [70, 85],
-        [70, 82],
-        [75, 80],
-        [75, 90],
-        [75, 82],
-        [80, 95],
-        [85, 90],
-        [85, 85],
-        [90, 87],
-      ],
-      type: 'scatter'
-    },
-    {
-      name: 'Load-Pcomp',
-      symbolSize: 10,
-      data: [
-        [25, 60],
-        [28, 70],
-        [30, 65],
-        [35, 60],
-        [35, 55],
-        [38, 65],
-        [40, 58],
-        [45, 70],
-        [45, 60],
-        [60, 65
-        ],
-        [70, 70],
-        [65, 55],
-        [65, 65],
-        [65, 65],
-        [55, 65],
-        [60, 65],
-        [65, 55],
-        [68, 73],
-        [60, 71],
-        [50, 60],
-        [55, 65],
-        [55, 58],
-        [60, 70],
-        [55, 60], [60, 70],
-        [65, 75],
-        [70, 75],
-        [70, 70],
-        [75, 65],
-        [75, 68],
-        [75.0, 65],
-        [75, 75],
-        [80, 75],
-        [85, 70],
-        [90, 75],
-        [95, 80],
-        [100,]
-      ],
-      type: 'scatter'
+      }
     }
-  ]
+  },
+  series: []
 })
 
 const loadTcOption = ref({
   title: {
     text: 'Load - T/C',
-    top: '2%',
+    top: '5%',
     left: 'center',
     textStyle: {
       color: '#fff'
     }
-
   },
   legend: {
     data: ['Load-T/C Inlet Gas', 'Load-T/C Outlet Gas'],
@@ -330,134 +255,59 @@ const loadTcOption = ref({
     bottom: '5%'
   },
   xAxis: {
-    interval: 25, splitLine: {
+    interval: 25,
+    splitLine: {
       lineStyle: {
         width: 1,
-        type: "dashed",
-        color: "#5C5C5E",
+        type: 'dashed',
+        color: '#5C5C5E',
         opacity: 0.5
-      },
-    }, },
+      }
+    }
+  },
   yAxis: {
     splitLine: {
       lineStyle: {
         width: 1,
-        type: "dashed",
-        color: "#5C5C5E",
+        type: 'dashed',
+        color: '#5C5C5E',
         opacity: 0.5
-      },
-    },
-},
-  series: [
-    {
-      name: 'Load-T/C Inlet Gas',
-      symbolSize: 10,
-      data: [
-        [25, 480],
-        [30, 485],
-        [35, 490],
-        [35, 495],
-        [35, 510],
-        [35, 450],
-        [40, 465],
-        [40, 475],
-        [40, 495],
-        [45, 510],
-        [45, 450],
-        [45, 500],
-        [50, 460],
-        [50, 510],
-        [50, 430],
-        [55, 485],
-        [55, 495],
-        [55, 515],
-        [55, 520],
-        [60, 525],
-        [65, 518],
-        [65, 525],
-        [65, 510],
-        [70, 515],
-        [70, 485],
-        [75, 505],
-        [75, 475],
-        [75, 510],
-        [75, 510],
-        [80, 510],
-
-      ],
-      type: 'scatter'
-    },
-    {
-      name: 'Load-T/C Outlet Gas',
-      symbolSize: 10,
-      data: [
-        [25, 380],
-        [30, 385],
-        [35, 390],
-        [35, 395],
-        [35, 410],
-        [35, 350],
-        [40, 365],
-        [40, 375],
-        [40, 395],
-        [45, 410],
-        [45, 350],
-        [45, 400],
-        [50, 360],
-        [50, 410],
-        [50, 330],
-        [55, 285],
-        [55, 295],
-        [55, 315],
-        [55, 320],
-        [60, 325],
-        [65, 318],
-        [65, 325],
-        [65, 310],
-        [70, 315],
-        [70, 285],
-        [75, 305],
-        [75, 315],
-        [75, 270],
-        [75, 280],
-        [80, 290],
-        [100,]
-
-      ],
-      type: 'scatter'
+      }
     }
-  ]
+  },
+  series: []
 })
 
 const loadTcSpeedrOption = ref({
   title: {
     text: 'Load - T/C Speed',
-    top: '2%',
+    top: '5%',
     left: 'center',
     textStyle: {
       color: '#fff'
     }
-
   },
   xAxis: {
-    interval: 25, splitLine: {
+    interval: 25,
+    splitLine: {
       lineStyle: {
         width: 1,
-        type: "dashed",
-        color: "#5C5C5E",
+        type: 'dashed',
+        color: '#5C5C5E',
         opacity: 0.5
-      },
-    }, },
+      }
+    }
+  },
   yAxis: {
     splitLine: {
       lineStyle: {
         width: 1,
-        type: "dashed",
-        color: "#5C5C5E",
+        type: 'dashed',
+        color: '#5C5C5E',
         opacity: 0.5
-      },
-    },
-},
+      }
+    }
+  },
   legend: {
     data: ['Load-T/CSpeed'],
     right: '10%',
@@ -467,45 +317,7 @@ const loadTcSpeedrOption = ref({
     {
       name: 'Load-T/CSpeed',
       symbolSize: 10,
-      data: [
-        [25, 25],
-        [30, 30],
-        [35, 35],
-        [35, 40],
-        [35, 45],
-        [35, 45],
-        [40, 45],
-        [40, 50],
-        [40, 55],
-        [45, 60],
-        [45, 65],
-        [48, 60],
-        [48, 70],
-        [48, 60
-        ],
-        [48, 60],
-        [50, 55],
-        [50, 60],
-        [50, 70],
-        [55, 75],
-        [55, 58],
-        [55, 75],
-        [55, 60],
-        [60, 70],
-        [60, 75],
-        [60, 80],
-        [65, 75],
-        [70, 75],
-        [70, 82],
-        [75, 80],
-        [75, 83],
-        [75.0, 85],
-        [80, 88],
-        [80, 75],
-        [80, 87],
-        [80, 80],
-        [100,]
-      ],
+      data: [],
       type: 'scatter'
     }
   ]
@@ -514,32 +326,33 @@ const loadTcSpeedrOption = ref({
 const loadScavOption = ref({
   title: {
     text: 'Load - Scav Air Pressure',
-    top: '2%',
+    top: '5%',
     left: 'center',
     textStyle: {
       color: '#fff'
     }
-
   },
   xAxis: {
-    interval: 25, splitLine: {
+    interval: 25,
+    splitLine: {
       lineStyle: {
         width: 1,
-        type: "dashed",
-        color: "#5C5C5E",
+        type: 'dashed',
+        color: '#5C5C5E',
         opacity: 0.5
-      },
-    }, },
+      }
+    }
+  },
   yAxis: {
     splitLine: {
       lineStyle: {
         width: 1,
-        type: "dashed",
-        color: "#5C5C5E",
+        type: 'dashed',
+        color: '#5C5C5E',
         opacity: 0.5
-      },
-    },
-},
+      }
+    }
+  },
   legend: {
     data: ['Load-Scav Air Pressure'],
     right: '10%',
@@ -549,99 +362,51 @@ const loadScavOption = ref({
     {
       name: 'Load-Scav Air Pressure',
       symbolSize: 10,
-      data: [
-        [10, 14],
-        [10, 16],
-        [10, 18],
-        [10, 25],
-        [10, 30],
-        [10, 35],
-        [15, 25],
-        [15, 31],
-        [15, 35],
-        [35, 40],
-        [35, 45],
-        [35, 45],
-        [40, 45],
-        [35, 40],
-        [35, 45],
-        [35, 45],
-
-        [40, 45],
-        [40, 50],
-        [40, 55],
-        [45, 60],
-        [30, 30],
-        [35, 35],
-        [35, 40],
-        [35, 45],
-        [35, 45],
-        [40, 45],
-        [40, 50],
-        [40, 55],
-        [45, 60],
-        [45, 55],
-        [48, 60],
-        [48, 60],
-        [25, 25],
-        [30, 30],
-        [35, 35],
-        [35, 40],
-        [35, 45],
-        [35, 45],
-        [40, 45],
-        [40, 50],
-        [40, 55],
-        [45, 60],
-        [45, 55],
-        [48, 60],
-        [48, 60],
-        [48, 60
-        ],
-        [48, 60],
-        [50, 65],
-        [50, 65],
-        [50, 70],
-        [55, 65],
-        [55, 70],
-        [55, 68],
-        [55, 65],
-        [60, 70],
-        [60, 75],
-        [60, 75],
-        [65, 75],
-        [70, 75],
-        [70, 82],
-        [75, 80],
-        [75, 83],
-        [75.0, 85],
-        [80, 88],
-        [80, 90],
-        [80, 95],
-        [80, 80],
-        [100,]
-      ],
-      type: 'scatter'
+      data: [],
+      type: 'scatter',
+      itemStyle: {
+        opacity: 0.5
+      }
     }
   ]
 })
+
+const isShowPopupModal = ref(false)
+const voyages = ref(false)
+const openVoyagesPopup = async () => {
+  isShowPopupModal.value = true
+  ;({
+    data: { data: voyages.value }
+  } = await getAllVoyageByImoNumber(selectedShip.value))
+}
+
+const updateDate = async (dateInformation) => {
+  let { selectStartDate, selectEndDate } = dateInformation
+
+  console.dir(dateInformation)
+  startDate.value = convertDateTimeType(selectStartDate)
+  endDate.value = convertDateTimeType(selectEndDate)
+  fetchPerformanceData(selectStartDate, selectEndDate)
+}
+
+watch(selectedShip, initFetchData)
 </script>
 
-<style scoped  lang="scss">
-.performance-container{
-  height: calc(100vh - 65px - 32px);
+<style scoped lang="scss">
+.performance-container {
+  height: calc(100vh - 65px - 62px - 48px);
 
   min-height: 600px;
   overflow: auto;
   // gap : 16px;
 }
 
-.performance-chart{
-  height: calc(100% - 25px);
+.performance-chart {
+  height: calc(100% - 79px - 48px);
 }
 
 .performance-container .chart-item {
-  flex : 1 1 30%;
+  flex: 1 1 30%;
   background: yellow;
 }
 
@@ -652,4 +417,7 @@ const loadScavOption = ref({
   }
 }
 
+.title {
+  font-size: 1.15rem;
+}
 </style>

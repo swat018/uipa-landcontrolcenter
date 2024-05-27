@@ -140,15 +140,11 @@ export const useCiiStore = defineStore('ciiManagement', () => {
         data: { data }
       } = await getMonthlyCiiData(imoNumber, year)
 
-      console.log('데이터가 null 인지')
-      console.dir(data)
-
       if (data) {
         monthlyCiiData.value = convertFloatFormatObject(data)
         console.log('Monthly Api 데이터 변환 후')
         console.dir(monthlyCiiData)
       } else {
-        console.log('데이터가 널이라서')
         monthlyCiiData.value = convertFloatFormatObject(monthlyCiiData.value)
       }
 
@@ -193,7 +189,7 @@ export const useCiiStore = defineStore('ciiManagement', () => {
 
       console.log('변환 후 form')
       console.dir(form)
-      
+
       const {
         data: { data }
       } = await updateCiiFutureData(form)

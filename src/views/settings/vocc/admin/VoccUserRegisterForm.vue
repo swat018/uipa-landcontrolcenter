@@ -7,33 +7,70 @@
     <v-card-text class="title-form-container">
       <v-form @submit.prevent v-model="isDisabled">
         <div class="mb-1">선사명</div>
-        <v-autocomplete :items="voccs" item-title="name" item-value="name" placeholder="선사명을 선택해주세요"
-          v-model="registerForm.voccName" variant="solo-filled" density="compact" bg-color="#434348">
+        <v-autocomplete
+          :items="voccs"
+          item-title="name"
+          item-value="name"
+          placeholder="선사명을 선택해주세요"
+          v-model="registerForm.voccName"
+          variant="solo-filled"
+          density="compact"
+          bg-color="#434348"
+          readonly
+        >
         </v-autocomplete>
         <div class="mb-1">아이디</div>
-        <i-input type="text" v-model="registerForm.username" placeholder="아이디를 입력하여 주십시오" required
-          :hide-details="false">
+        <i-input
+          type="text"
+          v-model="registerForm.username"
+          placeholder="아이디를 입력하여 주십시오"
+          required
+          :hide-details="false"
+        >
         </i-input>
         <div class="mb-1">비밀번호</div>
-        <i-input v-model="registerForm.password" :type="isShowPassword ? 'text' : 'password'"
+        <i-input
+          v-model="registerForm.password"
+          :type="isShowPassword ? 'text' : 'password'"
           :append-inner-icon="isShowPassword ? 'mdi-eye' : 'mdi-eye-off'"
-          @click:append-inner="isShowPassword = !isShowPassword" required password placeholder="비밀번호를 입력하여 주십시오"
-          :hide-details="false">
+          @click:append-inner="isShowPassword = !isShowPassword"
+          required
+          password
+          placeholder="비밀번호를 입력하여 주십시오"
+          :hide-details="false"
+        >
         </i-input>
         <div class="mt-1 mb-1">비밀번호 확인</div>
-        <i-input v-model="registerForm.passwordCheck" placeholder="비밀번호를 입력하여 주십시오"
+        <i-input
+          v-model="registerForm.passwordCheck"
+          placeholder="비밀번호를 입력하여 주십시오"
           :type="isShowPasswordCheck ? 'text' : 'password'"
-          :append-inner-icon="isShowPasswordCheck ? 'mdi-eye' : 'mdi-eye-off'" :hide-details="false"
-          @click:append-inner="isShowPasswordCheck = !isShowPasswordCheck" required password
-          :rules="[rePasswordRules.check]">
+          :append-inner-icon="isShowPasswordCheck ? 'mdi-eye' : 'mdi-eye-off'"
+          :hide-details="false"
+          @click:append-inner="isShowPasswordCheck = !isShowPasswordCheck"
+          required
+          password
+          :rules="[rePasswordRules.check]"
+        >
         </i-input>
         <div class="mt-1 mb-1">닉네임</div>
-        <i-input type="text" v-model="registerForm.nickname" placeholder="닉네임을 입력하여 주십시오" required
-          :hide-details="false">
+        <i-input
+          type="text"
+          v-model="registerForm.nickname"
+          placeholder="닉네임을 입력하여 주십시오"
+          required
+          :hide-details="false"
+        >
         </i-input>
         <div class="mt-1 mb-1">이메일</div>
-        <i-input type="text" v-model="registerForm.email" placeholder="이메일을 입력하여 주십시오" required email
-          :hide-details="false">
+        <i-input
+          type="text"
+          v-model="registerForm.email"
+          placeholder="이메일을 입력하여 주십시오"
+          required
+          email
+          :hide-details="false"
+        >
         </i-input>
         <div class="mt-1 mb-1">계정 권한</div>
         <span>선사 사용자</span>
@@ -41,7 +78,13 @@
 
       <div class="d-flex justify-space-between mt-8">
         <i-btn width="48%" text="취소" color="#5E616A" @click="cancleChange"></i-btn>
-        <i-btn width="48%" text="등록" color="#4E83FF" @click="registerVoccUser" :disabled="!isDisabled"></i-btn>
+        <i-btn
+          width="48%"
+          text="등록"
+          color="#4E83FF"
+          @click="registerVoccUser"
+          :disabled="!isDisabled"
+        ></i-btn>
       </div>
     </v-card-text>
   </v-card>
@@ -62,7 +105,7 @@ const { voccInfo } = storeToRefs(voccStore)
 const isShowPassword = ref(false)
 const isShowPasswordCheck = ref(false)
 const rePasswordRules = reactive({
-  check: value => {
+  check: (value) => {
     if (value && registerForm.value.passwordCheck && value === registerForm.value.passwordCheck) {
       return true
     }
@@ -92,25 +135,23 @@ const registerForm = ref({
   email: ''
 })
 
-
-
 const btnGroup = [
   { id: 'cancel-btn', action: 'cancle', text: '취소', color: '#5E616A', width: '48%' },
-  { id: 'register-btn', action: 'register', text: '등록', color: '#4E83FF', width: '48%' },
+  { id: 'register-btn', action: 'register', text: '등록', color: '#4E83FF', width: '48%' }
 ]
 
 const toggles = [
   { id: 'active', value: true, text: '사용 가능', color: '#5E616A' },
-  { id: 'inactive', avalue: false, text: '계정 잠금', color: '#4E83FF' },
+  { id: 'inactive', avalue: false, text: '계정 잠금', color: '#4E83FF' }
 ]
-
 
 const basePopup = ref(null)
 
 onMounted(() => {
-  fetchVoccs()
   if (!voccInfo.value) {
     fetchVoccInformation()
+  } else {
+    registerForm.value.voccName = voccInfo.value.name
   }
 })
 
@@ -120,25 +161,22 @@ onMounted(() => {
 const fetchVoccs = async () => {
   const result = await voccStore.fetchVoccs()
   console.dir(result)
-  voccs.value = result;
+  voccs.value = result
 }
 
-
 const fetchVoccInformation = async () => {
-  await voccStore.fetchVoccInfo()
+  await voccStore.fetchMyVoccInfo()
+
+  registerForm.value.voccName = voccInfo.value.name
   console.dir(voccInfo.value)
 }
 
-
 const registerVoccUser = async () => {
   registerForm.value.voccNameKor = voccInfo.value.nameKor
-  await voccStore.registerVoccUser(registerForm.value)
-    .then(response => {
-      vAlert('등록이 완료되었습니다')
-    })
+  await voccStore.registerVoccUser(registerForm.value).then((response) => {
+    vAlert('등록이 완료되었습니다')
+  })
 }
-
-
 
 const emit = defineEmits(['changeComponent'])
 const changeComponent = inject('changeComponent', 'DefaultText')
@@ -146,7 +184,6 @@ const changeComponent = inject('changeComponent', 'DefaultText')
 const cancleChange = (e) => {
   changeComponent(e, 'DefaultText')
 }
-
 
 const alertMessage = ref('')
 const dialogStatus = ref(false)
@@ -157,12 +194,6 @@ const vAlert = (message) => {
     dialogStatus.value = false
   }, 2000)
 }
-
-
-
-
-
-
 </script>
 
 <style></style>
