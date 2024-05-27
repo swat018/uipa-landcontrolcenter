@@ -37,6 +37,8 @@ import arrowIcon from '@/assets/images/shipicons/arrow.png'
 import { getShipInfo } from '@/api/shipApi'
 import { isStausOk } from '@/composables/util'
 
+const drawInteration_route = Draw
+
 export default {
   name: "olmap",
   data: () => ({
@@ -50,7 +52,6 @@ export default {
     aisClassLayer: VectorLayer,
     routePLayer: VectorLayer,
     routeLLayer: VectorLayer,
-    drawInteration_route: null,
     mapTypeId: String,
     imoNumbers: [],
     isClick: false,
@@ -172,6 +173,13 @@ export default {
     bundleScript.src = '/src/components/map/canvasLayer/bundle.js';
     document.body.appendChild(bundleScript);
 
+    emitter.on('draw_route_d2', () => {
+      this.drawRoute();
+    })
+
+    emitter.on('route_Interaction2', () => {
+      this.routeInteraction();
+    })
   },
   methods: {
     initMap: function() {
@@ -851,14 +859,15 @@ export default {
     },
     
     routeInteraction: function() { 
-      let lyr_p = this.getLayer("route_p");
+      const lyr_p = this.getLayer("route_p");
 
-      var drawInteration_route = new Draw({
+      this.drawInteration_route = new Draw({
+        id: 'draw_i',
         source: lyr_p.getSource(),
         type: 'Point'
       });
-      drawInteration_route.on('drawend', this.onDrawEnd);
-      map.addInteraction(drawInteration_route);
+      this.drawInteration_route.on('drawend', this.onDrawEnd);
+      map.addInteraction(this.drawInteration_route);
     },
 
     onDrawEnd(f) {
@@ -874,6 +883,7 @@ export default {
         
       f.feature.getGeometry().transform( 'EPSG:4326',  'EPSG:3857');
       this.drawRoute();
+      map.removeInteraction(this.drawInteration_route);
     },
 
     drawRoute: function() {
@@ -886,23 +896,25 @@ export default {
       lyr_l.getSource().clear();
       
       var arr_line = new Array()
-      routeDetail.value.forEach(function(item){
-        var point = [Number(item.lon),Number(item.lat)];
-        var feat_p = new ol.Feature({
-          id:"rt_"+item.routeseq,
-          geometry:new Point(point)
-        });	
-        feat_p.getGeometry().transform( 'EPSG:4326',  'EPSG:3857');
-			  lyr_p.getSource().addFeature(feat_p);
-        arr_line.push(point);
-      })
+      if (routeDetail.value.length > 0) {
+        routeDetail.value.forEach(function(item){
+          var point = [Number(item.lon),Number(item.lat)];
+          var feat_p = new ol.Feature({
+            id:"rt_"+item.routeseq,
+            geometry:new Point(point)
+          });	
+          feat_p.getGeometry().transform( 'EPSG:4326',  'EPSG:3857');
+          lyr_p.getSource().addFeature(feat_p);
+          arr_line.push(point);
+        })
 
-      var feat_line = new ol.Feature({
-			id:"rt_"+routeMaster.value.routeid,
-        geometry:new LineString(arr_line)
-      });
-      let c_geometry = feat_line.getGeometry().transform( 'EPSG:4326',  'EPSG:3857');
-      lyr_l.getSource().addFeature(feat_line);
+        var feat_line = new ol.Feature({
+        id:"rt_"+routeMaster.value.routeid,
+          geometry:new LineString(arr_line)
+        });
+        let c_geometry = feat_line.getGeometry().transform( 'EPSG:4326',  'EPSG:3857');
+        lyr_l.getSource().addFeature(feat_line);
+      }
     }
 
   }

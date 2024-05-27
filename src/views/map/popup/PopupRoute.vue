@@ -81,6 +81,7 @@
             </tr>
           </v-table>
           <button @click="addRow()"> WP 추가  &nbsp;</button>
+          <button @click="updateRow()"> WP 수정  &nbsp;</button>
           <button @click="removeRow()"> WP 삭제 </button>
         </v-col>
       </v-row>
@@ -95,6 +96,8 @@ import { onMounted, ref, watch, computed, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouteStore } from '@/stores/routeStore'
 import { useToast } from '@/composables/useToast'
+import emitter from '@/composables/eventbus'
+import axios from 'axios'
 
 const routeStore = useRouteStore()
 const { routelist, routeMaster, routeDetail, selectedMIndex, selectedDIndex, drawactive } = storeToRefs(routeStore);
@@ -121,7 +124,17 @@ const selectRowM = (index) => {
 
 const route_choice = (id) => {
   routeStore.fetchRouteInfoById(id)
-  routeStore.fetchRouteDetailInfoById(id)
+  //routeStore.fetchRouteDetailInfoById(id)
+  axios.get(baseUrl+"/api/route/detail",{
+    params: {
+      id: id
+    }}).then((response) => {
+    if (response.data.length != 0) {
+      const result = response.data;
+      routeDetail.value = result;
+    } 
+    emitter.emit('draw_route_d1');
+  })
 }
 
 const route_reset = () => {
@@ -160,7 +173,7 @@ const addRow = () => {
       } else {
         routeDetail.value.push(obj)
       }
-      selectRowD(routeDetail.value.length)
+      selectRowD(routeDetail.value.length-1)
     } else {
       routeDetail.value.splice(selectedDIndex.value + 1, 0, obj)
       selectRowD(selectedDIndex.value + 1)
@@ -168,12 +181,17 @@ const addRow = () => {
   }
 }
 
+const updateRow = () => {
+  emitter.emit('route_Interaction1');
+}
+
 const removeRow = () => {
   if(selectedDIndex.value === null) {
     showResMsg('삭제할 항로계획 순번을 선택해주세요.')
   } else {
     routeStore.routeDetail.splice(selectedDIndex.value, 1);
-    selectedDIndex.value = null
+    selectedDIndex.value = null    
+    emitter.emit('draw_route_d1');
   }
 }
 </script>
