@@ -37,8 +37,8 @@
               <td colspan = "2">항로계획 정보가 없습니다.</td>
             </tr>
           </v-table>
-          <button @click="route_reset()">항로 추가</button>
-          <button @click="route_delete()">항로 삭제</button>
+          <button @click="route_reset()"> 항로 추가  &nbsp;</button>
+          <button @click="route_delete()"> 항로 삭제 </button>
         </v-col>
         <v-col cols="7">
           <v-table height="200" width="480">
@@ -80,8 +80,8 @@
               <td class="text-center"><input class="text-center" v-model="rd_item.lon"></td>
             </tr>
           </v-table>
-          <button @click="addRow()">WP 추가</button>
-          <button @click="removeRow()">WP 삭제</button>
+          <button @click="addRow()"> WP 추가  &nbsp;</button>
+          <button @click="removeRow()"> WP 삭제 </button>
         </v-col>
       </v-row>
     </v-sheet>
@@ -97,7 +97,7 @@ import { useRouteStore } from '@/stores/routeStore'
 import { useToast } from '@/composables/useToast'
 
 const routeStore = useRouteStore()
-const { routelist, routeMaster, routeDetail, r_choice, selectedMIndex, selectedDIndex } = storeToRefs(routeStore);
+const { routelist, routeMaster, routeDetail, selectedMIndex, selectedDIndex, drawactive } = storeToRefs(routeStore);
 
 const { showResMsg } = useToast()
 
@@ -135,6 +135,7 @@ const route_delete = () => {
     routeStore.RouteMDelete(routeMaster.value.routeid)
     selectedMIndex.value = null
     selectedDIndex.value = null
+    drawactive.value = false
   }
 }
 
@@ -143,7 +144,8 @@ const saveRouteM = () => {
 }
 
 const selectRowD = (index) => {  
-  selectedDIndex.value = index;
+  selectedDIndex.value = index
+  drawactive.value = true
 }
 
 const addRow = () => {
@@ -151,14 +153,17 @@ const addRow = () => {
     showResMsg('항로계획을 선택해주세요.')
   } else {
     let obj = {routeid: routeMaster.routeid, lon: '', lat: '', seq: 0}
+    console.log(isNaN(selectedDIndex.value))
     if (selectedDIndex.value === null) {
-      if(routeDetail.length == 0) {
+      if(routeDetail.value.length == 0) {
         routeDetail.value = [obj]
       } else {
         routeDetail.value.push(obj)
       }
+      selectRowD(routeDetail.value.length)
     } else {
       routeDetail.value.splice(selectedDIndex.value + 1, 0, obj)
+      selectRowD(selectedDIndex.value + 1)
     }
   }
 }

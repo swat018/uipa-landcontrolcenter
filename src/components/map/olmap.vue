@@ -11,19 +11,20 @@ import VectorSource from 'ol/source/Vector'
 import { defaults as defaultControls } from 'ol/control'
 import { fromLonLat, transform } from 'ol/proj'
 import VectorLayer from 'ol/layer/Vector'
-import { Style, Icon, Fill, Stroke, RegularShape, Text } from 'ol/style'
+import { Style, Icon, Fill, Stroke, RegularShape, Text, Circle as CircleStyle } from 'ol/style'
 import Feature from 'ol/Feature'
 import Point from 'ol/geom/Point.js';
 import Select from 'ol/interaction/Select'
+import { Draw } from 'ol/interaction';
 import emitter from '@/composables/eventbus'
 import { TileWMS } from 'ol/source'
 import { useMapStore } from '@/stores/mapStore'
+import { useRouteStore } from '@/stores/routeStore'
 import { getShipData, getShipWakeCurrent, getShipWakePast } from '@/api/worldMap'
 import { getAisData } from '@/api/aisData'
 import { storeToRefs } from 'pinia'
 import { singleClick } from 'ol/events/condition'
 import { LineString } from 'ol/geom'
-
 
 // const urlBefore = 'http://navioncorp.asuscomm.com:8080/TileMap/'
 // const urlAfter = '/{z}/{x}/{-y}.png?v='+ Math.random();
@@ -49,6 +50,7 @@ export default {
     aisClassLayer: VectorLayer,
     routePLayer: VectorLayer,
     routeLLayer: VectorLayer,
+    drawInteration_route: null,
     mapTypeId: String,
     imoNumbers: [],
     isClick: false,
@@ -155,7 +157,7 @@ export default {
         view.setCenter(newCenter); // 변경된 경도로 지도 중심 재설정
       }
     });
-
+    
     this.shipSelectEvent();
     this.vesselTrackCurrent();
     this.vesselTrackPast();
@@ -163,10 +165,14 @@ export default {
     // ais 정보 시각화
     this.aisData();
 
+    this.setRouteLayer();
+    this.routeInteraction();
+
     // 기상정보 웹팩 관련 라이브러리 추가
     const bundleScript = document.createElement('script');
     bundleScript.src = '/src/components/map/canvasLayer/bundle.js';
     document.body.appendChild(bundleScript);
+
   },
   methods: {
     initMap: function() {
@@ -798,7 +804,108 @@ export default {
         })
 
       });
+    },
+
+    setRouteLayer: function() {
+      const source = new VectorSource();
+      var routePLayer = new VectorLayer({
+        id: 'route_p',
+        source: source,
+        style: new Style({
+          fill: new Fill({
+            color: 'rgba(255, 255, 255, 0.2)'
+          }),
+          stroke: new Stroke({
+            color: '#ffcc33',
+            width: 2
+          }),
+          image: new CircleStyle({
+            radius: 7,
+            fill: new Fill({
+              color: '#ffcc33'
+            })
+          })
+        })
+      });
+      map.addLayer(routePLayer);
+
+      var routeLLayer = new VectorLayer({
+        id: 'route_l',
+        source: source,
+        style: new Style({
+          fill: new Fill({
+            color: 'rgba(255, 255, 255, 0.2)'
+          }),
+          stroke: new Stroke({
+            color: '#ffcc33',
+            width: 2
+          }),
+          image: new CircleStyle({
+            radius: 7,
+            fill: new Fill({
+              color: '#ffcc33'
+            })
+          })
+        })
+      });
+      map.addLayer(routeLLayer);
+    },
+    
+    routeInteraction: function() { 
+      let lyr_p = this.getLayer("route_p");
+
+      var drawInteration_route = new Draw({
+        source: lyr_p.getSource(),
+        type: 'Point'
+      });
+      drawInteration_route.on('drawend', this.onDrawEnd);
+      map.addInteraction(drawInteration_route);
+    },
+
+    onDrawEnd(f) {
+      const routeStore = useRouteStore()
+      const { routeMaster, routeDetail, selectedMIndex, selectedDIndex, drawactive } = storeToRefs(routeStore);
+
+      var xy = f.feature.getGeometry().transform( 'EPSG:3857',  'EPSG:4326').getCoordinates();
+      var y = xy[0];
+      var x = xy[1];
+      
+      routeDetail.value[selectedDIndex.value].lon = y.toFixed(3)
+      routeDetail.value[selectedDIndex.value].lat = x.toFixed(3)
+        
+      f.feature.getGeometry().transform( 'EPSG:4326',  'EPSG:3857');
+      this.drawRoute();
+    },
+
+    drawRoute: function() {
+      const routeStore = useRouteStore()
+      const { routeMaster, routeDetail, selectedMIndex, selectedDIndex, drawactive } = storeToRefs(routeStore);
+
+      let lyr_p = this.getLayer("route_p");
+      let lyr_l = this.getLayer("route_l");
+      lyr_p.getSource().clear();
+      lyr_l.getSource().clear();
+      
+      var arr_line = new Array()
+      routeDetail.value.forEach(function(item){
+        var point = [Number(item.lon),Number(item.lat)];
+        var feat_p = new ol.Feature({
+          id:"rt_"+item.routeseq,
+          geometry:new Point(point)
+        });	
+        feat_p.getGeometry().transform( 'EPSG:4326',  'EPSG:3857');
+			  lyr_p.getSource().addFeature(feat_p);
+        arr_line.push(point);
+      })
+
+      var feat_line = new ol.Feature({
+			id:"rt_"+routeMaster.value.routeid,
+        geometry:new LineString(arr_line)
+      });
+      let c_geometry = feat_line.getGeometry().transform( 'EPSG:4326',  'EPSG:3857');
+      lyr_l.getSource().addFeature(feat_line);
     }
+
   }
 }
 </script>
@@ -810,3 +917,4 @@ export default {
   height: 100%;
 }
 </style>
+
