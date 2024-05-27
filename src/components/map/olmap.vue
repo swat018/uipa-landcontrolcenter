@@ -166,7 +166,6 @@ export default {
     this.aisData();
 
     this.setRouteLayer();
-    this.routeInteraction();
 
     // 기상정보 웹팩 관련 라이브러리 추가
     const bundleScript = document.createElement('script');
