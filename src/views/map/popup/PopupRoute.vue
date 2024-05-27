@@ -41,16 +41,25 @@
           <button @click="route_delete()"> 항로 삭제 </button>
         </v-col>
         <v-col cols="7">
-          <v-table height="200" width="480">
-            <colgroup><col width="23%"><col width="23%"><col width="23%"><col width="23%"><col width="8%"></colgroup>
+          <v-table height="60">
+            <colgroup><col width="25%"><col width="20%"><col width="20%"><col width="20%"><col width="15%"></colgroup>
             <tbody>
               <tr>
-                <th class="text-center">항로계획명</th><th colspan="5"><input v-model="routeMaster.routename" placeholder="항로계획명을 입력하세요"></th>
+                <th class="text-center" >항로계획명</th><th colspan="3"><input v-model="routeMaster.routename" placeholder="항로계획명을 입력하세요"></th>
+                <th><button @click="saveRouteM()">저장</button></th>
               </tr>
-              <tr>
+              <!--<tr>
                 <th class="text-center">편집자</th><th><input v-model="routeMaster.makename" placeholder="편집자명을 입력하세요"></th>
                 <th class="text-center">편집일자</th><th><p>{{routeMaster.modifydate}}</p></th>
-                <th><button @click="saveRouteM()">저장</button></th>
+              </tr>-->
+            </tbody>
+          </v-table>
+          <v-table height="60">
+            <colgroup><col width="20%"><col width="30%"><col width="20%"><col width="30%"></colgroup>
+            <tbody>
+              <tr>
+                <th class="text-center">편집자</th><th><p>{{routeMaster.makename}}</p></th>
+                <th class="text-center">편집일자</th><th><p>{{routeMaster.modifydate}}</p></th>
               </tr>
             </tbody>
           </v-table>
@@ -139,6 +148,7 @@ const route_choice = (id) => {
 
 const route_reset = () => {
   routeStore.resetroute()
+  emitter.emit('draw_route_d1');
 }
 
 const route_delete = () => {
@@ -203,6 +213,10 @@ const removeRow = () => {
   z-index: 999;
   left: 15px;
   height: calc(100% - 24px);
+}
+
+table th {
+  padding: 0
 }
 
 .RMList tr:hover:not(:first-child) {
