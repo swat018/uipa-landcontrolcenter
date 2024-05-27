@@ -216,6 +216,22 @@ emitter.on('clickPastVesselTracks', (value) => {
   isPastVesselTracks.value = value
 })
 
+emitter.on('draw_route_d1', () => {
+  draw_route_d()
+})
+
+const draw_route_d = async () => {
+  emitter.emit('draw_route_d2')
+}
+
+emitter.on('route_Interaction1', () => {
+  route_Interaction()
+})
+
+const route_Interaction = () => {
+  emitter.emit('route_Interaction2')
+}
+
 watch(vesselTrackStatus, (value) => {
   console.log(value)
 })

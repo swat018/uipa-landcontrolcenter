@@ -37,20 +37,29 @@
               <td colspan = "2">항로계획 정보가 없습니다.</td>
             </tr>
           </v-table>
-          <button @click="route_reset()">항로 추가</button>
-          <button @click="route_delete()">항로 삭제</button>
+          <button @click="route_reset()"> 항로 추가  &nbsp;</button>
+          <button @click="route_delete()"> 항로 삭제 </button>
         </v-col>
         <v-col cols="7">
-          <v-table height="200" width="480">
-            <colgroup><col width="23%"><col width="23%"><col width="23%"><col width="23%"><col width="8%"></colgroup>
+          <v-table height="60">
+            <colgroup><col width="25%"><col width="20%"><col width="20%"><col width="20%"><col width="15%"></colgroup>
             <tbody>
               <tr>
-                <th class="text-center">항로계획명</th><th colspan="5"><input v-model="routeMaster.routename" placeholder="항로계획명을 입력하세요"></th>
+                <th class="text-center" >항로계획명</th><th colspan="3"><input v-model="routeMaster.routename" placeholder="항로계획명을 입력하세요"></th>
+                <th><button @click="saveRouteM()">저장</button></th>
               </tr>
-              <tr>
+              <!--<tr>
                 <th class="text-center">편집자</th><th><input v-model="routeMaster.makename" placeholder="편집자명을 입력하세요"></th>
                 <th class="text-center">편집일자</th><th><p>{{routeMaster.modifydate}}</p></th>
-                <th><button @click="saveRouteM()">저장</button></th>
+              </tr>-->
+            </tbody>
+          </v-table>
+          <v-table height="60">
+            <colgroup><col width="20%"><col width="30%"><col width="20%"><col width="30%"></colgroup>
+            <tbody>
+              <tr>
+                <th class="text-center">편집자</th><th><p>{{routeMaster.makename}}</p></th>
+                <th class="text-center">편집일자</th><th><p>{{routeMaster.modifydate}}</p></th>
               </tr>
             </tbody>
           </v-table>
@@ -80,8 +89,9 @@
               <td class="text-center"><input class="text-center" v-model="rd_item.lon"></td>
             </tr>
           </v-table>
-          <button @click="addRow()">WP 추가</button>
-          <button @click="removeRow()">WP 삭제</button>
+          <button @click="addRow()"> WP 추가  &nbsp;</button>
+          <button @click="updateRow()"> WP 수정  &nbsp;</button>
+          <button @click="removeRow()"> WP 삭제 </button>
         </v-col>
       </v-row>
     </v-sheet>
@@ -95,9 +105,11 @@ import { onMounted, ref, watch, computed, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouteStore } from '@/stores/routeStore'
 import { useToast } from '@/composables/useToast'
+import emitter from '@/composables/eventbus'
+import axios from 'axios'
 
 const routeStore = useRouteStore()
-const { routelist, routeMaster, routeDetail, r_choice, selectedMIndex, selectedDIndex } = storeToRefs(routeStore);
+const { routelist, routeMaster, routeDetail, selectedMIndex, selectedDIndex, drawactive } = storeToRefs(routeStore);
 
 const { showResMsg } = useToast()
 
@@ -121,11 +133,22 @@ const selectRowM = (index) => {
 
 const route_choice = (id) => {
   routeStore.fetchRouteInfoById(id)
-  routeStore.fetchRouteDetailInfoById(id)
+  //routeStore.fetchRouteDetailInfoById(id)
+  axios.get(baseUrl+"/api/route/detail",{
+    params: {
+      id: id
+    }}).then((response) => {
+    if (response.data.length != 0) {
+      const result = response.data;
+      routeDetail.value = result;
+    } 
+    emitter.emit('draw_route_d1');
+  })
 }
 
 const route_reset = () => {
   routeStore.resetroute()
+  emitter.emit('draw_route_d1');
 }
 
 const route_delete = () => {
@@ -135,6 +158,7 @@ const route_delete = () => {
     routeStore.RouteMDelete(routeMaster.value.routeid)
     selectedMIndex.value = null
     selectedDIndex.value = null
+    drawactive.value = false
   }
 }
 
@@ -143,7 +167,8 @@ const saveRouteM = () => {
 }
 
 const selectRowD = (index) => {  
-  selectedDIndex.value = index;
+  selectedDIndex.value = index
+  drawactive.value = true
 }
 
 const addRow = () => {
@@ -151,16 +176,23 @@ const addRow = () => {
     showResMsg('항로계획을 선택해주세요.')
   } else {
     let obj = {routeid: routeMaster.routeid, lon: '', lat: '', seq: 0}
+    console.log(isNaN(selectedDIndex.value))
     if (selectedDIndex.value === null) {
-      if(routeDetail.length == 0) {
+      if(routeDetail.value.length == 0) {
         routeDetail.value = [obj]
       } else {
         routeDetail.value.push(obj)
       }
+      selectRowD(routeDetail.value.length-1)
     } else {
       routeDetail.value.splice(selectedDIndex.value + 1, 0, obj)
+      selectRowD(selectedDIndex.value + 1)
     }
   }
+}
+
+const updateRow = () => {
+  emitter.emit('route_Interaction1');
 }
 
 const removeRow = () => {
@@ -168,7 +200,8 @@ const removeRow = () => {
     showResMsg('삭제할 항로계획 순번을 선택해주세요.')
   } else {
     routeStore.routeDetail.splice(selectedDIndex.value, 1);
-    selectedDIndex.value = null
+    selectedDIndex.value = null    
+    emitter.emit('draw_route_d1');
   }
 }
 </script>
@@ -180,6 +213,10 @@ const removeRow = () => {
   z-index: 999;
   left: 15px;
   height: calc(100% - 24px);
+}
+
+table th {
+  padding: 0
 }
 
 .RMList tr:hover:not(:first-child) {
