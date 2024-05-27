@@ -34,7 +34,8 @@
           <td width="2px"></td>
           <td>
             <div>
-              <input type="date" id="selectDate" style="appearance: none; border: none; background-color: black; color:white">
+              <input type="date" id="selectDate" style="appearance: none; border: none;
+              background-color: black; color:white">
             </div>
           </td>
           <td width="10px"></td>
@@ -282,7 +283,7 @@ const getRouteplan = () => {
 }
 
 .menuTable-2 {
-  display: inline-block;
+  display: inline-table;
   float: right;
   margin-right: 1em;
 }
@@ -300,5 +301,24 @@ const getRouteplan = () => {
   background-color: rgba(4,82,137,0.5);
   color: white;
 }
+#selectDate::-webkit-inner-spin-button,
+#selectDate::-webkit-calendar-picker-indicator {
+  display: inline-block;
+}
 
+#selectDate::-webkit-datetime-edit {
+  display: none;
+}
+#selectDate {
+  display: inline-table;
+  height: 25px;
+  background-color: rgba(4,82,137,0.5);
+  color: white;
+}
+#weatherTime {
+  display: inline-table;
+  height: 30px;
+  background-color: rgba(4,82,137,0.5);
+  color: white;
+}
 </style>

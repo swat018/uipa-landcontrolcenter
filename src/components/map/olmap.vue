@@ -1,5 +1,5 @@
 <template>
-  <div id="map" class="map" ref="rootmap"></div>
+  <div id="mapContainer" class="map" ref="rootmap"></div>
 </template>
 
 <script>
@@ -48,7 +48,6 @@ export default {
     routePLayer: VectorLayer,
     routeLLayer: VectorLayer,
     mapTypeId: String,
-    map: null,
     imoNumbers: [],
     isClick: false,
   }),
@@ -84,16 +83,19 @@ export default {
   mounted: async function() {
     this.initMap();
     this.setMapType(this.layerBright, this.layerMode);
-    this.$emit('init', this.map);
+    this.$emit('init', map);
     this.shipSelectEvent();
     this.vesselTrackCurrent();
     this.vesselTrackPast();
     this.aisData();
+    const bundleScript = document.createElement('script');
+    bundleScript.src = '/src/components/map/canvasLayer/bundle.js';
+    document.body.appendChild(bundleScript);
   },
   methods: {
     initMap: function() {
-      this.map = new Map({
-        target: "map",
+      map = new Map({
+        target: "mapContainer",
         view: new View({
           center:fromLonLat([128.100,36.000]),
           zoom: 4,
@@ -105,14 +107,14 @@ export default {
           rotate: false,
         }),
       });
-      return this.map;
+      return map;
     },
     setMapType: function(mapBright, mapMode) {
       var geoserverWmsUrl = "http://navioncorp.asuscomm.com:8089/geoserver/wms";
 
       if (mapBright !== 'Black') {
-        this.map.getLayers().clear();
-        this.map.addLayer(
+        map.getLayers().clear();
+        map.addLayer(
           new TileLayer({
             source: new XYZ({
               url: urlBefore + mapBright + '_' + mapMode + urlAfter
@@ -122,8 +124,8 @@ export default {
           })
         );
       } else if (mapBright === 'Black') {
-        this.map.getLayers().clear();
-        this.map.addLayer(
+        map.getLayers().clear();
+        map.addLayer(
           new TileLayer({
             id: 'ocean',
             title: 'ocean',
@@ -143,7 +145,7 @@ export default {
           })
         );
         this.makeSld("ocean", "Polygon1_1", "17284F", null);
-        this.map.addLayer(
+        map.addLayer(
           new TileLayer({
             id: 'worldcountries',
             title: 'worldcountries',
@@ -167,13 +169,13 @@ export default {
       this.aisData();
     },
     setShipLayer: function() {
-      this.map.removeLayer(this.shipLayer);
-      this.map.getLayers().getArray()
+      map.removeLayer(this.shipLayer);
+      map.getLayers().getArray()
         .filter(layer => layer.get('name') === 'shipWakeLayer')
-        .forEach(layer => this.map.removeLayer(layer));
-      this.map.getLayers().getArray()
+        .forEach(layer => map.removeLayer(layer));
+      map.getLayers().getArray()
         .filter(layer => layer.get('name') === 'shipPastWakeLayer')
-        .forEach(layer => this.map.removeLayer(layer));
+        .forEach(layer => map.removeLayer(layer));
 
       var temp;
       if (this.propsdata.length !== 0) {
@@ -189,7 +191,7 @@ export default {
           condition: singleClick
       }
       );
-      this.map.addInteraction(select);
+      map.addInteraction(select);
 
       select.on('select', function(e) {
         if(e.selected[0].values_.layer === 'shipLayer') {
@@ -352,7 +354,7 @@ export default {
     },
     getLayer: function(id) {
       let lyr = null;
-      var layers = this.map.getLayers().getArray();
+      var layers = map.getLayers().getArray();
       for (let i in layers) {
         const l = layers[i];
         const thisLayerId = layers[i].get('id');
@@ -395,7 +397,7 @@ export default {
               })
             }),
           });
-          this.map.addLayer(this.shipLayer);
+          map.addLayer(this.shipLayer);
         })
       });
     },
@@ -443,16 +445,16 @@ export default {
               style: this.styleCurrent
             });
 
-            this.map.addLayer(this.shipWakeLayer);
+            map.addLayer(this.shipWakeLayer);
           })
         });
       } else if (vesselTrackStatus._value === false){
-        this.map.getLayers().getArray()
+        map.getLayers().getArray()
           .filter(layer => layer.get('name') === 'shipWakeLayer')
-          .forEach(layer => this.map.removeLayer(layer));
-        this.map.getLayers().getArray()
+          .forEach(layer => map.removeLayer(layer));
+        map.getLayers().getArray()
           .filter(layer => layer.get('name') === 'shipPastWakeLayer')
-          .forEach(layer => this.map.removeLayer(layer));
+          .forEach(layer => map.removeLayer(layer));
       }
     },
     styleCurrent: function (feature, resolution) {
@@ -544,7 +546,7 @@ export default {
               style: this.stylePast
             });
 
-            this.map.addLayer(this.shipPastWakeLayer);
+            map.addLayer(this.shipPastWakeLayer);
           })
         })
       }
@@ -622,7 +624,7 @@ export default {
               }),
             })
           });
-          this.map.addLayer(this.aisAtonLayer);
+          map.addLayer(this.aisAtonLayer);
         })
 
         fill = new Fill({color: 'blue'});
@@ -646,7 +648,7 @@ export default {
               }),
             })
           });
-          this.map.addLayer(this.aisBasestationLayer);
+          map.addLayer(this.aisBasestationLayer);
         })
 
         ais_class_a.forEach((aisClassAData) => {
@@ -671,7 +673,7 @@ export default {
               })
             }),
           });
-          this.map.addLayer(this.aisClassLayer);
+          map.addLayer(this.aisClassLayer);
         })
         ais_class_b.forEach((aisClassBData) => {
           var pointFeature = new Feature({
@@ -694,7 +696,7 @@ export default {
               })
             })
           });
-          this.map.addLayer(this.aisClassLayer);
+          map.addLayer(this.aisClassLayer);
         })
         vpass_class_b.forEach((vpassClassBData) => {
           var pointFeature = new Feature({
@@ -717,7 +719,7 @@ export default {
               })
             })
           });
-          this.map.addLayer(this.aisClassLayer);
+          map.addLayer(this.aisClassLayer);
         })
 
       });
@@ -727,7 +729,7 @@ export default {
 </script>
 
 <style scoped>
-#map {
+.map {
   position: fixed;
   width: 100%;
   height: 100%;
