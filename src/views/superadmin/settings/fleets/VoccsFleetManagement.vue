@@ -7,19 +7,40 @@
             <div class="d-flex justify-space-between">
               <div class="align-center">선단 목록</div>
               <div v-if="role != 'ROLE_VOCC_USER'">
-                <i-btn text="새 선단 추가" @click="showAddModal" color="#3D3D40" prepend-icon="mdi-plus" width="120"></i-btn>
-                <i-btn @click="showConfirmModal('정말로 선택한 선단을 삭제 하시겠습니까?')" class="ml-2" text="삭제" color="#F04A4A"
-                  prepend-icon="mdi-trash-can" width="80"></i-btn>
+                <i-btn
+                  text="새 선단 추가"
+                  @click="showAddModal"
+                  color="#3D3D40"
+                  prepend-icon="mdi-plus"
+                  width="120"
+                ></i-btn>
+                <i-btn
+                  @click="showConfirmModal('정말로 선택한 선단을 삭제 하시겠습니까?')"
+                  class="ml-2"
+                  text="삭제"
+                  color="#F04A4A"
+                  prepend-icon="mdi-trash-can"
+                  width="80"
+                ></i-btn>
               </div>
             </div>
           </v-card-title>
 
           <v-card-text>
-            <DxDataGrid ref="fleetGrid" :data-source="fleets" key-expr="id" class="tab-dx-grid no-stripe"
-              :active-state-enabled="activeStatus" :focused-row-enabled="activeStatus"
-              :on-focused-cell-changed="selectFleet" :show-borders="true">
-              <DxScrolling column-rendering-mode="virtual" />
-              <DxColumn data-field="name" caption="선단명" :allow-editing="false"></DxColumn>
+            <DxDataGrid
+              ref="fleetGrid"
+              :data-source="fleets"
+              key-expr="id"
+              :active-state-enabled="activeStatus"
+              :focused-row-enabled="activeStatus"
+              :selected-row-keys="selectedFleetKey"
+              :on-focused-cell-changed="selectFleet"
+              :show-borders="true"
+              class="tab-dx-grid no-stripe"
+            >
+              <DxColumn data-field="name" caption="선단명" :allow-editing="false" />
+              <DxScrolling mode="virtual" />
+              <DxSelection mode="single"></DxSelection>
             </DxDataGrid>
           </v-card-text>
         </v-card>
@@ -35,27 +56,49 @@
             </div>
           </v-card-title>
           <v-card-text>
-            <DxDataGrid id="ships" ref="shipGrid" class="tab-dx-grid no-stripe" key-expr="imoNumber"
-              :data-source="initShips" :show-borders="true" :column-auto-width="true"
-              :selected-row-keys="selectedRowKeys" @row-prepared="onRowPrepared" :show-column-lines="false"
-              @selection-changed="onSelectionChanged" @editor-preparing="onEditorPreparing" :show-column-headers="false"
-              :row-alternation-enabled="true">
-
-              <DxSelection mode="multiple" show-check-boxes-mode="always" :recursive="true"></DxSelection>
+            <DxDataGrid
+              id="ships"
+              ref="shipGrid"
+              class="tab-dx-grid no-stripe"
+              key-expr="imoNumber"
+              :data-source="initShips"
+              :column-auto-width="true"
+              :selected-row-keys="selectedRowKeys"
+              @row-prepared="onRowPrepared"
+              :show-column-lines="false"
+              @selection-changed="onSelectionChanged"
+              @editor-preparing="onEditorPreparing"
+              :show-column-headers="false"
+              :row-alternation-enabled="true"
+              :show-borders="true"
+            >
+              <DxSelection
+                mode="multiple"
+                show-check-boxes-mode="always"
+                :recursive="true"
+              ></DxSelection>
               <DxColumn data-field="name" caption="선박명" cell-template="cellTemplate"></DxColumn>
               <DxColumn data-field="fleetName" :visible="false"></DxColumn>
 
               <template #cellTemplate="{ data: templateOptions }">
                 <div class="d-flex align-self-center">
                   <div class="userName">{{ templateOptions.data.name }}</div>
-                  <div class="groupName ml-2" v-if="templateOptions.data.fleetName != null"
-                    :class="changeColor(templateOptions.data.fleetName)">
-                    {{ templateOptions.data.fleetName}}
+                  <div
+                    class="groupName ml-2"
+                    v-if="templateOptions.data.fleetName != null"
+                    :class="changeColor(templateOptions.data.fleetName)"
+                  >
+                    {{ templateOptions.data.fleetName }}
                   </div>
-                  <div v-else class="groupName ml-2" :class="changeColor(templateOptions.data.fleetName)">선단 없음</div>
+                  <div
+                    v-else
+                    class="groupName ml-2"
+                    :class="changeColor(templateOptions.data.fleetName)"
+                  >
+                    선단 없음
+                  </div>
                 </div>
               </template>
-
             </DxDataGrid>
           </v-card-text>
         </v-card>
@@ -66,7 +109,12 @@
   <!--  선단 추가 팝업창 -->
   <AppModal v-model="isShowAddModal" @close="closeAddModal" title="새로운 선단 추가">
     <template #default>
-      <i-input bg-color="#F1F1F9" label="선단명" v-model="fleetRegisterForm.name" placeholder="선단명을 입력해주세요"></i-input>
+      <i-input
+        bg-color="#F1F1F9"
+        label="선단명"
+        v-model="fleetRegisterForm.name"
+        placeholder="선단명을 입력해주세요"
+      ></i-input>
     </template>
 
     <template #actions>
@@ -89,11 +137,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, provide } from 'vue'
+import { ref, watch } from 'vue'
 
 import ColTwoLayout from '@/layout/ColTwoLayout.vue'
 import NoSelectShip from '@/components/NoSelectShip.vue'
-import ShipInfoEditForm from '@/views/settings/vocc/ship/form/ShipInfoEditForm.vue'
+import ShipInfoEditByUserForm from '@/views/settings/vocc/ship/form/ShipInfoEditByUserForm.vue'
 import ShipInfoRegisterForm from '@/views/settings/vocc/ship/form/ShipInfoRegisterForm.vue'
 import AppModal from '@/components/modal/AppModal.vue'
 
@@ -107,37 +155,31 @@ const colType = ref(1)
 const shipsByVocc = ref('')
 
 const fleetStore = useFleetStore()
-const { fleets } = storeToRefs(fleetStore)
-
+const fleets = ref('')
 
 const shipStore = useShipStore()
 const { ships } = storeToRefs(shipStore)
 
-
-const shipImoNumber = ref("")
-const selectedFleet = ref("")
+const shipImoNumber = ref('')
+const selectedFleet = ref('')
+const selectedFleetKey = ref([])
 
 const fleetGrid = ref()
 
-let role = ''
-/**
- * 선단 목록 조회
- */
-onMounted(() => {
-  // 선단 목록 조회
-  fetchVoccFleets()
-  // 선박 목록 조회
-  if (ships.value.length == 0) {
-    shipStore.fetchShipsByVocc()
+const props = defineProps({
+  voccId: {
+    type: [String, Number, Object]
   }
-
-  role = sessionStorage.getItem('userRole')
-
 })
 
+let role = ''
+
 const fetchVoccFleets = async () => {
-  await fleetStore.fetchFleetsByVocc()
+  let voccId = props.voccId
+  fleets.value = await fleetStore.fetchFleetsByVoccId(voccId)
   // shipsByVocc.value = [...ships.value]
+  selectedFleetKey.value = [fleets.value[0].id]
+  fetchShipsByFleetId(fleets.value[0].id)
 }
 
 /**
@@ -153,57 +195,60 @@ let oldShipKeys = []
  */
 const activeStatus = ref(true)
 const selectFleet = async (e) => {
-  initShips.value = [...ships.value]
-
-  const cellKey = e['row']['key'];
+  const cellKey = e['row']['key']
   const fleetName = e['row']['cells'][0]['displayValue']
 
   selectedFleet.value = { id: cellKey, name: fleetName }
-  const fleetInfo = fleets.value.find(item => item.id === cellKey)
+  const fleetInfo = fleets.value.find((item) => item.id === cellKey)
 
-  selectedRowKeys.value = fleetInfo.imoNumberList;
+  selectedRowKeys.value = fleetInfo.imoNumberList
 
-  oldShipKeys = selectedRowKeys.value;
+  oldShipKeys = selectedRowKeys.value
+  // await fetchShipsByFleetId(cellKey)
+}
+
+const fetchShipsByFleetId = async () => {
+  let voccId = props.voccId
+  const result = await shipStore.fetchShipsByVoccId(voccId)
+  initShips.value = result
 }
 
 const onSelectionChanged = (e) => {
-  selectedRowKeys.value = e.selectedRowKeys;
+  selectedRowKeys.value = e.selectedRowKeys
 }
 
-
 const changeColor = (groupName) => {
-  return groupName ? 'primary' : 'gray';
+  return groupName ? 'primary' : 'gray'
 }
 
 /**
  * 할당된 선단이 있을 경우, 체크박스 및 클릭 이벤트 비활성화
  * onEditorPreparing은 체크박스 비활성화된 것처럼만 보이고,
  * 실제 동작하기 때문에 이벤트를 막는 코드 추가
- * @param {*} e 
+ * @param {*} e
  */
 const onRowPrepared = (e) => {
   // console.log(e)
-  if (e.rowType !== "data") return;
+  if (e.rowType !== 'data') return
   // const isSelected = selectedRowKeys.value.includes(e.key);
   // 선택된 항목 관련 배경색 지정할 경우
   // if (isSelected) {
   //   e.rowElement.style.backgroundColor = '#4E83FF';
   // }
   if (e.data.fleetName != null && selectedFleet.value.id != e.data.fleetId) {
-    e.rowElement.style.pointerEvents = 'none';
+    e.rowElement.style.pointerEvents = 'none'
   }
 }
 
-
 /**
  * 할당된 그룹이 있을 경우, 체크박스 비활성화
- * @param {*} e 
+ * @param {*} e
  */
 const onEditorPreparing = (e) => {
   // 타입이 dataRow일 경우만 동작
-  if (e.type !== "selection" || e.parentType !== 'dataRow') return;
+  if (e.type !== 'selection' || e.parentType !== 'dataRow') return
   if (e.row.data.fleetName != null && selectedFleet.value.id != e.row.data.fleetId) {
-    e.editorOptions.disabled = true;
+    e.editorOptions.disabled = true
   }
 }
 
@@ -211,12 +256,12 @@ const onEditorPreparing = (e) => {
  * 선단 정보 등록
  */
 const fleetRegisterForm = ref({
-  name: "",
+  name: ''
 })
 
 const registerFleet = () => {
   fleetStore.registerFleet(fleetRegisterForm.value).then(() => {
-    isShowAddModal.value = false;
+    isShowAddModal.value = false
     dxGridRefresh(fleetGrid)
     fleetRegisterForm.value.name = ''
   })
@@ -228,20 +273,20 @@ const saveShipByFleet = () => {
     imoNumberList: selectedRowKeys.value
   }
 
-  const fleetName = selectedFleet.value.name;
+  const fleetName = selectedFleet.value.name
   // 기존 선단에 없는 선박 배열
   // 추가된 선박 배열
-  
-  let newValue;
-  let removedValue;
-  
-  if(oldShipKeys){
-    newValue = selectedRowKeys.value.filter(x => !(oldShipKeys.includes(x)))
-    removedValue = oldShipKeys.filter(x => !(selectedRowKeys.value.includes(x)))
-  }else{
-    newValue = selectedRowKeys.value;
+
+  let newValue
+  let removedValue
+
+  if (oldShipKeys) {
+    newValue = selectedRowKeys.value.filter((x) => !oldShipKeys.includes(x))
+    removedValue = oldShipKeys.filter((x) => !selectedRowKeys.value.includes(x))
+  } else {
+    newValue = selectedRowKeys.value
   }
-  // 삭제된 배열 
+  // 삭제된 배열
 
   const editShipArray = {
     newValue,
@@ -253,32 +298,30 @@ const saveShipByFleet = () => {
 }
 
 /**
- * 동적 컴포넌트 변경 
+ * 동적 컴포넌트 변경
  * 버튼에 따라 등록 폼, 수정 폼 변경
  */
 const currentComponent = ref('NoSelectShip')
 const componentList = {
   NoSelectShip,
-  ShipInfoEditForm,
+  ShipInfoEditByUserForm,
   ShipInfoRegisterForm
 }
 
 const changeComponent = (name) => {
-  currentComponent.value = name;
+  currentComponent.value = name
 }
-
 
 /**
  * 선단 등록 팝업창
  */
 const isShowAddModal = ref(false)
 const showAddModal = () => {
-  isShowAddModal.value = true;
+  isShowAddModal.value = true
 }
 const closeAddModal = () => {
-  isShowAddModal.value = false;
+  isShowAddModal.value = false
 }
-
 
 /**
  * 선단 삭제 확인 팝업창
@@ -287,37 +330,37 @@ const showModal = ref(false)
 const modalMessage = ref('')
 const showConfirmModal = (message) => {
   if (!selectedFleet.value.id) {
-    modalMessage.value = '선단을 선택해주세요';
+    modalMessage.value = '선단을 선택해주세요'
   } else {
-    modalMessage.value = message;
+    modalMessage.value = message
   }
-  showModal.value = true;
+  showModal.value = true
 }
 const closeConfirmModal = () => {
-  showModal.value = false;
+  showModal.value = false
 }
 
-
 /**
- * 선단 삭제 
+ * 선단 삭제
  */
-const removeFleet = async() => {
+const removeFleet = async () => {
   // if(selectedRowKeys.value.length > 0){
   //   return;
   // }
-  const result  = await fleetStore.removeFleet(selectedFleet.value.id)
-  
-  if(result == 200){
+  const result = await fleetStore.removeFleet(selectedFleet.value.id)
+
+  if (result == 200) {
     setTimeout(() => {
-      showModal.value = false;
+      showModal.value = false
       const instance = getDxGridInstance(fleetGrid)
       instance.option('focusedRowKey', null)
       initShips.value = []
       dxGridRefresh(fleetGrid)
-
     }, 500)
   }
 }
+
+watch(() => props.voccId, fetchVoccFleets, { immediate: true })
 </script>
 
 <style></style>

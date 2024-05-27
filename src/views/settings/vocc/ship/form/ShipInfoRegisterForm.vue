@@ -18,7 +18,7 @@
           <div class="shipInfo-item">
             <div class="mb-1">IMO Number</div>
             <i-input label="IMO Number" type="text" v-model="shipRegisterForm.imoNumber"
-              placeholder="IMONumber 입력하여 주십시오" maxChar="7" maxlength="7" required :hide-details="false">
+              placeholder="IMO Number를 입력하여 주십시오" min="7" maxChar="7" maxlength="7" required :hide-details="false">
             </i-input>
           </div>
           <div class="shipInfo-item">
@@ -99,6 +99,9 @@ const { voccInfo } = storeToRefs(voccStore)
 const ports = ref([])
 
 const props = defineProps({
+  voccId: {
+    type: Number
+  },
   shipImoNumber: {
     type: String,
     default: ''
@@ -106,7 +109,7 @@ const props = defineProps({
 })
 
 const shipRegisterForm = ref({
-  voccId: voccInfo.value.id, // 선사 아이디
+  voccId: props.voccId, // 선사 아이디
   name: '',
   nation: null,
   imoNumber: '',
@@ -132,7 +135,7 @@ onMounted(() => {
 const disabled = ref(false)
 
 
-const emit = defineEmits(['change-component'])
+const emit = defineEmits(['change-component', 'registerShipInfo'])
 const shipGrid = inject('shipGrid')
 
 /**
@@ -144,12 +147,23 @@ const registerShip = async () => {
   shipRegisterForm.value.length = parseFloat(shipRegisterForm.value.length)
   shipRegisterForm.value.beam = parseFloat(shipRegisterForm.value.beam)
 
+  console.log('선박 등록 요청 ')
+  console.dir(shipRegisterForm.value)
   const result = await shipStore.addShip(shipRegisterForm.value)
 
   if (result == 201) {
-    dxGridRefresh(shipGrid)
+    let registerShipInfo = {
+      voccId: shipRegisterForm.value.voccId,
+      imoNumber: shipRegisterForm.value.imoNumber,
+      name: shipRegisterForm.value.name,
+    }
+
+    console.dir('선박 등롷ㄱ 완료')
+    console.dir(registerShipInfo)
+    emit('registerShipInfo', registerShipInfo)
     setTimeout(() => {
       emit('change-component', 'NoSelectShip')
+
     }, 500)
   }
 }

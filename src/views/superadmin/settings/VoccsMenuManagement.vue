@@ -7,10 +7,22 @@
             <div class="d-flex justify-space-between align-center">
               <div>선사별 권한그룹 목록</div>
               <div>
-                <i-btn class="bg-btn mr-1" @click="showAddModal" color="#3D3D40" prepend-icon="mdi-plus" text="새그룹추가"
-                  width="120"></i-btn>
-                <i-btn class="bg-btn ml-1" @click="showDeleteModal" color="#F04A4A" prepend-icon="mdi-trash-can-outline"
-                  text="삭제" width="75"></i-btn>
+                <i-btn
+                  class="bg-btn mr-1"
+                  @click="showAddModal"
+                  color="#3D3D40"
+                  prepend-icon="mdi-plus"
+                  text="새그룹추가"
+                  width="120"
+                ></i-btn>
+                <i-btn
+                  class="bg-btn ml-1"
+                  @click="showDeleteModal"
+                  color="#F04A4A"
+                  prepend-icon="mdi-trash-can-outline"
+                  text="삭제"
+                  width="75"
+                ></i-btn>
               </div>
             </div>
           </v-card-title>
@@ -18,10 +30,18 @@
             <v-row>
               <v-col cols="4">
                 <!-- 선사 목록 -->
-                <DxDataGrid id="voccGrid" class="no-stripe title-container" ref="voccGrid" key-expr="id"
-                  :show-borders="true" :data-source="voccs" :active-state-enabled="activeStatus"
-                  :focused-row-enabled="activeStatus" :selected-row-keys="selectedVoccId"
-                  :on-focused-cell-changed="getUserdAndGroups">
+                <DxDataGrid
+                  id="voccGrid"
+                  class="no-stripe title-container"
+                  ref="voccGrid"
+                  key-expr="id"
+                  :show-borders="true"
+                  :data-source="voccs"
+                  :active-state-enabled="activeStatus"
+                  :focused-row-enabled="activeStatus"
+                  :selected-row-keys="selectedVoccId"
+                  :on-focused-cell-changed="getUserdAndGroups"
+                >
                   <DxScrolling mode="virtual" />
                   <DxSelection mode="single" />
                   <DxColumn data-field="id" :visible="false" class="pl-10"></DxColumn>
@@ -30,14 +50,31 @@
               </v-col>
               <v-col>
                 <!-- 권한 그룹 목록 -->
-                <DxDataGrid id="groupGrid" class="no-stripe title-container" ref="groupGrid" key-expr="first"
-                  :show-borders="true" :data-source="voccGroups" :active-state-enabled="activeStatus"
-                  :focused-row-enabled="activeStatus" :selected-row-keys="selectedGroupId"
-                  :on-focused-cell-changed="getMenuGroup">
+                <DxDataGrid
+                  id="groupGrid"
+                  class="no-stripe title-container"
+                  ref="groupGrid"
+                  key-expr="first"
+                  :show-borders="true"
+                  :data-source="voccGroups"
+                  :active-state-enabled="activeStatus"
+                  :focused-row-enabled="activeStatus"
+                  :selected-row-keys="selectedGroupId"
+                  :on-focused-cell-changed="getMenuGroup"
+                >
                   <DxScrolling mode="virtual" />
                   <DxSelection mode="single" />
-                  <DxColumn data-field="first" caption="groupId" :visible="false" class="pl-10"></DxColumn>
-                  <DxColumn data-field="second" caption="권한그룹명" :allow-editing="false"></DxColumn>
+                  <DxColumn
+                    data-field="first"
+                    caption="groupId"
+                    :visible="false"
+                    class="pl-10"
+                  ></DxColumn>
+                  <DxColumn
+                    data-field="second"
+                    caption="권한그룹명"
+                    :allow-editing="false"
+                  ></DxColumn>
                 </DxDataGrid>
               </v-col>
             </v-row>
@@ -56,9 +93,19 @@
             </div>
           </v-card-title>
           <v-card-text>
-            <DxTreeList id="menus" ref="menusGrid" class="title-container no-stripe" :data-source="initMenus"
-              :column-auto-width="true" key-expr="menuId" parent-id-expr="parentId" :selected-row-keys="selectedRowKeys"
-              :autoExpandAll="true" noDataText="데이터가 없습니다" :show-borders="true">
+            <DxTreeList
+              id="menus"
+              ref="menusGrid"
+              class="title-container no-stripe"
+              :data-source="initMenus"
+              :column-auto-width="true"
+              key-expr="menuId"
+              parent-id-expr="parentId"
+              :selected-row-keys="selectedRowKeys"
+              :autoExpandAll="true"
+              noDataText="데이터가 없습니다"
+              :show-borders="true"
+            >
               <DxHeaderFilter :visible="false" />
               <DxScrolling column-rendering-mode="virtual" />
               <DxSelection mode="multiple" :recursive="true"></DxSelection>
@@ -72,7 +119,12 @@
   <!--  그룹 추가 팝업창 -->
   <AppModal v-model="isShowAddModal" @close="closeAddModal" title="새로운 그룹 추가">
     <template #default>
-      <i-input bgColor="#F1F1F9" label="그룹명" v-model="newGroupName" placehoder="새로운 그룹명을 입력해주세요"></i-input>
+      <i-input
+        bgColor="#F1F1F9"
+        label="그룹명"
+        v-model="newGroupName"
+        placehoder="새로운 그룹명을 입력해주세요"
+      ></i-input>
     </template>
 
     <template #actions>
@@ -91,8 +143,12 @@
     </template>
 
     <template #actions>
-      <i-btnGroup v-if="selectdGroupId !== ''" type="confirm" @close="closeDeleteModal"
-        @confirm="removeGroup"></i-btnGroup>
+      <i-btnGroup
+        v-if="selectdGroupId !== ''"
+        type="confirm"
+        @close="closeDeleteModal"
+        @confirm="removeGroup"
+      ></i-btnGroup>
     </template>
   </AppModal>
 </template>
@@ -150,8 +206,8 @@ onBeforeMount(() => {
   fetchVoccs()
   getMenus().then((response) => {
     // const { data : { data : allMenu }} = response;
-    const allMenu = response.data.data;
-    const filterMenu = allMenu.filter(menu => menu.accessRole != 'LCC_ADMIN')
+    const allMenu = response.data.data
+    const filterMenu = allMenu.filter((menu) => menu.accessRole != 'LCC_ADMIN')
     menus.value = filterMenu
     // ({ data: menus.value = response.data })
   })
@@ -173,47 +229,42 @@ const getUserdAndGroups = async (e) => {
   console.log('유저 그룹')
   console.dir(e)
 
-  selectedVoccId.value = e.row.key
+  selectedVoccId.value = e.row.keysaveMenuByGroup
   initUsers.value = []
   const result = await authStore.fetchGroupsByVoccId(e.row.key)
 
   console.dir(result)
   voccGroups.value = result.userGroupIdAndNameList
   voccUsers.value = result.userGroupInfoByUserList
-
 }
 
 const changeColor = (groupName) => {
-  return groupName ? 'primary' : 'gray';
+  return groupName ? 'primary' : 'gray'
 }
 
-const voccs = ref();
+const voccs = ref()
 const fetchVoccs = async () => {
-  const result = await voccStore.fetchVoccs();
-  voccs.value = result;
+  const result = await voccStore.fetchVoccs()
+  voccs.value = result
   console.dir(voccs)
 }
 
-const fetchGroupsByVoccId = () => {
-
-}
-
+const fetchGroupsByVoccId = () => {}
 
 // 그룹 선택시, 메뉴 목록에서 해당 그룹에 할당한 메뉴를 체크해주는 기능
 const getUsersGroup = (e) => {
   console.dir(e)
-  const cellKey = e['row']['data']['first'];
-  const cellValue = e['row']['data']['second'];
+  const cellKey = e['row']['data']['first']
+  const cellValue = e['row']['data']['second']
 
   selectdGroupId.value = cellKey
   selectedGroupName.value = cellValue
-  initUsers.value = _.cloneDeep(voccUsers.value);
+  initUsers.value = _.cloneDeep(voccUsers.value)
 
-  selectedRowKeys.value = initUsers.value.filter((user) => user.groupId === cellKey)
+  selectedRowKeys.value = initUsers.value
+    .filter((user) => user.groupId === cellKey)
     .map((user) => user.userId)
   oldGroupKeys = selectedRowKeys.value
-
-  dxGridRefresh(userGrid)
 }
 
 // 메뉴 선택 시 실행되는 함수
@@ -223,7 +274,7 @@ const getMenuGroup = (e) => {
   initMenus.value = [...menus.value]
 
   getMenusByGroup(selectedGroupKey.value).then((response) => {
-    const result = response.data.data;
+    const result = response.data.data
     if (result.length > 0) {
       // 할당된 메뉴가 있을 경우, 메뉴 업데이트
       selectedRowKeys.value = result
@@ -234,11 +285,12 @@ const getMenuGroup = (e) => {
   })
 }
 
-
 // 저장할 경우 백엔드로 정보 전달
 const saveMenusByGroup = async () => {
   const selectedMenuKeys = getDxGridInstance(menusGrid).getSelectedRowKeys('all')
-  const selectedMenu = menus.value.filter((menu) => selectedMenuKeys.includes(menu.menuId)).map(item => item.menuId)
+  const selectedMenu = menus.value
+    .filter((menu) => selectedMenuKeys.includes(menu.menuId))
+    .map((item) => item.menuId)
 
   const groupForm = {
     groupId: selectedGroupKey.value,
@@ -247,17 +299,20 @@ const saveMenusByGroup = async () => {
 
   try {
     const response = await saveMenuByGroup(groupForm)
-    showResMsg('메뉴 목록이 업데이트 되었습니다')
+    console.log('저장 후 결과')
+    console.dir(response)
+    if (response.status == 200) {
+      showResMsg('메뉴 목록이 업데이트 되었습니다')
+    }
   } catch (error) {
-    const errorMsg = error.response.data.errorMsg;
+    const errorMsg = error.response.data.errorMsg
     showResMsg(errorMsg)
   }
 }
 
 const closeAddModal = () => {
-  isShowAddModal.value = false;
+  isShowAddModal.value = false
 }
-
 </script>
 
 <style scoped>
@@ -268,7 +323,7 @@ const closeAddModal = () => {
 }
 
 .groupName.primary {
-  background: #4E83FF;
+  background: #4e83ff;
 }
 
 .groupName.gray {

@@ -75,7 +75,7 @@ export const useAuthStore = defineStore(
             sessionStorage.setItem('accessMenus', JSON.stringify(accessMenus.value))
             localStorage.setItem('accessMenus', JSON.stringify(accessMenus.value))
 
-            await voccStore.fetchVoccInfo()
+            await voccStore.fetchMyVoccInfo()
             let uuid = v4()
             // let uuid = crypto.randomUUID()
             userInfo.value.uuid = uuid
@@ -276,7 +276,10 @@ export const useAuthStore = defineStore(
       try {
         const response = await addGroup(voccId, groupName)
         const { data: groupKey } = response
+        const { status } = response
 
+        console.dir(response)
+        console.log(status)
         const addGroupInfo = {
           first: groupKey, // 그룹 추가 후 그룹 아이디 값 추가 필요
           second: groupName // 소속 그룹 업데이트 필요해서 필드 추가
@@ -284,6 +287,7 @@ export const useAuthStore = defineStore(
 
         groups.value = [...groups.value, addGroupInfo]
         showResMsg('그룹이 추가되었습니다')
+        return status
       } catch (error) {
         errorMsg = error.response.data.errorMsg
         showResMsg(errorMsg)
@@ -364,16 +368,15 @@ export const useAuthStore = defineStore(
 
           console.log(`그룹명 : ${groupName}`)
           console.log(`사용자 목록  : ${userIdList}`)
-          users.value = users.value.forEach((user) => {
+          users.value.forEach((user) => {
             if (userIdList.includes(user.userId)) {
               user.groupName = groupName
               user.groupId = groupId
             }
           })
-        
 
           console.log('사용자 추가 후 결과')
-        console.dir(users.value)
+          console.dir(users.value)
 
           // localStorage.setItem('users', users.value)
 
@@ -385,8 +388,10 @@ export const useAuthStore = defineStore(
       }
     }
 
-    const addUserByVoccId = async (groupId, userInfo) => {
+    const addUserByVoccId = async (userInfo) => {
       try {
+        console.log('그룹 추가 요청')
+        console.dir(userInfo)
         const response = await saveUserByGroup(userInfo)
 
         if (response.status == 200) {

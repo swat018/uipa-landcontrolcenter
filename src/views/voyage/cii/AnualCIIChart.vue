@@ -10,13 +10,28 @@ import { storeToRefs } from 'pinia'
 import { useShipStore } from '@/stores/shipStore'
 import { useCiiStore } from '@/stores/ciiStore'
 
+import {
+  getCiiListByImoNumber,
+  getAnnualCiiData,
+  getMonthlyCiiData,
+  getPastCiiData,
+  updateCiiFutureData
+} from '@/api/cii.js'
+
+import {
+  convertNumberFormat,
+  convertFloatFormatObject,
+  convertDateTimeType,
+  convertStringToFloat
+} from '@/composables/util'
+
 import EChart from '@/components/echart/Echarts.vue'
 
 const shipStore = useShipStore()
-const { selectedShip } = storeToRefs(shipStore);
+const { selectedShip } = storeToRefs(shipStore)
 
 const ciiStore = useCiiStore()
-const { monthlyCiiData } = storeToRefs(ciiStore);
+// const { monthlyCiiData } = storeToRefs(ciiStore)
 
 onMounted(() => {
   fetchMonthlyCiiData()
@@ -25,14 +40,13 @@ onMounted(() => {
 const year = ref('2024')
 let series = ref([])
 const test2 = ref([])
+const monthlyCiiData = ref([])
 
-
-const hfo = ref(null)
 let option = ref({
   grid: {
     bottom: 30,
-    right: 20,
-    left: 30
+    right: 5,
+    left: 20
   },
   tooltip: {
     trigger: 'axis'
@@ -43,7 +57,7 @@ let option = ref({
   },
   xAxis: {
     type: 'category',
-    data: ['Jau', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    data: ['', 'Jau', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   },
   yAxis: {
     type: 'value',
@@ -52,263 +66,179 @@ let option = ref({
         color: '#54565F'
       }
     },
-    max: monthlyCiiData.value.ciiGradeRangeE.second
+    max: 0
   },
-  series:  test2.value
-})
-
-
-
-const fetchMonthlyCiiData = async () => {
-  let test = []
-
-  await ciiStore.fetchMonthlyCiiData(selectedShip.value, year.value);
-
-  option.value.yAxis.max = monthlyCiiData.value.ciiGradeRangeE.second 
-  const indexOfAttainedCii = findFuelIndex('Attained CII');
-  if (indexOfAttainedCii == -1) {
-    test2.value.push({
+  series: [
+    {
       name: 'Attained CII',
-      data: monthlyCiiData.value.attainedCiiList,
+      data: 0,
       type: 'bar',
       smooth: true
-    })
-  } else {
-    test2.value[indexOfAttainedCii].data = monthlyCiiData.value.focLngList
-  }
-
-  const indexOfAttainedCiiLine = findFuelIndex('Attained CII Line');
-  if (indexOfAttainedCiiLine == -1) {
-    test2.value.push({
+    },
+    {
       name: 'Attained CII Line',
       color: '#FD8100',
-      data: monthlyCiiData.value.attainedCiiList,
+      data: 0,
       type: 'line',
       smooth: true
-    })
-  } else {
-    test2.value[indexOfAttainedCiiLine].data = monthlyCiiData.value.focLngList
-  }
-
-  const indexOfRequiredCii = findFuelIndex('Required CII');
-  if (indexOfRequiredCii == -1) {
-    test2.value.push({
+    },
+    {
       symbolSize: 0,
       name: 'Required CII',
-      data: new Array(12).fill(monthlyCiiData.value.requiredCii),
+      data: [],
       type: 'line',
       color: '#42D2A7',
-      markArea : {
-        emphasis: {
-          disabled: true
-        },
-        data :[
-          [{
-            name: 'A',
-            nameLocation: 'middle',
-            label: {
-              position: ['5%', '45%'],
-              fontSize: '25px',
-              color: '#fff'
-            },
-            yAxis: 0,
-            itemStyle: {
-              color: '#ADB2B81A',
-              // opacity: 0.3,
-            },
-          },
-          { 
-            yAxis: monthlyCiiData.value.ciiGradeRangeA.second
-          }],
-          [
-            {
-              name: 'B',
-              nameLocation: 'vertical',
-              label: {
-                position: ['5%', '50%'],
-                fontSize: '25px',
-                color: '#fff'
-              },
-              yAxis: monthlyCiiData.value.ciiGradeRangeB.first,
-              itemStyle: {
-                color: '#42D2A71A',
-                // opacity: 0.3,
-              },
-            },
-            {
-              yAxis: monthlyCiiData.value.ciiGradeRangeB.second,
-            },
-          ],
-          [
-            {
-              name: 'C',
-              label: {
-                position: ['5%', '45%'],
-                fontSize: '25px',
-                color: '#fff'
-              },
-              yAxis: monthlyCiiData.value.ciiGradeRangeC.first,
-              itemStyle: {
-                color: '#FD81001A',
-              //  opacity: 0.3,
-              },
-            },
-            { yAxis: monthlyCiiData.value.ciiGradeRangeC.second },
-          ],
-          [
-            {
-              name: 'D',
-              label: {
-                position: ['5%', '45%'],
-                fontSize: '25px',
-                color: '#fff'
-              },
-              yAxis: monthlyCiiData.value.ciiGradeRangeD.first,
-              itemStyle: {
-                color: '#FEBD191A',
-                //  opacity: 0.3,
-              },
-            },
-            { yAxis: monthlyCiiData.value.ciiGradeRangeD.second },
-          ],
-          [
-            {
-              name: 'E',
-              label: {
-                position: ['5%', '45%'],
-                fontSize: '25px',
-                color: '#fff'
-              },
-              yAxis: monthlyCiiData.value.ciiGradeRangeE.first,
-              itemStyle: {
-                color: '#5789FE1A',
-                // /opacity: 0.3,
-              },
-            },
-            { yAxis: monthlyCiiData.value.ciiGradeRangeE.second },
-          ]
-        ]
-      }
-    })
-  } else {
-    test2.value[indexOfRequiredCii] = {
-      name: 'Required CII',
-      symbolSize: 0,
-      data: new Array(12).fill(monthlyCiiData.value.requiredCii) ,
-      type: 'line',
       markArea: {
         emphasis: {
           disabled: true
         },
         data: [
-          [{
-            name: 'A',
-            
-            nameLocation: 'middle',
-            label: {
-              position: ['5%', '45%'],
-              fontSize: '25px',
-              color: '#fff'
-            },
-            yAxis: 0,
-            itemStyle: {
-              color: '#ADB2B81A',
-              // opacity: 0.3,
-            },
-          },
-          {
-            yAxis: monthlyCiiData.value.ciiGradeRangeA.second
-          }],
           [
             {
-              name: 'B',
+              name: 'A',
+              nameLocation: 'middle',
               label: {
-                position: ['5%', '45%'],
+                position: 'insideLeft',
                 fontSize: '25px',
                 color: '#fff'
               },
-              nameLocation: 'vertical',
-              yAxis: monthlyCiiData.value.ciiGradeRangeB.first,
+              yAxis: 0,
               itemStyle: {
-                color: '#42D2A71A',
+                color: '#ADB2B81A'
                 // opacity: 0.3,
-              },
+              }
             },
             {
-              yAxis: monthlyCiiData.value.ciiGradeRangeB.second,
+              yAxis: 0
+            }
+          ],
+          [
+            {
+              name: 'B',
+              nameLocation: 'vertical',
+              label: {
+                position: 'insideLeft',
+                fontSize: '25px',
+                color: '#fff'
+              },
+              yAxis: 0,
+              itemStyle: {
+                color: '#42D2A71A'
+                // opacity: 0.3,
+              }
             },
+            {
+              yAxis: 0
+            }
           ],
           [
             {
               name: 'C',
               label: {
-                position: ['5%', '45%'],
+                position: 'insideLeft',
                 fontSize: '25px',
                 color: '#fff'
               },
-              yAxis: monthlyCiiData.value.ciiGradeRangeC.first,
+              yAxis: 0,
               itemStyle: {
-                color: '#FD81001A',
+                color: '#FD81001A'
                 //  opacity: 0.3,
-              },
+              }
             },
-            { yAxis: monthlyCiiData.value.ciiGradeRangeC.second },
+            { yAxis: 0 }
           ],
           [
             {
               name: 'D',
               label: {
-                position: ['5%', '45%'],
+                position: 'insideLeft',
                 fontSize: '25px',
                 color: '#fff'
               },
-              yAxis: monthlyCiiData.value.ciiGradeRangeD.first,
+              yAxis: 0,
               itemStyle: {
-                color: '#FEBD191A',
+                color: '#FEBD191A'
                 //  opacity: 0.3,
-              },
+              }
             },
-            { yAxis: monthlyCiiData.value.ciiGradeRangeD.second },
+            { yAxis: 0 }
           ],
           [
             {
               name: 'E',
               label: {
-                position: ['5%', '45%'],
+                position: 'insideLeft',
                 fontSize: '25px',
                 color: '#fff'
               },
-              yAxis: monthlyCiiData.value.ciiGradeRangeE.first,
+              yAxis: 0,
               itemStyle: {
-                color: '#5789FE1A',
+                color: '#5789FE1A'
                 // /opacity: 0.3,
-              },
+              }
             },
-            { yAxis: monthlyCiiData.value.ciiGradeRangeE.second },
+            { yAxis: 0 }
           ]
         ]
       }
     }
+  ]
+})
+
+const fetchMonthlyCiiData = async () => {
+  const {
+    data: { data }
+  } = await getMonthlyCiiData(selectedShip.value, year.value)
+
+  if (data) {
+    monthlyCiiData.value = convertFloatFormatObject(data)
+    console.log('Monthly Api 데이터 변환 후')
+    console.dir(monthlyCiiData)
+  } else {
+    monthlyCiiData.value = convertFloatFormatObject(monthlyCiiData.value)
   }
+  let test = []
+
+  // await ciiStore.fetchMonthlyCiiData(selectedShip.value, year.value)
+
+  console.log('월별 데이터')
+  console.dir(monthlyCiiData)
+
+  option.value.yAxis.max = monthlyCiiData.value.ciiGradeRangeE.second
+
+  option.value.yAxis.max = monthlyCiiData.value.ciiGradeRangeE.second
+  let attainedCII = [...monthlyCiiData.value.attainedCiiList]
+  let requiredCII = new Array(12).fill(monthlyCiiData.value.requiredCii)
+
+  attainedCII.unshift('-')
+  requiredCII.unshift('-')
+
+  console.log('달성량')
+  console.dir(attainedCII)
+  option.value.series[0].data = attainedCII
+  option.value.series[1].data = attainedCII
+  option.value.series[2].data = requiredCII
+  option.value.series[2].markArea.data[0][1].yAxis = monthlyCiiData.value.ciiGradeRangeA.second
+  option.value.series[2].markArea.data[1][0].yAxis = monthlyCiiData.value.ciiGradeRangeB.first
+  option.value.series[2].markArea.data[1][1].yAxis = monthlyCiiData.value.ciiGradeRangeB.second
+  option.value.series[2].markArea.data[2][0].yAxis = monthlyCiiData.value.ciiGradeRangeC.first
+  option.value.series[2].markArea.data[2][1].yAxis = monthlyCiiData.value.ciiGradeRangeC.second
+  option.value.series[2].markArea.data[3][0].yAxis = monthlyCiiData.value.ciiGradeRangeD.first
+  option.value.series[2].markArea.data[3][1].yAxis = monthlyCiiData.value.ciiGradeRangeD.second
+  option.value.series[2].markArea.data[4][0].yAxis = monthlyCiiData.value.ciiGradeRangeE.first
+  option.value.series[2].markArea.data[4][1].yAxis = monthlyCiiData.value.ciiGradeRangeE.second
 }
-
-
 
 function findFuelIndex(name) {
   for (let i = 0; i < test2.value.length; i++) {
     if (test2.value[i].name === name) {
-      return i;
+      return i
     }
   }
-  return -1; // MGO not found in the chart
+  return -1 // MGO not found in the chart
 }
 
-watch(selectedShip, fetchMonthlyCiiData);
+watch(selectedShip, fetchMonthlyCiiData)
 // watch(monthlyCiiData, setChartOption, {deep : true})
-
 </script>
-<style>
-.chart2-container {
-  height: 50%;
-}
-</style>
+<style></style>

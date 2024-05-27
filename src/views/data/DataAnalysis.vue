@@ -1,14 +1,22 @@
 <template>
   <v-sheet class="tabs-content-test">
-    <v-sheet class="px-6 py-6  my-6 rounded-lg" color="#333334">
+    <v-sheet class="px-6 py-6 my-6 rounded-lg" color="#333334">
       <div class="d-flex justify-space-between align-center">
         <!-- <div class="align-center">Equipment</div> -->
         <div class="d-flex ga-2">
           <input class="noticeList-datePicker" type="date" v-model="startDate" />
           <input class="noticeList-datePicker" type="date" v-model="endDate" />
 
-          <v-autocomplete v-model="equipments[0]" :items="equipments" variant="solo-filled" density="compact"
-            class="equipmentSelector" bg-color="#434348" :hide-details="true" placeholder="장비를 선택해주세요"></v-autocomplete>
+          <v-autocomplete
+            v-model="equipments[0]"
+            :items="equipments"
+            variant="solo-filled"
+            density="compact"
+            class="equipmentSelector"
+            bg-color="#434348"
+            :hide-details="true"
+            placeholder="장비를 선택해주세요"
+          ></v-autocomplete>
         </div>
       </div>
     </v-sheet>
@@ -64,23 +72,25 @@
       </v-row>
     </v-sheet> -->
     <v-container class="performance-chart-container" fluid>
-      <v-row dense class="h-100">
-        <v-col cols="6" class="col">
+      <v-row class="h-100">
+        <v-col cols="6" class="col pl-0">
           <v-sheet class="h-100 rounded-lg" color="#333334">
             <Echart :option="option"></Echart>
           </v-sheet>
         </v-col>
-        <v-col cols="6" class="col"> <v-sheet class="h-100 rounded-lg" color="#333334">
-            <Echart :option="speedPowerOption"></Echart>
-          </v-sheet></v-col>
-        <v-col cols="6" class="col">
-          <v-sheet class="h-100" color="#333334">
-            <Echart :option=" fuelPowerOption"></Echart>
+        <v-col cols="6" class="col pr-0">
+          <v-sheet class="h-100 rounded-lg" color="#333334">
+            <Echart :option="speedPowerOption"></Echart> </v-sheet
+        ></v-col>
+        <v-col cols="6" class="col pl-0">
+          <v-sheet class="h-100 rounded-lg" color="#333334">
+            <Echart :option="fuelPowerOption"></Echart>
           </v-sheet>
         </v-col>
-        <v-col cols="6" class="col"> <v-sheet class="h-100" color="#333334">
-            <Echart :option=" powerPropellerOption"></Echart>
-          </v-sheet></v-col>
+        <v-col cols="6" class="col pr-0">
+          <v-sheet class="h-100 rounded-lg" color="#333334">
+            <Echart :option="powerPropellerOption"></Echart> </v-sheet
+        ></v-col>
       </v-row>
     </v-container>
   </v-sheet>
@@ -93,26 +103,13 @@ import Echart from '@/components/echart/Echarts.vue'
 
 import analysisData from '@/assets/mockup/analysis.json'
 
-import { use } from 'echarts/core';
-import { CanvasRenderer } from 'echarts/renderers';
-import { PieChart } from 'echarts/charts';
-import {
-  TitleComponent,
-  TooltipComponent,
-  LegendComponent,
-} from 'echarts/components';
-import VChart, { THEME_KEY } from 'vue-echarts';
+import { use } from 'echarts/core'
+import { CanvasRenderer } from 'echarts/renderers'
+import { PieChart } from 'echarts/charts'
+import { TitleComponent, TooltipComponent, LegendComponent } from 'echarts/components'
+import VChart, { THEME_KEY } from 'vue-echarts'
 
-use([
-  CanvasRenderer,
-  PieChart,
-  TitleComponent,
-  TooltipComponent,
-  LegendComponent,
-]);
-
-
-
+use([CanvasRenderer, PieChart, TitleComponent, TooltipComponent, LegendComponent])
 
 const selected = ref([])
 const selectedTags = []
@@ -133,9 +130,8 @@ const option = ref({
     left: 'center',
     textStyle: {
       color: '#fff'
-    }
-    , top: '2%'
-
+    },
+    top: '2%'
   },
   grid: {
     bottom: '20%',
@@ -147,36 +143,34 @@ const option = ref({
     nameLocation: 'center',
     nameGap: 30,
     nameTextStyle: {
-      color: "#fff",
+      color: '#fff',
       fontSize: '12px'
     },
     splitLine: {
       lineStyle: {
         width: 1,
-        type: "dashed",
-        color: "#5C5C5E",
+        type: 'dashed',
+        color: '#5C5C5E',
         opacity: 0.5
-      },
-    },
+      }
+    }
   },
   yAxis: {
     name: 'Fuel Consumption (kg/h)',
     nameLocation: 'middle',
     nameGap: 30,
     nameTextStyle: {
-      color: "#fff",
+      color: '#fff',
       fontSize: '12px'
     },
     splitLine: {
       lineStyle: {
         width: 1,
-        type: "dashed",
-        color: "#5C5C5E",
+        type: 'dashed',
+        color: '#5C5C5E',
         opacity: 0.5
-      },
-    },
-
-
+      }
+    }
   },
   series: [
     {
@@ -220,7 +214,7 @@ const option = ref({
         [13.0, 7.58],
         [14.0, 8.96],
         [14.0, 8.96],
-        [14.0, 7.66],
+        [14.0, 7.66]
       ],
       type: 'scatter'
     },
@@ -234,7 +228,8 @@ const option = ref({
         [8, 6.5],
         [10, 7.5],
         [12, 8.5],
-        [15, 10],],
+        [15, 10]
+      ],
       type: 'line'
     }
   ]
@@ -246,8 +241,8 @@ const speedPowerOption = ref({
     left: 'center',
     textStyle: {
       color: '#fff'
-    },top: '2%'
-
+    },
+    top: '2%'
   },
   grid: {
     bottom: '20%',
@@ -258,35 +253,34 @@ const speedPowerOption = ref({
     nameLocation: 'center',
     nameGap: 30,
     nameTextStyle: {
-      color: "#fff",
+      color: '#fff',
       fontSize: '12px'
     },
     splitLine: {
       lineStyle: {
         width: 1,
-        type: "dashed",
-        color: "#5C5C5E",
+        type: 'dashed',
+        color: '#5C5C5E',
         opacity: 0.5
-      },
-    },
+      }
+    }
   },
   yAxis: {
     name: 'Power (kW)',
     nameLocation: 'middle',
     nameGap: 40,
     nameTextStyle: {
-      color: "#fff",
+      color: '#fff',
       fontSize: '12px'
     },
     splitLine: {
       lineStyle: {
         width: 1,
-        type: "dashed",
-        color: "#5C5C5E",
+        type: 'dashed',
+        color: '#5C5C5E',
         opacity: 0.5
-      },
-    },
-
+      }
+    }
   },
   series: [
     {
@@ -297,7 +291,7 @@ const speedPowerOption = ref({
         [40, 80],
         [60, 150],
         [70, 200],
-        [100, 300],
+        [100, 300]
       ],
       type: 'line',
       smooth: true
@@ -310,7 +304,7 @@ const speedPowerOption = ref({
         [20, 200],
         [40, 250],
         [60, 300],
-        [100, 350],
+        [100, 350]
       ],
       type: 'line',
       smooth: true
@@ -323,7 +317,7 @@ const speedPowerOption = ref({
         [40, 150],
         [60, 200],
         [80, 300],
-        [100, 400],
+        [100, 400]
       ],
       type: 'line',
       smooth: true
@@ -331,15 +325,14 @@ const speedPowerOption = ref({
   ]
 })
 
-
 const fuelPowerOption = ref({
   title: {
     text: 'Fuel Consumption - Power Curve',
     left: 'center',
     textStyle: {
       color: '#fff'
-    }, top: '2%'
-
+    },
+    top: '2%'
   },
   grid: {
     bottom: '20%',
@@ -350,34 +343,34 @@ const fuelPowerOption = ref({
     nameLocation: 'center',
     nameGap: 40,
     nameTextStyle: {
-      color: "#fff",
+      color: '#fff',
       fontSize: '12px'
     },
     splitLine: {
       lineStyle: {
         width: 1,
-        type: "dashed",
-        color: "#5C5C5E",
+        type: 'dashed',
+        color: '#5C5C5E',
         opacity: 0.5
-      },
-    },
+      }
+    }
   },
   yAxis: {
     name: 'Fuel Consumption (kg/h)',
     nameLocation: 'center',
     nameGap: 40,
     nameTextStyle: {
-      color: "#fff",
+      color: '#fff',
       fontSize: '12px'
     },
     splitLine: {
       lineStyle: {
         width: 1,
-        type: "dashed",
-        color: "#5C5C5E",
+        type: 'dashed',
+        color: '#5C5C5E',
         opacity: 0.5
-      },
-    },
+      }
+    }
   },
   series: [
     {
@@ -389,7 +382,7 @@ const fuelPowerOption = ref({
         [40, 80],
         [60, 150],
         [70, 200],
-        [100, 300],
+        [100, 300]
       ],
       type: 'line',
       smooth: true
@@ -405,7 +398,7 @@ const fuelPowerOption = ref({
         [70, 20],
         [80, 20],
         [90, 20],
-        [100, 20],
+        [100, 20]
       ],
       type: 'line',
       smooth: true
@@ -419,7 +412,7 @@ const fuelPowerOption = ref({
         [40, 200],
         [60, 290],
         [70, 330],
-        [100, 400],
+        [100, 400]
       ],
       type: 'line',
       smooth: true
@@ -435,7 +428,6 @@ const powerPropellerOption = ref({
       color: '#fff'
     },
     top: '2%'
-
   },
   grid: {
     bottom: '20%',
@@ -446,34 +438,34 @@ const powerPropellerOption = ref({
     nameLocation: 'center',
     nameGap: 30,
     nameTextStyle: {
-      color: "#fff",
+      color: '#fff',
       fontSize: '12px'
     },
     splitLine: {
       lineStyle: {
         width: 1,
-        type: "dashed",
-        color: "#5C5C5E",
+        type: 'dashed',
+        color: '#5C5C5E',
         opacity: 0.5
-      },
-    },
+      }
+    }
   },
   yAxis: {
     name: 'Power (kW)',
     nameLocation: 'middle',
     nameGap: 40,
     nameTextStyle: {
-      color: "#fff",
+      color: '#fff',
       fontSize: '12px'
     },
     splitLine: {
       lineStyle: {
         width: 1,
-        type: "dashed",
-        color: "#5C5C5E",
+        type: 'dashed',
+        color: '#5C5C5E',
         opacity: 0.5
-      },
-    },
+      }
+    }
   },
   series: [
     {
@@ -484,7 +476,7 @@ const powerPropellerOption = ref({
         [40, 150],
         [60, 250],
         [80, 340],
-        [100, 400],
+        [100, 400]
       ],
       type: 'line',
       smooth: true
@@ -497,7 +489,7 @@ const powerPropellerOption = ref({
         [40, 50],
         [60, 100],
         [80, 150],
-        [100, 250],
+        [100, 250]
       ],
       type: 'line',
       smooth: true
@@ -510,7 +502,7 @@ const powerPropellerOption = ref({
         [40, 80],
         [60, 150],
         [80, 280],
-        [100, 400],
+        [100, 400]
       ],
       type: 'line',
       smooth: true
@@ -518,10 +510,7 @@ const powerPropellerOption = ref({
   ]
 })
 
-
-onMounted(() => {
-})
-
+onMounted(() => {})
 </script>
 
 <style lang="scss" scoped>
@@ -549,8 +538,6 @@ onMounted(() => {
 */
 /* height : 100%; */
 
-
-
 /* Grid */
 .chart-analysis-container {
   /* flex: 1 1 0; */
@@ -570,7 +557,6 @@ onMounted(() => {
   background: #222224;
 }
 
-
 .analysis-tab-container .v-window-item {
   height: 100%;
 }
@@ -580,19 +566,19 @@ onMounted(() => {
 }
 
 .v-row.analysis-chart-container {
-  >div {
+  > div {
     height: calc(100% / 2);
   }
 }
 
 .test {
   height: 100vh;
-  max-height: calc(100vh - 65px - 24px - 24px - 44px - 24px - 24px)
+  max-height: calc(100vh - 65px - 24px - 24px - 44px - 24px - 24px);
 }
 
 .test2 {
   height: 100vh;
-  max-height: calc((100vh - 65px - 24px - 24px - 44px - 24px - 24px) / 2)
+  max-height: calc((100vh - 65px - 24px - 24px - 44px - 24px - 24px) / 2);
 }
 
 .tabs-content-test {
@@ -614,4 +600,5 @@ onMounted(() => {
 //   background : red;
 //       height: 100vh;
 //     max-height: calc((99vh - 65px - 24px - 62px - 24px - 24px - 40px - 24px - 24px - 24px - 24px) / 2);
-// }</style>
+// }
+</style>

@@ -13,7 +13,8 @@ import voyageRoutes from './voyage'
 import equipmentRoutes from './equipment'
 import fdsRoutes from './fds'
 import dataRoutes from './data'
-import insRoutes from './ins'
+// import insRoutes from './ins'
+import monitoringRoutes from './monitoring'
 
 /**
  * 페이지 Import
@@ -88,7 +89,8 @@ const routes = [
   ...equipmentRoutes,
   ...fdsRoutes,
   ...dataRoutes,
-  ...insRoutes
+  // ...insRoutes,
+  ...monitoringRoutes
 ]
 
 const router = createRouter({
@@ -176,7 +178,7 @@ router.beforeEach((to, from, next) => {
   if (from.fullPath == '/' && to.fullPath == '/auth/login') {
     const { accessMenus } = menus
 
-    if(!accessMenus){
+    if (!accessMenus) {
       next()
     }
 

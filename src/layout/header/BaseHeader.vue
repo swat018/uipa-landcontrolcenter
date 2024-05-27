@@ -16,16 +16,14 @@
         <IconList></IconList>
       </div>
     </div>
-
   </v-app-bar>
 </template>
 
 <script setup>
 import DistanceProgress from '@/layout/header/menu/DistanceProgress.vue'
 import HeaderAisInfo from '@/layout/header/menu/HeaderAisInfo.vue'
-import IconList from '@/layout/header/menu/IconList.vue';
+import IconList from '@/layout/header/menu/IconList.vue'
 import TimeInfo from '@/layout/header/menu/TimeInfo.vue'
-
 </script>
 
 <style scoped>
@@ -33,5 +31,4 @@ header {
   color: white !important;
   /* border-bottom: 0.5px solid #595a63; */
 }
-
 </style>

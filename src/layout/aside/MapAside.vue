@@ -1,57 +1,85 @@
 <template>
-  <v-navigation-drawer v-model="drawer" :rail="rail" permanent @click="rail = false" style="background : #1f1e1e">
+  <v-navigation-drawer
+    v-model="drawer"
+    :rail="rail"
+    permanent
+    @click="rail = false"
+    style="background: #1f1e1e"
+  >
     <v-list density="compact">
       <v-list-item v-if="rail" :prepend-avatar="rail ? getLogoImage : getLogoImage"> </v-list-item>
-      <v-list-item class="d-flex justify-center" v-else><v-img :src="getLogoImage" width="150" height="50"
-          cover></v-img>
+      <v-list-item class="d-flex justify-center" v-else
+        ><v-img :src="getLogoImage" width="150" height="50" cover></v-img>
       </v-list-item>
 
-      <!-- <v-list-item v-if="!rail" class="mt-4 pa-0">
-        <v-sheet class="pa-5" color="#29292D">
-          <i-input id="searchBox" v-model="searchVocc" prepend-inner-icon="mdi-magnify" single-line hide-details
-            @input="searchByVocc" style="width:220px" placeholder="선사명을 입력해주세요"></i-input>
-
-          <DxDataGrid ref="voccsGrid" class="noStripe mt-4" :data-source="voccs" key-expr="id" height="180"
-            :show-column-lines="false" :on-selection-changed="selectVocc">
-            <DxColumn data-field="id" caption="id" :visible="false" />
-            <DxColumn data-field="name" caption="Select All" :allow-editing="false" />
-
-            <DxSelection mode="multiple" show-check-boxes-mode="always" />
-            <DxScrolling mode="virtual" />/
-          </DxDataGrid>
-        </v-sheet>
-
-      </v-list-item> -->
       <v-list-item v-if="!rail" class="pa-0">
         <v-sheet class="mt-5 pa-4" color="#1f1e1e">
-          <i-input id="searchBox" v-model="searchShip" prepend-inner-icon="mdi-magnify" single-line hide-details
-            @input="searchByShip" style="width:220px" placeholder="선박명을 입력해주세요"></i-input>
+          <i-input
+            id="searchBox"
+            v-model="searchShip"
+            prepend-inner-icon="mdi-magnify"
+            single-line
+            hide-details
+            @input="searchByShip"
+            style="width: 220px"
+            placeholder="선박명을 입력해주세요"
+          ></i-input>
 
-          <DxTreeList id="menus" ref="fleetsGrid" :data-source="initFleetsAndShip" key-expr="id"
-            parent-id-expr="parentId" :selected-row-keys="selectedRowKeys" :autoExpandAll="true"
-            :on-selection-changed="selectShip" height="360" class="noStripe map mt-4" style="background-color: #1f1e1e;">
-            <DxSelection mode="multiple" :recursive="true" show-check-boxes-mode="always"></DxSelection>
-            <DxColumn data-field="displayName" cell-template="status-template" caption="Select all" />
+          <DxTreeList
+            id="fleetsGrid"
+            ref="fleetsGrid"
+            :data-source="initFleetsAndShip"
+            key-expr="id"
+            parent-id-expr="parentId"
+            :selected-row-keys="selectedRowKeys"
+            :autoExpandAll="true"
+            @row-click="selectShip"
+            :on-selection-changed="checkShip"
+            height="360"
+            class="noStripe map-ship-selector mt-4"
+            style="background-color: #1f1e1e"
+          >
+            <DxSelection
+              mode="multiple"
+              :recursive="true"
+              show-check-boxes-mode="always"
+            ></DxSelection>
+            <DxColumn
+              data-field="displayName"
+              cell-template="status-template"
+              caption="Select all"
+            />
             <DxColumn data-field="shipStatus" caption="Status" :visible="false" />
             <template #status-template="{ data: templateOptions }">
               <div class="ship-container d-flex">
-                <div class="mr-4 ship-name ellipsis" :title="templateOptions.data.displayName"
-                  :data-tooltip="templateOptions.data.displayName">{{
-    templateOptions.data.displayName }}</div>
-                <div v-if="templateOptions.data.parentId != 0
-    && templateOptions.data.shipStatus != ''
-    && templateOptions.data.shipStatus != null"
-                  :class="getStatus(templateOptions.data.shipStatus)">●</div>
+                <div
+                  class="mr-4 ship-name ellipsis"
+                  :class="getSelectShipClass(templateOptions.data)"
+                  :title="templateOptions.data.displayName"
+                  :data-tooltip="templateOptions.data.displayName"
+                >
+                  {{ templateOptions.data.displayName }}
+                </div>
+                <div
+                  class="ship-alarm-type"
+                  v-if="
+                    templateOptions.data.parentId != 0 &&
+                    templateOptions.data.shipStatus != '' &&
+                    templateOptions.data.shipStatus != null
+                  "
+                  :class="getStatus(templateOptions.data.shipStatus)"
+                >
+                  ●
+                </div>
               </div>
             </template>
           </DxTreeList>
         </v-sheet>
-
       </v-list-item>
     </v-list>
     <template v-slot:append>
       <v-divider></v-divider>
-      <div class=" d-flex">
+      <div class="d-flex">
         <v-btn variant="text" icon="mdi-chevron-double-left" @click.stop="rail = !rail"></v-btn>
       </div>
     </template>
@@ -60,26 +88,32 @@
 
 <script setup>
 import { computed, onBeforeMount, onMounted, onUnmounted, ref } from 'vue'
+import { storeToRefs } from 'pinia'
+
 import { useAuthStore } from '@/stores/authStore'
 import { useAccessMenuStore } from '@/stores/accessMenuStore'
-import { storeToRefs } from 'pinia'
 import { useVoccStore } from '@/stores/voccStore'
 import { useShipStore } from '@/stores/shipStore'
+
 import { getVoccListAll, fetchShipCondition } from '@/api/voccApi'
+import { getShipInfo } from '@/api/shipApi'
+
 import { getDxGridInstance } from '@/composables/dxGridUtil'
 import emitter from '@/composables/eventbus.js'
-import { fetchMachineData } from '@/composables/util'
+import { fetchMachineData, isStausOk } from '@/composables/util'
 
 import uipaLogoImgKr from '@/assets/images/uipa_logo_kr.png'
 
 const authStore = useAuthStore()
 const { userInfo } = storeToRefs(authStore)
-const { accessMenus } = useAccessMenuStore()
 const voccStore = useVoccStore()
-const shipStore = useShipStore()
 const { voccInfo, fleetsAndShip } = storeToRefs(voccStore)
+const shipStore = useShipStore()
+const { checkedShips, curSelectedShip } = storeToRefs(shipStore)
 
-
+/**
+ * 사이드바 접힘 여부 관련 변수
+ */
 const drawer = ref(true)
 const rail = ref(false)
 
@@ -89,19 +123,17 @@ const initFleetsAndShip = ref([])
 
 // DevExtreme 관련 속성
 const voccsGrid = ref(null)
+let voccsInstance = ''
 const fleetsGrid = ref(null)
-const selectedRowKeys = ref()
-let voccsInstance = '';
-let fleetsInstance = '';
+let fleetsInstance = ''
+const selectedRowKeys = ref([])
 
 let treeSelectMode = 'leavesOnly'
 
-
-const SECOND_IN_ONE_MINUTE = 1000 * 15
+// 알람 상태 조회 주기
+const SECOND_IN_ONE_MINUTE = 1000 * 60
 let interval = null
 
-
-let role = ''
 onMounted(async () => {
   userRole.value = userInfo.value.role
 
@@ -112,11 +144,12 @@ onMounted(async () => {
   }
 
   fetchFleetAndShipByVocc()
-  // voccsInstance = getDxGridInstance(voccsGrid)
   fleetsInstance = getDxGridInstance(fleetsGrid)
 
+  if (checkedShips.value.length != 0) {
+    selectedRowKeys.value = checkedShips.value.map((ship) => ship.id)
+  }
   interval = setInterval(fetchShipAlarm, SECOND_IN_ONE_MINUTE)
-
 })
 
 onUnmounted(() => {
@@ -124,19 +157,20 @@ onUnmounted(() => {
 })
 
 const fetchShipAlarm = async () => {
-  const imoNumberList = fleetsAndShip.value.filter(ship => ship.imoNumber != "")
-    .map(result => result.imoNumber)
+  const imoNumberList = fleetsAndShip.value
+    .filter((ship) => ship.imoNumber != '')
+    .map((result) => result.imoNumber)
   const result = await fetchShipCondition(imoNumberList)
-  fleetsAndShip.value.forEach(item => {
+  fleetsAndShip.value.forEach((item) => {
     if (result.hasOwnProperty(item.imoNumber)) {
-      item.shipStatus = result[item.imoNumber];
+      item.shipStatus = result[item.imoNumber]
     }
-  });
+  })
 }
 
 const fetchVoccAll = async () => {
-  const result = await voccStore.fetchVoccs();
-  voccs.value = result;
+  const result = await voccStore.fetchVoccs()
+  voccs.value = result
 }
 
 const fetchVocc = async () => {
@@ -147,22 +181,11 @@ const fetchVocc = async () => {
   voccs.value = [{ id, name }]
 }
 
-const selectVocc = (e) => {
-  let selectedVoccIds = e.selectedRowKeys;
-  // api 요청
-  fetchFleetAndShipByVocc(selectedVoccIds)
-  // 결과값을 변환
-}
-
 const fetchFleetAndShipByVocc = async () => {
-  // api 요청
-  console.log('voccs 선단 목록')
-  console.dir(voccs.value)
-  let voccids = voccs.value.map(vocc => vocc.id).toString();
+  let voccids = voccs.value.map((vocc) => vocc.id).toString()
 
   const voccIdString = voccids.toString()
   const result = await voccStore.fetchFleetAndShipByVocc(voccIdString)
-  // 결과값 반환
 
   initFleetsAndShip.value = [...fleetsAndShip.value]
 }
@@ -171,22 +194,21 @@ const getStatus = (status) => {
   let colorClass = ''
   switch (status) {
     case 'NORMAL':
-      colorClass = 'blue'
-      break;
+      colorClass = 'normal'
+      break
     case 'WARNING':
-      colorClass = 'orange'
-      break;
+      colorClass = 'warning'
+      break
     case 'DANGER':
-      colorClass = 'red'
-      break;
+      colorClass = 'danager'
+      break
     case 'BLANK':
-      colorClass = 'blue'
-      break;
+      colorClass = 'normal'
+      break
   }
 
-  return colorClass;
+  return colorClass
 }
-
 
 const getLogoImage = computed(() => {
   let logoImage = ''
@@ -196,36 +218,63 @@ const getLogoImage = computed(() => {
   return voccInfo.value.logoImage ? logoImage : uipaLogoImgKr
 })
 
+const selectShip = async (e) => {
+  console.dir(e)
+  let selectedShipImoNumber = e.data.imoNumber
 
-const searchVocc = ref('')
-const searchByVocc = () => {
-  voccsInstance.searchByText(searchVocc.value);
+  if (selectedShipImoNumber) {
+    const {
+      status,
+      data: { data }
+    } = await getShipInfo(selectedShipImoNumber)
+    if (isStausOk(status)) {
+      curSelectedShip.value = { ...data }
+    }
+  }
 }
 
 let selectedImonumbers = []
-const selectShip = async () => {
-  const selectedShips = fleetsInstance.getSelectedRowsData(treeSelectMode);
+const checkShip = async () => {
+  const selectedShips = fleetsInstance.getSelectedRowsData(treeSelectMode)
+
+  console.dir(selectedShips)
 
   selectedImonumbers = getImoNumbers(selectedShips)
 
-  // 선박을 클릭 시 조회 되게 변경 
-  // await fetchMachineData(selectedShips)
-
-  emitter.emit('selectedShip', selectedImonumbers)
+  checkedShips.value = [...selectedImonumbers]
+  selectedRowKeys.value = checkedShips.value.map((ship) => ship.id)
 }
 
 const getImoNumbers = (selectedShips) => {
-  const imoNumbers = selectedShips.filter(ship => ship.imoNumber != null && ship.imoNumber != '')
-    .map(ship => ship.imoNumber);
-  return imoNumbers;
+  const imoNumbers = selectedShips
+    .filter((ship) => ship.imoNumber != null && ship.imoNumber != '')
+    .map((ship) => {
+      return { id: ship.id, imoNumber: ship.imoNumber }
+    })
+  return imoNumbers
 }
 
+const getSelectShipClass = (data) => {
+  let className = ''
+  let selectedShipImoNumber = data.imoNumber
+  let voccName = data.voccName
+  let displayName = data.displayName
+  let curSelectedImoNumber = curSelectedShip.value.imoNumber
+  if (selectedShipImoNumber == curSelectedImoNumber) {
+    className = 'active'
+  }
+
+  if (voccName == displayName) {
+    className += 'voccName'
+  }
+
+  return className
+}
 
 const searchShip = ref('')
 const searchByShip = () => {
   fleetsInstance.searchByText(searchShip.value)
 }
-
 </script>
 
 <style scoped>
@@ -236,41 +285,66 @@ const searchByShip = () => {
 }
 
 .voccSelection .dx-data-row:nth-child(odd) {
-  background: #29292D !important;
+  background: #29292d !important;
 }
 
 .voccSelection .dx-data-row:nth-child(even) {
-  background: #29292D !important;
+  background: #29292d !important;
 }
 
-.blue {
-  color: #5789FE;
+.ship-alarm-type.normal {
+  color: #5789fe;
 }
 
-.orange {
-  color: #F7C63A
+.ship-alarm-type.warning {
+  color: #f7c63a;
 }
 
-
-.gray {
-  color: #909CB4;
+.ship-alarm-type.blank {
+  color: #909cb4;
 }
 
-.red {
-  color: #FF0045
+.ship-alarm-type.danger {
+  color: #ff0045;
 }
 
 .ellipsis {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  width: 100%
+  width: 100%;
 }
-
 
 /* TOOLTIP */
 .ship-container {
   position: relative;
+}
+
+#fleetsGrid {
+}
+
+.ellipsis.ship-name {
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: #9c9c9c;
+  display: flex;
+  align-self: center;
+}
+
+.ship-name.active {
+  background: #5789fe;
+  border-radius: 5px;
+  padding: 2px;
+  font-size: 0.9rem;
+  color: #fff;
+}
+
+.ship-name.voccName {
+  color: #3ea15d;
+}
+
+.map-ship-selector .dx-treelist .dx-row > td {
+  padding: 4px 7px;
 }
 
 /* .ship-name[data-tooltip]:hover::after {

@@ -1,5 +1,5 @@
 <template>
-  <div id="map" class="map" ref="rootmap"></div>
+  <div id="mapContainer" class="map" ref="rootmap"></div>
 </template>
 
 <script>
@@ -33,6 +33,8 @@ const urlAfter = '/{z}/{x}/{-y}.png';
 import shipIcon from '@/assets/images/shipicons/shipIcon_green.png'
 import selectShipIcon from '@/assets/images/shipicons/shipIcon_yellow.png'
 import arrowIcon from '@/assets/images/shipicons/arrow.png'
+import { getShipInfo } from '@/api/shipApi'
+import { isStausOk } from '@/composables/util'
 
 export default {
   name: "olmap",
@@ -48,15 +50,45 @@ export default {
     routePLayer: VectorLayer,
     routeLLayer: VectorLayer,
     mapTypeId: String,
-    map: null,
     imoNumbers: [],
     isClick: false,
   }),
-  props: [ 'propsdata', 'isShow', 'isRouteShow', 'vesselTrack', 'startDate', 'endDate', 'isPastVesselTracks', 'layerMode', 'layerBright' ],
+  props: [ 'propsdata', 'curSelectedShip','isShow', 'isRouteShow', 'vesselTrack', 'startDate', 'endDate', 'isPastVesselTracks', 'layerMode', 'layerBright' ],
   watch: {
     propsdata: function() {
-      this.imoNumbers = this.propsdata;
+      map.getLayers().getArray()
+        .filter(layer => layer.get('name') === 'shipLayer')
+        .forEach(layer => map.removeLayer(layer));
+      map.getLayers().getArray()
+        .filter(layer => layer.get('name') === 'shipWakeLayer')
+        .forEach(layer => map.removeLayer(layer));
+      map.getLayers().getArray()
+        .filter(layer => layer.get('name') === 'shipPastWakeLayer')
+        .forEach(layer => map.removeLayer(layer));
+      this.imoNumbers = [];
+
+      var shipdataList =  this.propsdata;
+      shipdataList.map((shipData) => {
+        this.imoNumbers.push(shipData.imoNumber);
+      });
       this.setShipLayer();
+    },
+    curSelectedShip: async function() {
+      let imoNumber;
+      Object.keys(this.curSelectedShip).forEach((key) => {
+        if (key === 'imoNumber') imoNumber = this.curSelectedShip[key];
+      });
+      this.propsdata.map((shipData) => {
+        if (shipData.imoNumber === imoNumber) {
+          getShipData(imoNumber).then((response) => {
+            if(response.data.data === null) return;
+            var ship = response.data.data;
+            map.getView().setCenter(fromLonLat([Number(ship[0].longitude), Number(ship[0].latitude)]));
+            map.getView().setZoom(4);
+          });
+        }
+      });
+
     },
     isShow: function() {
       if (this.isShow === false) {
@@ -84,16 +116,62 @@ export default {
   mounted: async function() {
     this.initMap();
     this.setMapType(this.layerBright, this.layerMode);
-    this.$emit('init', this.map);
+    this.$emit('init', map);
+
+    // 오픈레이어스 좌우영역 제한
+    map.on('moveend', function() {
+      let view = map.getView(); // 지도의 뷰
+      // 지도의 크기를 가져옴
+      let mapSize = map.getSize();
+
+      // 화면의 왼쪽 중앙 좌표를 계산
+      let leftCoordinate = map.getCoordinateFromPixel([0, 0]); // 좌측 좌표
+      let rightPixel = mapSize[0]; // 우측 좌표(x)
+      let rightCoordinate = map.getCoordinateFromPixel([rightPixel, 0]); // 화면 좌표를 지도 좌표로 변환
+      // 화면상의 중심 좌표
+      var currentCenter = view.getCenter();
+
+      // 화면상의 중심 좌표와 왼쪽 좌표의 차이 계산
+      var dx = currentCenter[0] - leftCoordinate[0];
+
+      let lonLeft = ol.proj.transform([leftCoordinate[0], 0], 'EPSG:3857', 'EPSG:4326')[0];
+      let lonRight = ol.proj.transform([rightCoordinate[0], 0], 'EPSG:3857', 'EPSG:4326')[0];
+
+      // 경도 제한
+      let newCenter;
+      if (lonLeft < -180 || lonRight > 540) {
+        if (lonLeft < -180) {
+          lonLeft = 360 + (lonLeft % 360);
+
+          newCenter = ol.proj.transform([lonLeft, 0], 'EPSG:4326', 'EPSG:3857');
+          newCenter = [newCenter[0] + dx, currentCenter[1]];
+        } else {
+          lonRight = lonRight % 360;
+
+          newCenter = ol.proj.transform([lonRight, 0], 'EPSG:4326', 'EPSG:3857');
+          newCenter = [newCenter[0] - dx, currentCenter[1]];
+        }
+
+        view.setCenter(newCenter); // 변경된 경도로 지도 중심 재설정
+      }
+    });
+
     this.shipSelectEvent();
     this.vesselTrackCurrent();
     this.vesselTrackPast();
+
+    // ais 정보 시각화
     this.aisData();
+
+    // 기상정보 웹팩 관련 라이브러리 추가
+    const bundleScript = document.createElement('script');
+    bundleScript.src = '/src/components/map/canvasLayer/bundle.js';
+    document.body.appendChild(bundleScript);
   },
   methods: {
     initMap: function() {
-      this.map = new Map({
-        target: "map",
+      map = new Map({
+        target: "mapContainer",
         view: new View({
           center:fromLonLat([128.100,36.000]),
           zoom: 4,
@@ -105,14 +183,14 @@ export default {
           rotate: false,
         }),
       });
-      return this.map;
+      return map;
     },
     setMapType: function(mapBright, mapMode) {
       var geoserverWmsUrl = "http://navioncorp.asuscomm.com:8089/geoserver/wms";
 
       if (mapBright !== 'Black') {
-        this.map.getLayers().clear();
-        this.map.addLayer(
+        map.getLayers().clear();
+        map.addLayer(
           new TileLayer({
             source: new XYZ({
               url: urlBefore + mapBright + '_' + mapMode + urlAfter
@@ -122,8 +200,8 @@ export default {
           })
         );
       } else if (mapBright === 'Black') {
-        this.map.getLayers().clear();
-        this.map.addLayer(
+        map.getLayers().clear();
+        map.addLayer(
           new TileLayer({
             id: 'ocean',
             title: 'ocean',
@@ -143,7 +221,7 @@ export default {
           })
         );
         this.makeSld("ocean", "Polygon1_1", "17284F", null);
-        this.map.addLayer(
+        map.addLayer(
           new TileLayer({
             id: 'worldcountries',
             title: 'worldcountries',
@@ -167,17 +245,19 @@ export default {
       this.aisData();
     },
     setShipLayer: function() {
-      this.map.removeLayer(this.shipLayer);
-      this.map.getLayers().getArray()
+      map.getLayers().getArray()
+        .filter(layer => layer.get('name') === 'shipLayer')
+        .forEach(layer => map.removeLayer(layer));
+      map.getLayers().getArray()
         .filter(layer => layer.get('name') === 'shipWakeLayer')
-        .forEach(layer => this.map.removeLayer(layer));
-      this.map.getLayers().getArray()
+        .forEach(layer => map.removeLayer(layer));
+      map.getLayers().getArray()
         .filter(layer => layer.get('name') === 'shipPastWakeLayer')
-        .forEach(layer => this.map.removeLayer(layer));
+        .forEach(layer => map.removeLayer(layer));
 
       var temp;
-      if (this.propsdata.length !== 0) {
-        this.propsdata.forEach((imoNumber) => {
+      if (this.imoNumbers.length !== 0) {
+        this.imoNumbers.forEach((imoNumber) => {
           if (temp !== undefined) temp = temp + ',' + imoNumber;
           else temp = imoNumber;
         });
@@ -187,9 +267,8 @@ export default {
     shipSelectEvent: function() {
       var select = new Select({
           condition: singleClick
-      }
-      );
-      this.map.addInteraction(select);
+      });
+      map.addInteraction(select);
 
       select.on('select', function(e) {
         if(e.selected[0].values_.layer === 'shipLayer') {
@@ -203,6 +282,7 @@ export default {
             })
           }));
           emitter.emit('clickShipName', e.selected[0].values_.name);
+
         } else {
           this.setShipLayer();
         }
@@ -352,7 +432,7 @@ export default {
     },
     getLayer: function(id) {
       let lyr = null;
-      var layers = this.map.getLayers().getArray();
+      var layers = map.getLayers().getArray();
       for (let i in layers) {
         const l = layers[i];
         const thisLayerId = layers[i].get('id');
@@ -365,10 +445,7 @@ export default {
       return lyr;
     },
     shipData: async function(imoNumbers) {
-      const mapStore = useMapStore();
-      await mapStore.fetchShipData(imoNumbers);
       getShipData(imoNumbers).then((response) => {
-        if (response.data.data.length === 0) return;
         var shipDataList = response.data.data;
 
         shipDataList.forEach((shipData) => {
@@ -395,7 +472,7 @@ export default {
               })
             }),
           });
-          this.map.addLayer(this.shipLayer);
+          map.addLayer(this.shipLayer);
         })
       });
     },
@@ -443,16 +520,16 @@ export default {
               style: this.styleCurrent
             });
 
-            this.map.addLayer(this.shipWakeLayer);
+            map.addLayer(this.shipWakeLayer);
           })
         });
       } else if (vesselTrackStatus._value === false){
-        this.map.getLayers().getArray()
+        map.getLayers().getArray()
           .filter(layer => layer.get('name') === 'shipWakeLayer')
-          .forEach(layer => this.map.removeLayer(layer));
-        this.map.getLayers().getArray()
+          .forEach(layer => map.removeLayer(layer));
+        map.getLayers().getArray()
           .filter(layer => layer.get('name') === 'shipPastWakeLayer')
-          .forEach(layer => this.map.removeLayer(layer));
+          .forEach(layer => map.removeLayer(layer));
       }
     },
     styleCurrent: function (feature, resolution) {
@@ -544,7 +621,7 @@ export default {
               style: this.stylePast
             });
 
-            this.map.addLayer(this.shipPastWakeLayer);
+            map.addLayer(this.shipPastWakeLayer);
           })
         })
       }
@@ -622,7 +699,7 @@ export default {
               }),
             })
           });
-          this.map.addLayer(this.aisAtonLayer);
+          map.addLayer(this.aisAtonLayer);
         })
 
         fill = new Fill({color: 'blue'});
@@ -646,7 +723,7 @@ export default {
               }),
             })
           });
-          this.map.addLayer(this.aisBasestationLayer);
+          map.addLayer(this.aisBasestationLayer);
         })
 
         ais_class_a.forEach((aisClassAData) => {
@@ -671,7 +748,7 @@ export default {
               })
             }),
           });
-          this.map.addLayer(this.aisClassLayer);
+          map.addLayer(this.aisClassLayer);
         })
         ais_class_b.forEach((aisClassBData) => {
           var pointFeature = new Feature({
@@ -694,7 +771,7 @@ export default {
               })
             })
           });
-          this.map.addLayer(this.aisClassLayer);
+          map.addLayer(this.aisClassLayer);
         })
         vpass_class_b.forEach((vpassClassBData) => {
           var pointFeature = new Feature({
@@ -717,7 +794,7 @@ export default {
               })
             })
           });
-          this.map.addLayer(this.aisClassLayer);
+          map.addLayer(this.aisClassLayer);
         })
 
       });
@@ -727,7 +804,7 @@ export default {
 </script>
 
 <style scoped>
-#map {
+.map {
   position: fixed;
   width: 100%;
   height: 100%;

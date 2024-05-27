@@ -1,5 +1,5 @@
 <template>
-  <v-sheet class="ma-4 pa-4 rounded-lg " color="#222224">
+  <v-sheet class="ma-4 pa-4 rounded-lg" color="#222224">
     <v-tabs v-model="tab" color="#5789FE">
       <v-tab value="monitoring">선박연료유 사용량 보고서</v-tab>
       <v-tab value="report">선박연료유 수급현황</v-tab>
@@ -15,26 +15,25 @@
 
       <!-- Report -->
       <v-window-item value="report" class="overflow-y-auto">
-        <AnualCIIReport></AnualCIIReport>
+        <BDNSUmmaries />
         <!-- <div>test2</div> -->
-      </v-window-item>
-
-      <!-- Simulation  -->
-      <v-window-item value="simulation">
       </v-window-item>
       <v-window-item value="plan">
         <EEDIPlanPart />
       </v-window-item>
+      <v-window-item value="simulation">
+        <CollectedDataSummaries />
+      </v-window-item>
     </v-window>
   </v-sheet>
-
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import FuelConsumptionReport from '@/views/voyage/imodcs/FuelConsumptionReport.vue'
-import EEDIPlanPart from '@/views/voyage/imodcs/EEDIPlanPart.vue';
-
+import EEDIPlanPart from '@/views/voyage/imodcs/EEDIPlanPart.vue'
+import BDNSUmmaries from '@/views/voyage/imodcs/BDNSummaries.vue'
+import CollectedDataSummaries from '@/views/voyage/imodcs/CollectedDataSummaries.vue'
 
 const tab = ref(null)
 </script>

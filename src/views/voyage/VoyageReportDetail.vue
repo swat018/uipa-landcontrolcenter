@@ -28,7 +28,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import VoyageOlmap from '@/views/voyage/VoyageOlmap.vue'
+import VoyageOlmap from '@/components/voyage/VoyageOlmap.vue'
 import { getVoyageTrack } from '@/api/voyage'
 
 import { convertFloatFormatObject } from '@/composables/util'

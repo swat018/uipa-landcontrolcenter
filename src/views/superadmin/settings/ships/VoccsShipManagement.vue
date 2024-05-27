@@ -1,7 +1,7 @@
 <template>
   <v-container fluid class="h-100 detail-page settings">
     <v-row class="h-100">
-      <v-col cols="6">
+      <v-col cols="5">
         <v-card class="h-100" rounded="30">
           <v-card-title>
             <div class="d-flex justify-space-between">
@@ -24,7 +24,7 @@
                 :allow-editing="false"></DxColumn>
               <DxColumn data-field="name" caption="선박명" :allow-editing="false" cell-template="shipName-template">
               </DxColumn>
-              <template #shipName-template="{ data : templateOptions }">
+              <template #shipName-template="{ data: templateOptions }">
                 <div class="d-flex justify-space-between align-center">
                   <div>{{ templateOptions.data.name }}</div>
                   <i-btn text="이미지 변경" @click="changeComponent('ShipImageEditForm')"></i-btn>
@@ -34,15 +34,17 @@
           </v-card-text>
         </v-card>
       </v-col>
-      <v-col cols="6">
+      <v-col cols="7">
         <v-card class="h-100" rounded="30">
           <v-card-title>
             <div>선박정보</div>
           </v-card-title>
           <v-card-text>
-            <component :is="componentList[currentComponent]" :shipImoNumber="shipImoNumber"
-              style="background-color: #1F1E1E;" @change-component="changeComponent"></component>
-            <!-- <ShipInfoEditForm :shipImoNumber="shipImoNumber" ></ShipInfoEditForm> -->
+            <component :is="componentList[currentComponent]" :voccId="selectedVoccId" :shipImoNumber="shipImoNumber"
+              style="background-color: #1F1E1E;" @change-component="changeComponent" @updateShipInfo="updateShipInfo"
+              @registerShipInfo="registerShipInfo">
+            </component>
+            <!-- <ShipInfoEditByUserForm :shipImoNumber="shipImoNumber" ></ShipInfoEditByUserForm> -->
           </v-card-text>
         </v-card>
       </v-col>
@@ -64,11 +66,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, provide } from 'vue'
+import { ref, onMounted, watch, provide } from 'vue'
 
 import ColTwoLayout from '@/layout/ColTwoLayout.vue'
 import NoSelectShip from '@/components/NoSelectShip.vue'
-import ShipInfoEditForm from '@/views/settings/vocc/ship/form/ShipInfoEditForm.vue'
+import ShipInfoEditByAdminForm from '@/views/superadmin/settings/ships/form/ShipInfoEditByAdminForm.vue'
 import ShipInfoRegisterForm from '@/views/settings/vocc/ship/form/ShipInfoRegisterForm.vue'
 import ShipImageEditForm from '@/views/settings/vocc/ship/form/ShipImageEditForm.vue'
 import AppModal from '@/components/modal/AppModal.vue'
@@ -82,9 +84,11 @@ import { useToast } from '@/composables/useToast'
 const { showResMsg } = useToast()
 
 const colType = ref(1)
-const shipsByVocc = ref('')
+const ships = ref('')
 const shipStore = useShipStore()
-const { ships } = storeToRefs(shipStore)
+
+const { voccShips } = storeToRefs(shipStore);
+
 const shipImoNumber = ref("")
 
 const shipGrid = ref()
@@ -94,17 +98,19 @@ let role;
 /**
  * 선박 목록 조회
  */
-onMounted(() => {
-  fetchVoccShips()
-  role = sessionStorage.getItem('userRole')
+
+const props = defineProps({
+  voccId: {
+    type: [String, Object, Number]
+  }
 })
 
-
+const selectedVoccId = ref()
 
 const fetchVoccShips = async () => {
-  await shipStore.fetchShipsByVocc()
-  shipsByVocc.value = [...ships.value]
-  console.dir(shipsByVocc)
+  selectedVoccId.value = props.voccId
+  const response = await shipStore.fetchShipsByVoccId(selectedVoccId.value)
+  ships.value = voccShips.value
 }
 
 /**
@@ -112,10 +118,11 @@ const fetchVoccShips = async () => {
  */
 const activeStatus = ref(true)
 const selectShip = async (e) => {
+  refreshGrid()
   // 선택한 선박의 IMO 번호
   const cellKey = e['row']['key'];
   shipImoNumber.value = cellKey
-  changeComponent('ShipInfoEditForm')
+  changeComponent('ShipInfoEditByAdminForm')
 }
 
 /**
@@ -125,7 +132,7 @@ const selectShip = async (e) => {
 const currentComponent = ref('NoSelectShip')
 const componentList = {
   NoSelectShip,
-  ShipInfoEditForm,
+  ShipInfoEditByAdminForm,
   ShipInfoRegisterForm,
   ShipImageEditForm
 }
@@ -134,7 +141,7 @@ const changeComponent = (name) => {
   const instance = getDxGridInstance(shipGrid)
 
   currentComponent.value = name;
-  if (name != 'ShipInfoEditForm') {
+  if (name != 'ShipInfoEditByUserForm') {
     instance.clearSelection();
   }
 }
@@ -162,31 +169,52 @@ const closeConfirmModal = () => {
  * 선박 삭제 
  */
 const removeShip = async () => {
+  let imoNumber = shipImoNumber.value;
   const instance = getDxGridInstance(shipGrid)
-  const result = await shipStore.removeShip(shipImoNumber.value)
-  if(result == 200)
-  setTimeout(() => {
+  const result = await shipStore.removeShip(imoNumber)
+  if (result == 200)
+    setTimeout(() => {
       showModal.value = false;
+      let index = ships.value.findIndex((ship) => ship.imoNumber == imoNumber);
+      ships.value.splice(index, 1)
       refreshGrid()
       instance.option('focusedRowKey', null)
       changeComponent('NoSelectShip')
-  }, 500)
+    }, 500)
 }
 
 const refreshGrid = () => {
   dxGridRefresh(shipGrid)
 }
 
+const updateShipInfo = (shipNameInfo) => {
+  let { originShipName, newShipName } = shipNameInfo
+  let index = ships.value.findIndex((ship) => ship.name == originShipName);
+  console.log('선박 목록')
+  console.dir(ships.value)
+  console.log('위치')
+  console.log(index)
+  ships.value[index].name = newShipName;
+}
+
+const registerShipInfo = (registerShipInfo) => {
+  let { voccId } = registerShipInfo
+  console.log('등록 후' + voccId + props.voccId)
+  if (props.voccId == voccId) {
+    ships.value.push(registerShipInfo)
+  }
+  dxGridRefresh(shipGrid)
+}
+
+watch(() => props.voccId, fetchVoccShips, { deep: true })
 </script>
 
 <style scoped>
- @media (max-height : 825px){
+@media (max-height : 825px) {
   .tab-container {
     height: 724px;
     max-height: 724px;
-    overflow-y: auto ;
+    overflow-y: auto;
   }
 }
-
-
 </style>

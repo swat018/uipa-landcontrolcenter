@@ -1,13 +1,12 @@
 /**
- * 대메뉴 : 운항정보
+ * 대메뉴 : VOYAGE
  */
 import BaseLayout from '@/layout/BaseLayout.vue'
 /**
- * 소메뉴 : 항차리포트, CII Rating, IMO DCS, EU MRV
+ * 소메뉴 : VOYAGE LIST, CII RATRING
  */
-import VoyageReport from '@/views/voyage/VoyageReport.vue'
-import DetailCIIRating from '@/views/voyage/cii/DetailCIIRating.vue'
-import ImoDcs from '@/views/voyage/imodcs/ImoDcs.vue'
+import VoyageList from '@/views/voyage/VoyageList.vue'
+import CIIRating from '@/views/voyage/cii/CIIRating.vue'
 
 const voyageRoutes = [
   {
@@ -15,24 +14,14 @@ const voyageRoutes = [
     component: BaseLayout,
     children: [
       {
-        name: 'VoyageReport',
-        path: 'report',
-        component: VoyageReport
+        name: 'VoyageList',
+        path: 'cii/list',
+        component: VoyageList
       },
       {
-        name: 'CllMonitoring',
+        name: 'DetailCIIRating',
         path: 'cii/rating',
-        component: DetailCIIRating
-      },
-      {
-        name: 'ImoDcs',
-        path: 'imodcs',
-        component: ImoDcs
-      },
-      {
-        name: 'AnualReport',
-        path: '/voyage/anual',
-        component: DetailCIIRating
+        component: CIIRating
       }
     ]
   }

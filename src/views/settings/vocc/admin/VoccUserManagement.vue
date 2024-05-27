@@ -5,27 +5,48 @@
         <v-card class="h-100" rounded="30">
           <v-card-title class="d-flex justify-space-between align-center">
             <div>사용자 목록</div>
-            <i-btn prepend-icon="mdi-plus" color="#3D3D40" text="등록" width="75"
-              @click.stop="changeComponent($event, 'VoccUserRegisterForm')"></i-btn>
+            <i-btn
+              prepend-icon="mdi-plus"
+              color="#3D3D40"
+              text="등록"
+              width="75"
+              @click.stop="changeComponent($event, 'VoccUserRegisterForm')"
+            ></i-btn>
           </v-card-title>
           <v-card-text>
             <v-table class="list-table title-container">
-              <thead>
-              </thead>
+              <thead></thead>
               <tbody>
                 <tr v-for="(voccUser, index) in voccUsers" :key="voccUser.id">
                   <td class="username">{{ voccUser.nickname }}</td>
                   <td class="activate-status">
-                    <i-btn :text="voccUser.activated ? '사용 가능' : '계정 잠금'"
+                    <i-btn
+                      :text="voccUser.activated ? '사용 가능' : '계정 잠금'"
                       :prepend-icon="voccUser.activated ? 'mdi-lock-open' : 'mdi-lock'"
-                      :color="voccUser.activated ? '#fff' : '#737373'" variant="text" readonly
-                      class="d-flex justify-end align-center">
+                      :color="voccUser.activated ? '#fff' : '#737373'"
+                      variant="text"
+                      readonly
+                      class="d-flex justify-end align-center"
+                    >
                     </i-btn>
                   </td>
                   <td class="modify-btn">
-                    <i-btn :text="isEditing(index) ? '수정중' : '수정'" :color="isEditing(index) ? '#7A8294' : '#4E83FF'"
-                      :disable="isEditing(index)" :dataId="index" name="VoccAdminEditForm"
-                      @click.stop="changeComponent($event, 'VoccUserEditForm', voccUser.voccId, voccUser.userId, index)">
+                    <i-btn
+                      :text="isEditing(index) ? '수정중' : '수정'"
+                      :color="isEditing(index) ? '#7A8294' : '#4E83FF'"
+                      :disable="isEditing(index)"
+                      :dataId="index"
+                      name="VoccAdminEditForm"
+                      @click.stop="
+                        changeComponent(
+                          $event,
+                          'VoccUserEditForm',
+                          voccUser.voccId,
+                          voccUser.userId,
+                          index
+                        )
+                      "
+                    >
                     </i-btn>
                   </td>
                 </tr>
@@ -35,11 +56,15 @@
         </v-card>
       </v-col>
       <v-col cols="3" lg="3">
-        <component :is="componentList[currentComponent]" :voccId="_voccId" :voccUserId="_voccUserId" class="h-100">
+        <component
+          :is="componentList[currentComponent]"
+          :voccId="_voccId"
+          :voccUserId="_voccUserId"
+          class="h-100"
+        >
         </component>
       </v-col>
     </v-row>
-
   </v-container>
 </template>
 
@@ -53,45 +78,43 @@ import VoccUserEditForm from '@/views/settings/vocc/admin/VoccUserEditForm.vue'
 import { storeToRefs } from 'pinia'
 const currentComponent = ref('DefaultText')
 const voccStore = useVoccStore()
-const { voccUsers  } = storeToRefs(voccStore)
+const { voccInfo, voccUsers } = storeToRefs(voccStore)
 const _voccId = ref()
 const _voccUserId = ref()
 const currentId = ref('')
 
-
-
 const componentList = {
   DefaultText,
   VoccUserRegisterForm,
-  VoccUserEditForm,
+  VoccUserEditForm
 }
 
 onBeforeMount(() => {
   getVoccUserAll()
-
 })
 
 const getVoccUserAll = async () => {
-  await voccStore.getVoccUsers()
+  let voccId = voccInfo.value.id
+
+  await voccStore.getVoccUsers(voccId)
 }
 
 /**
  * 수정 버튼 인덱스 값에 따른 컴포넌트 변경
  * */
-const changeComponent = (event, name, voccId='',  voccUserId ='', index='') => {
+const changeComponent = (event, name, voccId = '', voccUserId = '', index = '') => {
   _voccUserId.value = voccUserId
   //typeof(event) == 'string'? currentComponent.value = event : currentComponent.value = event.target.name
   _voccId.value = voccId
-  currentComponent.value = name;
+  currentComponent.value = name
   currentId.value = index
 }
 
 const isEditing = (index) => {
-  return parseInt(currentId.value) === index;
+  return parseInt(currentId.value) === index
 }
 
 provide('changeComponent', changeComponent)
-
 </script>
 
 <style scoped>
@@ -103,16 +126,16 @@ provide('changeComponent', changeComponent)
   height: 100%;
 } */
 
-.list-table{
-  border: 1px solid #49494E;
+.list-table {
+  border: 1px solid #49494e;
 }
 
-.list-table  tr:nth-child(odd) {
-  background: #2F2F32;
+.list-table tr:nth-child(odd) {
+  background: #2f2f32;
 }
 
-.list-table  th {
-  border-right: 1px solid #49494E;
+.list-table th {
+  border-right: 1px solid #49494e;
 }
 
 .list-table .title {
@@ -130,11 +153,11 @@ provide('changeComponent', changeComponent)
 
 } */
 
- @media (max-height : 800px){
+@media (max-height: 800px) {
   .management-container {
     max-height: 724px;
     height: 724px;
-    overflow-y: auto ;
+    overflow-y: auto;
   }
 }
 </style>

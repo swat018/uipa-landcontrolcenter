@@ -1,8 +1,8 @@
 <template>
   <v-sheet class="ma-6 px-3 rounded-lg tabs-container">
-    <v-tabs v-model="tab" color="#5789FE">
-      <v-tab value="monitoring">실시간 모니터링</v-tab>
-      <v-tab value="history">과거 영상 재생</v-tab>
+    <v-tabs v-model="tab" class="tabs-button" color="#5789FE">
+      <v-tab value="monitoring">Real-time</v-tab>
+      <v-tab value="history">Time-based</v-tab>
     </v-tabs>
 
     <v-window v-model="tab">
@@ -23,7 +23,7 @@
 import { ref } from 'vue'
 
 import CCTVMonitoring from '@/views/ins/cctv/CCTVMonitoring.vue'
-import CCTVHistory from '@/views/ins/cctv/CCTVHistory.vue';
+import CCTVHistory from '@/views/ins/cctv/CCTVHistory.vue'
 
 const tab = ref(null)
 </script>
@@ -53,6 +53,4 @@ const tab = ref(null)
     height: 100vh;
   }
 } */
-
-
 </style>

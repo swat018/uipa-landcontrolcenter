@@ -8,12 +8,31 @@
           </v-card-title>
           <v-card-text>
             <!-- 선사 목록 -->
-            <DxDataGrid ref="shipGrid" :data-source="ships" key-expr="imoNumber" ::active-state-enabled="activeStatus"
-              :focused-row-enabled="activeStatus" :selected-row-keys="selectedRowKey"
-              :on-focused-cell-changed="selectShip" @refresh-grid="refreshGrid" show-borders="true" class="tab-dx-grid">
-              <DxColumn data-field="imoNumber" caption="imoNumber" :visible="false" class="pl-10"
-                :allow-editing="false"></DxColumn>
-              <DxColumn data-field="name" caption="선박명" :allow-editing="false" cell-template="shipName-template">
+            <DxDataGrid
+              ref="shipGrid"
+              :data-source="ships"
+              key-expr="imoNumber"
+              ::active-state-enabled="activeStatus"
+              :focused-row-enabled="activeStatus"
+              :selected-row-keys="selectedRowKey"
+              :on-focused-cell-changed="selectShip"
+              @refresh-grid="refreshGrid"
+              show-borders="true"
+              class="tab-dx-grid"
+            >
+              <DxColumn
+                data-field="imoNumber"
+                caption="imoNumber"
+                :visible="false"
+                class="pl-10"
+                :allow-editing="false"
+              ></DxColumn>
+              <DxColumn
+                data-field="name"
+                caption="선박명"
+                :allow-editing="false"
+                cell-template="shipName-template"
+              >
               </DxColumn>
               <template #shipName-template="{ data: templateOptions }">
                 <div class="d-flex justify-space-between align-center">
@@ -30,19 +49,11 @@
       <v-col cols="8">
         <v-sheet class="px-6 rounded-lg tabs-container">
           <v-tabs v-model="tab" color="#5789FE" align-tabs="left">
-            <v-tab :value="tabItem[0]">기준연료정보</v-tab>
-            <v-tab :value="tabItem[1]">환경규제정보</v-tab>
             <v-tab :value="tabItem[2]">선박제원관리</v-tab>
           </v-tabs>
           <v-window v-model="tab">
-            <v-window-item :value="tabItem[0]">
-              <FuelInformation />
-            </v-window-item>
-            <v-window-item :value="tabItem[1]">
-              <CIIInformation :selectedShipImoNumber=shipImoNumber />
-            </v-window-item>
             <v-window-item :value="tabItem[2]">
-              <EquipmentManagement />
+              <EquipmentManagement :selectedShipImoNumber="shipImoNumber" />
             </v-window-item>
           </v-window>
         </v-sheet>
@@ -53,8 +64,8 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import FuelInformation from '@/views/settings/operation/tab/FuelInformation.vue';
-import CIIInformation from '@/views/settings/operation/tab/CIIInformation.vue';
+import FuelInformation from '@/views/settings/operation/tab/FuelInformation.vue'
+import CIIInformation from '@/views/settings/operation/tab/CIIInformation.vue'
 import EquipmentManagement from '@/views/settings/operation/tab/EquipmentManagement.vue'
 
 import { useShipStore } from '@/stores/shipStore'
@@ -62,12 +73,10 @@ import { storeToRefs } from 'pinia'
 
 const shipStore = useShipStore()
 const { ships } = storeToRefs(shipStore)
-const tab = ref('fuel')
-const tabItem = ref([
-  'fuel', 'imodcs', 'usedFuel'
-])
+const tab = ref(null)
+const tabItem = ref(['cii', 'usedFuel', 'fuel'])
 
-const selectedRowKey = ref();
+const selectedRowKey = ref()
 
 const shipImoNumber = ref('')
 
@@ -76,7 +85,7 @@ onMounted(() => {
 })
 
 const init = () => {
-  let shipsLength = ships.value.length;
+  let shipsLength = ships.value.length
   if (shipsLength != 0) {
     let imoNumber = ships.value[shipsLength - 1].imoNumber
     selectedRowKey.value = imoNumber
@@ -85,19 +94,15 @@ const init = () => {
 }
 
 /**
- * 선박 상세 조회
+ * 선박 선택
  */
 const activeStatus = ref(true)
 const selectShip = async (e) => {
   // 선택한 선박의 IMO 번호
-  const cellKey = e['row']['key'];
+  const cellKey = e['row']['key']
   selectedRowKey.value = [cellKey]
   shipImoNumber.value = cellKey
 }
-
-
-
 </script>
-
 
 <style scoped></style>

@@ -1,5 +1,3 @@
-
-
 /**
  * Dx 그리드 인스턴스 반환
  */
@@ -8,16 +6,14 @@ export const getDxGridInstance = (ref) => {
   return instance
 }
 
-
 /**
  * Dx그리드 데이터 새로 고침
  * @param DxDataGrid ref 객체
  */
-export const dxGridRefresh = ( ref ) => {
+export const dxGridRefresh = (ref) => {
   const instance = getDxGridInstance(ref)
-  instance.refresh();
+  instance.refresh()
 }
-
 
 /**
  * Dx그리드 선택 해제

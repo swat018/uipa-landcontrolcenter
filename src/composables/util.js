@@ -108,7 +108,6 @@ export const sse2 = (eventSource) => {
  * 숫자 3자리 단위로 끊는 기능
  * ex) 123000 => 123,000
  */
-
 export const convertNumberFormat = (data) => {
   let formattedData = new Intl.NumberFormat('ko', {
     style: 'decimal',
@@ -121,35 +120,41 @@ export const convertNumberFormat = (data) => {
 export const convertStringToFloat = (object) => {
   Object.entries(object).forEach(([key, value]) => {
     let type = typeof value
-    if (Number.isInteger(value)) {
+    if (Number.isInteger(value) || type == 'boolean') {
       return
     }
-
-    value = value.replace(',', '')
+    console.log(value)
 
     if (isNaN(value)) {
       if (value == null || value == '-') {
         object[key] = 0.0
         return
       }
-    } else {
-      console.log(typeof value)
-      console.log(value)
-      // const hasDecimal = value.include('.')
-
-      if (!Number.isInteger(value)) object[key] = parseFloat(value)
-      else object[key] = parseInt(value)
+      const isExistComma = value.includes(',')
+      if (isExistComma) {
+        value = value.replace(',', '')
+      } else {
+        return
+      }
     }
+    console.log(typeof value)
+    console.log(value)
+
+    if (!Number.isInteger(value)) object[key] = parseFloat(value)
+    else object[key] = parseInt(value)
   })
   return object
 }
 
 export const removeComma = (data) => {
-  return data.replace(',', '')
+  if (data.includes(',')) {
+    data = data.replace(',', '')
+  }
+  return data
 }
 
 export const convertDateType = (date) => {
-  const utcDate = moment(date)
+  const utcDate = moment(date).utc()
   const formattedDate = utcDate.format('YYYY-MM-DD')
 
   return formattedDate
@@ -162,10 +167,14 @@ export const convertDateTimeType = (date) => {
 }
 
 export const convertDateTimeSecondType = (date) => {
-  const utcDate = moment(date)
+  const utcDate = moment(date).utc()
   const formattedDate = utcDate.format('YYYY-MM-DD HH:mm:ss')
 
   return formattedDate
+}
+
+export const convertUTCTimezone = (date) => {
+  return moment.parseZone(date).toISOString()
 }
 
 /**
@@ -205,6 +214,32 @@ export const convertFloatFormatObject = (object) => {
   return object
 }
 
+export const convertFloatValueFromObject = (object) => {
+  Object.entries(object).forEach(([key, value]) => {
+    let type = typeof value
+
+    if (Array.isArray(typeof value)) {
+      object[key] = convertFloatValueArray(value)
+    } else if (value != null && type == 'object') {
+      convertFloatValueFromObject(value)
+    } else {
+      if (!Number.isInteger(value)) object[key] = roundFloatValue(value)
+    }
+  })
+
+  return object
+}
+
+export const roundFloatValue = (floatValue) => {
+  if (floatValue != null && floatValue != 'NaN') return parseFloat(floatValue.toFixed(2))
+  else return 0
+}
+
+export const convertFloatValueArray = (array) => {
+  array.forEach((item, index) => (item[index] = roundFloatValue(item)))
+  return array
+}
+
 export const covertFloatFormatArray = (array) => {
   array.forEach((item, index) => (item[index] = convertNumberFormat(item)))
   return array
@@ -236,4 +271,8 @@ export const isValidDateRange = (startDate, endDate) => {
 export const fetchMachineData = async (imoNumber) => {
   const shipStore = useShipStore()
   await shipStore.fetchShipMachineInfo(imoNumber)
+}
+
+export const isStausOk = (status) => {
+  return status == 200 || status == 204 ? true : false
 }

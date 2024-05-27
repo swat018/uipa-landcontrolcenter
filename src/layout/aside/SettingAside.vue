@@ -1,22 +1,32 @@
 <template>
-  <v-navigation-drawer v-model="drawer" :rail="rail" permanent @click="rail = false" class="bg-aside">
+  <v-navigation-drawer
+    v-model="drawer"
+    :rail="rail"
+    permanent
+    @click="rail = false"
+    class="bg-aside"
+  >
     <v-list density="compact">
       <v-list-item v-if="rail" :prepend-avatar="rail ? getLogoImage : getLogoImage"> </v-list-item>
-      <v-list-item class="d-flex justify-center" v-else><v-img :src="getLogoImage" width="300" height="50"></v-img>
+      <v-list-item class="d-flex justify-center" v-else
+        ><v-img :src="getLogoImage" width="300" height="50"></v-img>
       </v-list-item>
       <div v-if="!rail">
-        <v-list-item v-for="menu in settingMenus" :key="menu.routerName" :title="menu.menuName" :value="menu.routerName"
-          @click="goPage(menu.routerPath)" class="py-3 active-class sidemenu">
+        <v-list-item
+          v-for="menu in settingMenus"
+          :key="menu.routerName"
+          :title="menu.menuName"
+          :value="menu.routerName"
+          @click="goPage(menu.routerPath)"
+          class="py-3 active-class sidemenu"
+        >
         </v-list-item>
       </div>
     </v-list>
 
     <template>
-
       <v-list-item title="test"></v-list-item>
-
     </template>
-
 
     <template v-slot:append>
       <v-divider></v-divider>
@@ -36,7 +46,6 @@ import { useAccessMenuStore } from '@/stores/accessMenuStore'
 import { goPage } from '@/composables/util'
 import { Role } from '@/common/globalReference.js'
 
-
 import uipaLogoImg from '/images/logo/uipa-logo.png'
 
 const authStore = useAuthStore()
@@ -55,17 +64,17 @@ let userRole = ''
 const settingMenus = ref()
 
 const menuRole = {
-  lccAdmin : 'LCC_ADMIN',
-  voccAdmin : 'VOCC_ADMIN',
-  voccUser :  'VOCC_USER',
-  anyone : 'ANYONE'
+  lccAdmin: 'LCC_ADMIN',
+  voccAdmin: 'VOCC_ADMIN',
+  voccUser: 'VOCC_USER',
+  anyone: 'ANYONE'
 }
 
 const SETTINGS_MENU_ID = 500
-
+const SYSTEM_SETTINGS_MENU_ID = 515
 
 onMounted(() => {
-  userRole= userInfo.value.role
+  userRole = userInfo.value.role
   getSettingMenus()
 })
 
@@ -82,30 +91,27 @@ const getLogoImage = computed(() => {
   return voccInfo.value.logoImage ? logoImage : uipaLogoImg
 })
 
-
 const getSettingMenus = () => {
   let menu = ''
 
-  let settingMenu = accessMenus.value.filter(menu => menu.menuId == SETTINGS_MENU_ID)
+  let settingMenu = accessMenus.value.filter((menu) => menu.menuId == SETTINGS_MENU_ID)
   settingMenu = settingMenu[0].children
 
   console.dir(settingMenu)
-  switch (userRole){
+  switch (userRole) {
     case Role.lccAdmin:
-      menu = settingMenu;
-      break;
+      menu = settingMenu.filter(
+        (menu) => menu.accessRole != menuRole.voccAdmin && menu.menuId != SYSTEM_SETTINGS_MENU_ID
+      )
+      break
     case Role.voccAdmin:
-      menu = settingMenu.filter(menu => menu.accessRole != menuRole.lccAdmin)
-      break;
+      menu = settingMenu.filter((menu) => menu.accessRole != menuRole.lccAdmin)
+      break
     case Role.voccUser:
-      menu = settingMenu.filter(menu => menu.accessRole == menuRole.voccUser)
+      menu = settingMenu.filter((menu) => menu.accessRole == menuRole.voccUser)
   }
-  settingMenus.value = menu;
-
+  settingMenus.value = menu
 }
-
-
-
 </script>
 
 <style scoped>

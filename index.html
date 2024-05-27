@@ -7,6 +7,12 @@
     <title>선박통합데이터센터</title>
     <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
     <script src="https://api.windy.com/assets/map-forecast/libBoot.js"></script>
+    <script src="/src/common/ol.js"></script>
+    <script>
+      let map;
+      // Weather API URL 주소
+      let baseUrl = 'http://localhost:8080/emapMin_war';
+    </script>
   </head>
   <body>
     <div id="app"></div>

@@ -9,11 +9,16 @@
       </tr>
     </template>
 </v-data-table> -->
-  <v-data-table class="cii-table" :headers="headers" :items="ciiData" height="100%"
-    style="--v-table-header-height: 38px;">
-
+  <v-data-table
+    ref="ciiTable"
+    class="cii-table text-center"
+    :headers="headers"
+    :items="ciiData"
+    style="--v-table-row-height: 38px"
+    :style="ciiTableRowStyle"
+  >
     <template v-slot:item.key="{ item }">
-      {{ platformText(item.Key) }}
+      {{ getKeyName(item.Key) }}
     </template>
   </v-data-table>
 </template>
@@ -25,37 +30,60 @@ import { useShipStore } from '@/stores/shipStore'
 import { useCiiStore } from '@/stores/ciiStore'
 
 const shipStore = useShipStore()
-const { selectedShip } = storeToRefs(shipStore);
+const { selectedShip } = storeToRefs(shipStore)
 
 const ciiStore = useCiiStore()
-const { monthlyCiiData } = storeToRefs(ciiStore);
+// const { monthlyCiiData } = storeToRefs(ciiStore)
+const { usedFuels } = storeToRefs(shipStore)
 
+const ciiTable = ref()
+
+let tableElement = 0
+let ciiTableHeight = ref(0)
+let ciiTableRowHeight = ref(0)
+let ciiTableRowStyle = ref()
 
 onMounted(() => {
-
   fetchMonthlyCiiData()
+  console.log('테이블')
+  console.dir(ciiTable.value)
+  ciiTableRowHeight.value = 30
+
+  tableElement = document.querySelector('.cii-table')
+  if (tableElement) {
+    ciiTableHeight.value = tableElement.clientHeight
+    console.log('테이블 높이')
+    console.log(ciiTableHeight)
+  }
 })
 
 const year = ref('2024')
-const targetLength = 12;
+const targetLength = 12
 
-let ciiData = ref();
+const usedMDO = ref(false)
+const usedMGO = ref(false)
+const usedLFO = ref(false)
+const usedHFO = ref(false)
+const usedLPG = ref(false)
+const usedLNG = ref(false)
+
+let ciiData = ref()
 const fetchMonthlyCiiData = async () => {
   // ciiData.value = ciiData.value.fill('-');
   console.log('cii')
   console.dir(ciiData.value)
   const result = await ciiStore.fetchMonthlyCiiData(selectedShip.value, year.value)
+  usedMDO.value = usedFuels.value.includes('MDO')
+  usedMGO.value = usedFuels.value.includes('MGO')
+  usedLFO.value = usedFuels.value.includes('LFO')
+  usedHFO.value = usedFuels.value.includes('HFO')
+  usedLNG.value = usedFuels.value.includes('LNG')
+  usedLPG.value = usedFuels.value.includes('LPG')
 
   console.log('결과값 null 인지')
   console.dir(result)
   if (result) {
     const {
-      ciiGradeList, ciiRatingList, attainedCiiList, co2EmissionList,
-      focTotalList, focHfoList, focMdoList, focMgoList, focLfoList, focLngList,
-      speedList, distanceList
-    } = result
-
-    let data = {
       ciiGradeList,
       ciiRatingList,
       attainedCiiList,
@@ -65,19 +93,69 @@ const fetchMonthlyCiiData = async () => {
       focMdoList,
       focMgoList,
       focLfoList,
+      focLpgList,
       focLngList,
+      speedList,
+      distanceList
+    } = result
+
+    let data = {
+      ciiGradeList,
+      ciiRatingList,
+      attainedCiiList,
+      co2EmissionList,
+      focTotalList,
+      focHfoList,
+      focLfoList,
+      focMdoList,
+      focMgoList,
+      focLngList,
+      focLpgList,
       speedList,
       distanceList
     }
 
+    if (!usedMDO.value) {
+      delete data.focMdoList
+    }
 
-    let test2 = formattedData(data)
-    ciiData.value = test2
+    if (!usedMGO.value) {
+      delete data.focMgoList
+    }
+    if (!usedLFO.value) {
+      delete data.focLfoList
+    }
+    if (!usedHFO.value) {
+      delete data.focHfoList
+    }
+    if (!usedLNG.value) {
+      delete data.focLngList
+    }
+    if (!usedLPG.value) {
+      delete data.focLpgList
+    }
+
+    let monthlyCiiData = formattedData(data)
+    console.log('월간데이터')
+    console.dir(monthlyCiiData)
+    ciiData.value = monthlyCiiData
+    getTableRowHeight(monthlyCiiData)
   }
-
 }
 
-watch(selectedShip, fetchMonthlyCiiData);
+const getTableRowHeight = (test2) => {
+  tableElement = document.querySelector('.cii-table')
+  ciiTableHeight.value = tableElement.clientHeight
+  ciiTableRowHeight.value = ciiTableHeight.value / test2.length
+  setTimeout(() => {
+    console.log('행 높이')
+    console.log(ciiTableRowHeight.value)
+    tableElement.style.setProperty('--v-table-header-height', ciiTableRowHeight)
+    ciiTableRowStyle.value = `--v-table-row-height: ${ciiTableRowHeight.value}px`
+  }, 1000)
+}
+
+watch(selectedShip, fetchMonthlyCiiData)
 const headers = [
   { title: 'Key', align: 'start', value: 'key' },
   { title: 'Jan', value: 'Jan' },
@@ -91,8 +169,8 @@ const headers = [
   { title: 'Sep', value: 'Sep' },
   { title: 'Oct', value: 'Oct' },
   { title: 'Nov', value: 'Nov' },
-  { title: 'Dec', value: 'Dec' },
-];
+  { title: 'Dec', value: 'Dec' }
+]
 
 // const data = [
 //   { emissionTotal: [1000, 800, 600, 700, 450, 650, 850, 1000, 800, 600, 700, 450] },
@@ -104,7 +182,7 @@ const headers = [
 //   { lng: [0,0,0,0,0,0,0,0,0,0,0,0] },
 // ];
 
-const platformNames = {
+const keyNames = {
   ciiGradeList: 'CII Grade',
   ciiRatingList: 'CII Rating',
   attainedCiiList: 'Attained CII',
@@ -117,37 +195,39 @@ const platformNames = {
   focLpgList: 'LPG (t)',
   focLngList: 'LNG (t)',
   speedList: 'Speed(kn)',
-  distanceList: 'Distance (nm)',
-};
-
+  distanceList: 'Distance (nm)'
+}
 
 const formattedData = (data) => {
-  const result = [];
+  const result = []
   for (const key in data) {
-    const values = data[key];
-    const item = {};
+    const values = data[key]
+    const item = {}
 
-    item.Key = key;
+    item.Key = key
 
-    for (let i = 0; i < headers.length; i++) {
-      const header = headers[i];
-      if (header.title != 'Key')
-        item[header.title] = values[i] !== undefined ? values[i] : '-';
+    let headerList = headers.filter((header) => header.title != 'Key')
+
+    for (let i = 0; i < headerList.length; i++) {
+      const header = headerList[i]
+      item[header.title] = values[i] !== undefined ? values[i] : '-'
     }
-    result.push(item);
+    result.push(item)
   }
+  return result
+}
 
-  return result;
-};
+const getKeyName = (key) => {
+  return keyNames[key] || key
+}
 
-const platformText = (platform) => {
-  return platformNames[platform] || platform;
-};
+window.addEventListener('resize', getTableRowHeight)
 </script>
 <style lang="scss">
 .v-data-table-footer {
   display: none !important;
 }
 
-.cii-table {}
+.cii-table {
+}
 </style>
