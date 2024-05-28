@@ -146,7 +146,9 @@ onMounted(async () => {
   fetchFleetAndShipByVocc()
   fleetsInstance = getDxGridInstance(fleetsGrid)
 
-  if (checkedShips.value.length != 0) {
+  console.log(checkedShips);
+
+  if (checkedShips.value!= null && checkedShips.value.length != 0) {
     selectedRowKeys.value = checkedShips.value.map((ship) => ship.id)
   }
   interval = setInterval(fetchShipAlarm, SECOND_IN_ONE_MINUTE)

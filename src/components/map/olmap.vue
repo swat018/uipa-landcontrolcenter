@@ -134,8 +134,8 @@ export default {
       // 화면상의 중심 좌표와 왼쪽 좌표의 차이 계산
       var dx = currentCenter[0] - leftCoordinate[0];
 
-      let lonLeft = ol.proj.transform([leftCoordinate[0], 0], 'EPSG:3857', 'EPSG:4326')[0];
-      let lonRight = ol.proj.transform([rightCoordinate[0], 0], 'EPSG:3857', 'EPSG:4326')[0];
+      let lonLeft = transform([leftCoordinate[0], 0], 'EPSG:3857', 'EPSG:4326')[0];
+      let lonRight = transform([rightCoordinate[0], 0], 'EPSG:3857', 'EPSG:4326')[0];
 
       // 경도 제한
       let newCenter;
@@ -143,12 +143,12 @@ export default {
         if (lonLeft < -180) {
           lonLeft = 360 + (lonLeft % 360);
 
-          newCenter = ol.proj.transform([lonLeft, 0], 'EPSG:4326', 'EPSG:3857');
+          newCenter = transform([lonLeft, 0], 'EPSG:4326', 'EPSG:3857');
           newCenter = [newCenter[0] + dx, currentCenter[1]];
         } else {
           lonRight = lonRight % 360;
 
-          newCenter = ol.proj.transform([lonRight, 0], 'EPSG:4326', 'EPSG:3857');
+          newCenter = transform([lonRight, 0], 'EPSG:4326', 'EPSG:3857');
           newCenter = [newCenter[0] - dx, currentCenter[1]];
         }
 
@@ -156,6 +156,8 @@ export default {
       }
     });
 
+    // 선박 정보 시각화
+    this.setShipLayer();
     this.shipSelectEvent();
     this.vesselTrackCurrent();
     this.vesselTrackPast();
@@ -583,7 +585,7 @@ export default {
       console.log(vesselTrackStatus._value, isPastVesselTracks._value)
 
       if(vesselTrackStatus._value === true) {
-        getShipWakePast(clickedShipInfo.value.imoNumber, startDate._value, endDate._value).then((response) => {wn
+        getShipWakePast(clickedShipInfo.value.imoNumber, startDate._value, endDate._value).then((response) => {
           var shipWaskPastList = response.data.data;
           if(response.data.data === null) return;
 

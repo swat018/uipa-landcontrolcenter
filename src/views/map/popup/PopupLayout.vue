@@ -558,7 +558,7 @@ let remainingMgo = ref(0)
 let remainingLpg = ref(0)
 let remainingLng = ref(0)
 
-const trackStatus = ref(true)
+const trackStatus = ref(false)
 const tab = ref(null)
 
 const startDate = ref(null)
@@ -784,7 +784,7 @@ onUnmounted(() => {
 <style scoped>
 .popupLayout {
   position: absolute;
-  top: 10px;
+  top: 50px;
   z-index: 999;
   left: 15px;
   height: calc(100% - 24px);
