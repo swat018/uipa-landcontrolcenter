@@ -141,7 +141,9 @@ const route_choice = (id) => {
     if (response.data.length != 0) {
       const result = response.data;
       routeDetail.value = result;
-    } 
+    } else {
+      routeDetail.value = ref([{}])
+    }
     emitter.emit('draw_route_d1');
   })
 }
@@ -178,7 +180,7 @@ const addRow = () => {
     let obj = {routeid: routeMaster.routeid, lon: '', lat: '', seq: 0}
     console.log(isNaN(selectedDIndex.value))
     if (selectedDIndex.value === null) {
-      if(routeDetail.value.length == 0) {
+      if(routeDetail.value.length == 0||typeof routeDetail.value.length == "undefined" || routeDetail.value.length == null) {
         routeDetail.value = [obj]
       } else {
         routeDetail.value.push(obj)
