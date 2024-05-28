@@ -11,19 +11,20 @@ import VectorSource from 'ol/source/Vector'
 import { defaults as defaultControls } from 'ol/control'
 import { fromLonLat, transform } from 'ol/proj'
 import VectorLayer from 'ol/layer/Vector'
-import { Style, Icon, Fill, Stroke, RegularShape, Text } from 'ol/style'
+import { Style, Icon, Fill, Stroke, RegularShape, Text, Circle as CircleStyle } from 'ol/style'
 import Feature from 'ol/Feature'
 import Point from 'ol/geom/Point.js';
 import Select from 'ol/interaction/Select'
+import { Draw } from 'ol/interaction';
 import emitter from '@/composables/eventbus'
 import { TileWMS } from 'ol/source'
 import { useMapStore } from '@/stores/mapStore'
+import { useRouteStore } from '@/stores/routeStore'
 import { getShipData, getShipWakeCurrent, getShipWakePast } from '@/api/worldMap'
 import { getAisData } from '@/api/aisData'
 import { storeToRefs } from 'pinia'
 import { singleClick } from 'ol/events/condition'
 import { LineString } from 'ol/geom'
-
 
 // const urlBefore = 'http://navioncorp.asuscomm.com:8080/TileMap/'
 // const urlAfter = '/{z}/{x}/{-y}.png?v='+ Math.random();
@@ -35,6 +36,8 @@ import selectShipIcon from '@/assets/images/shipicons/shipIcon_yellow.png'
 import arrowIcon from '@/assets/images/shipicons/arrow.png'
 import { getShipInfo } from '@/api/shipApi'
 import { isStausOk } from '@/composables/util'
+
+const drawInteration_route = Draw
 
 export default {
   name: "olmap",
@@ -134,8 +137,8 @@ export default {
       // 화면상의 중심 좌표와 왼쪽 좌표의 차이 계산
       var dx = currentCenter[0] - leftCoordinate[0];
 
-      let lonLeft = transform([leftCoordinate[0], 0], 'EPSG:3857', 'EPSG:4326')[0];
-      let lonRight = transform([rightCoordinate[0], 0], 'EPSG:3857', 'EPSG:4326')[0];
+      let lonLeft = ol.proj.transform([leftCoordinate[0], 0], 'EPSG:3857', 'EPSG:4326')[0];
+      let lonRight = ol.proj.transform([rightCoordinate[0], 0], 'EPSG:3857', 'EPSG:4326')[0];
 
       // 경도 제한
       let newCenter;
@@ -143,21 +146,19 @@ export default {
         if (lonLeft < -180) {
           lonLeft = 360 + (lonLeft % 360);
 
-          newCenter = transform([lonLeft, 0], 'EPSG:4326', 'EPSG:3857');
+          newCenter = ol.proj.transform([lonLeft, 0], 'EPSG:4326', 'EPSG:3857');
           newCenter = [newCenter[0] + dx, currentCenter[1]];
         } else {
           lonRight = lonRight % 360;
 
-          newCenter = transform([lonRight, 0], 'EPSG:4326', 'EPSG:3857');
+          newCenter = ol.proj.transform([lonRight, 0], 'EPSG:4326', 'EPSG:3857');
           newCenter = [newCenter[0] - dx, currentCenter[1]];
         }
 
         view.setCenter(newCenter); // 변경된 경도로 지도 중심 재설정
       }
     });
-
-    // 선박 정보 시각화
-    this.setShipLayer();
+    
     this.shipSelectEvent();
     this.vesselTrackCurrent();
     this.vesselTrackPast();
@@ -165,10 +166,20 @@ export default {
     // ais 정보 시각화
     this.aisData();
 
+    this.setRouteLayer();
+
     // 기상정보 웹팩 관련 라이브러리 추가
     const bundleScript = document.createElement('script');
     bundleScript.src = '/src/components/map/canvasLayer/bundle.js';
     document.body.appendChild(bundleScript);
+
+    emitter.on('draw_route_d2', () => {
+      this.drawRoute();
+    })
+
+    emitter.on('route_Interaction2', () => {
+      this.routeInteraction();
+    })
   },
   methods: {
     initMap: function() {
@@ -585,7 +596,7 @@ export default {
       console.log(vesselTrackStatus._value, isPastVesselTracks._value)
 
       if(vesselTrackStatus._value === true) {
-        getShipWakePast(clickedShipInfo.value.imoNumber, startDate._value, endDate._value).then((response) => {
+        getShipWakePast(clickedShipInfo.value.imoNumber, startDate._value, endDate._value).then((response) => {wn
           var shipWaskPastList = response.data.data;
           if(response.data.data === null) return;
 
@@ -800,7 +811,112 @@ export default {
         })
 
       });
+    },
+
+    setRouteLayer: function() {
+      const source = new VectorSource();
+      var routePLayer = new VectorLayer({
+        id: 'route_p',
+        source: source,
+        style: new Style({
+          fill: new Fill({
+            color: 'rgba(255, 255, 255, 0.2)'
+          }),
+          stroke: new Stroke({
+            color: '#ffcc33',
+            width: 2
+          }),
+          image: new CircleStyle({
+            radius: 7,
+            fill: new Fill({
+              color: '#ffcc33'
+            })
+          })
+        })
+      });
+      map.addLayer(routePLayer);
+
+      var routeLLayer = new VectorLayer({
+        id: 'route_l',
+        source: source,
+        style: new Style({
+          fill: new Fill({
+            color: 'rgba(255, 255, 255, 0.2)'
+          }),
+          stroke: new Stroke({
+            color: '#ffcc33',
+            width: 2
+          }),
+          image: new CircleStyle({
+            radius: 7,
+            fill: new Fill({
+              color: '#ffcc33'
+            })
+          })
+        })
+      });
+      map.addLayer(routeLLayer);
+    },
+    
+    routeInteraction: function() { 
+      const lyr_p = this.getLayer("route_p");
+
+      this.drawInteration_route = new Draw({
+        id: 'draw_i',
+        source: lyr_p.getSource(),
+        type: 'Point'
+      });
+      this.drawInteration_route.on('drawend', this.onDrawEnd);
+      map.addInteraction(this.drawInteration_route);
+    },
+
+    onDrawEnd(f) {
+      const routeStore = useRouteStore()
+      const { routeMaster, routeDetail, selectedMIndex, selectedDIndex, drawactive } = storeToRefs(routeStore);
+
+      var xy = f.feature.getGeometry().transform( 'EPSG:3857',  'EPSG:4326').getCoordinates();
+      var y = xy[0];
+      var x = xy[1];
+      
+      routeDetail.value[selectedDIndex.value].lon = y.toFixed(3)
+      routeDetail.value[selectedDIndex.value].lat = x.toFixed(3)
+        
+      f.feature.getGeometry().transform( 'EPSG:4326',  'EPSG:3857');
+      this.drawRoute();
+      map.removeInteraction(this.drawInteration_route);
+    },
+
+    drawRoute: function() {
+      const routeStore = useRouteStore()
+      const { routeMaster, routeDetail, selectedMIndex, selectedDIndex, drawactive } = storeToRefs(routeStore);
+
+      let lyr_p = this.getLayer("route_p");
+      let lyr_l = this.getLayer("route_l");
+      lyr_p.getSource().clear();
+      lyr_l.getSource().clear();
+      
+      var arr_line = new Array()
+      if (routeDetail.value.length > 0) {
+        routeDetail.value.forEach(function(item){
+          var point = [Number(item.lon),Number(item.lat)];
+          var feat_p = new ol.Feature({
+            id:"rt_"+item.routeseq,
+            geometry:new Point(point)
+          });	
+          feat_p.getGeometry().transform( 'EPSG:4326',  'EPSG:3857');
+          lyr_p.getSource().addFeature(feat_p);
+          arr_line.push(point);
+        })
+
+        var feat_line = new ol.Feature({
+        id:"rt_"+routeMaster.value.routeid,
+          geometry:new LineString(arr_line)
+        });
+        let c_geometry = feat_line.getGeometry().transform( 'EPSG:4326',  'EPSG:3857');
+        lyr_l.getSource().addFeature(feat_line);
+      }
     }
+
   }
 }
 </script>
@@ -812,3 +928,4 @@ export default {
   height: 100%;
 }
 </style>
+

@@ -32,6 +32,7 @@ export const useRouteStore = defineStore(
 
         const selectedMIndex = ref(null)
         const selectedDIndex = ref(null)
+        const drawactive = ref(false)
 
         const routelist = ref([])
 
@@ -117,6 +118,7 @@ export const useRouteStore = defineStore(
             routelist,
             selectedMIndex,
             selectedDIndex,
+            drawactive,
             getRouteList,
             fetchRouteInfoById,
             resetroute,
