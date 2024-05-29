@@ -26,11 +26,6 @@ import { storeToRefs } from 'pinia'
 import { singleClick } from 'ol/events/condition'
 import { LineString } from 'ol/geom'
 
-// const urlBefore = 'http://navioncorp.asuscomm.com:8080/TileMap/'
-// const urlAfter = '/{z}/{x}/{-y}.png?v='+ Math.random();
-const urlBefore = import.meta.env.VITE_TILE_MAP_URL + '/';
-const urlAfter = '/{z}/{x}/{-y}.png';
-
 import shipIcon from '@/assets/images/shipicons/shipIcon_green.png'
 import selectShipIcon from '@/assets/images/shipicons/shipIcon_yellow.png'
 import arrowIcon from '@/assets/images/shipicons/arrow.png'
@@ -38,6 +33,10 @@ import { getShipInfo } from '@/api/shipApi'
 import { isStausOk } from '@/composables/util'
 
 const drawInteration_route = Draw
+
+const urlBefore = import.meta.env.VITE_TILE_MAP_URL + '/';
+const urlAfter = '/{z}/{x}/{-y}.png';
+const geoserverWmsUrl = import.meta.env.VITE_GEOSERVER_WMS_URL;
 
 export default {
   name: "olmap",
@@ -56,7 +55,12 @@ export default {
     imoNumbers: [],
     isClick: false,
   }),
-  props: [ 'propsdata', 'curSelectedShip','isShow', 'isRouteShow', 'vesselTrack', 'startDate', 'endDate', 'isPastVesselTracks', 'layerMode', 'layerBright' ],
+  props: [
+    'propsdata', 'curSelectedShip',
+    'isShow', 'isRouteShow',
+    'vesselTrack', 'startDate', 'endDate', 'isPastVesselTracks',
+    'layerMode', 'layerBright',
+  ],
   watch: {
     propsdata: function() {
       map.getLayers().getArray()
@@ -137,8 +141,8 @@ export default {
       // 화면상의 중심 좌표와 왼쪽 좌표의 차이 계산
       var dx = currentCenter[0] - leftCoordinate[0];
 
-      let lonLeft = ol.proj.transform([leftCoordinate[0], 0], 'EPSG:3857', 'EPSG:4326')[0];
-      let lonRight = ol.proj.transform([rightCoordinate[0], 0], 'EPSG:3857', 'EPSG:4326')[0];
+      let lonLeft = transform([leftCoordinate[0], 0], 'EPSG:3857', 'EPSG:4326')[0];
+      let lonRight = transform([rightCoordinate[0], 0], 'EPSG:3857', 'EPSG:4326')[0];
 
       // 경도 제한
       let newCenter;
@@ -146,19 +150,19 @@ export default {
         if (lonLeft < -180) {
           lonLeft = 360 + (lonLeft % 360);
 
-          newCenter = ol.proj.transform([lonLeft, 0], 'EPSG:4326', 'EPSG:3857');
+          newCenter = transform([lonLeft, 0], 'EPSG:4326', 'EPSG:3857');
           newCenter = [newCenter[0] + dx, currentCenter[1]];
         } else {
           lonRight = lonRight % 360;
 
-          newCenter = ol.proj.transform([lonRight, 0], 'EPSG:4326', 'EPSG:3857');
+          newCenter = transform([lonRight, 0], 'EPSG:4326', 'EPSG:3857');
           newCenter = [newCenter[0] - dx, currentCenter[1]];
         }
 
         view.setCenter(newCenter); // 변경된 경도로 지도 중심 재설정
       }
     });
-    
+
     this.shipSelectEvent();
     this.vesselTrackCurrent();
     this.vesselTrackPast();
@@ -199,7 +203,6 @@ export default {
       return map;
     },
     setMapType: function(mapBright, mapMode) {
-      var geoserverWmsUrl = "http://navioncorp.asuscomm.com:8089/geoserver/wms";
 
       if (mapBright !== 'Black') {
         map.getLayers().clear();
@@ -442,6 +445,40 @@ export default {
       var source = this.getLayer(lynm).getSource();
       //var source = getLayerGroup(lynm).getSource();
       source.updateParams({ 'STYLES': '', 'SLD_BODY': text_SLD });
+    },
+    addWorldcountries: function(brightMode) {
+      if (brightMode != 'Black') {
+        map.addLayer(
+          new TileLayer({
+            id: 'worldcountries',
+            title: 'worldcountries',
+            opacity: 1,
+            zIndex: -1,
+            source: new TileWMS({
+              url: geoserverWmsUrl,
+              serverType: 'geoserver',
+              crossOrigin: 'anonymous',
+              params: {
+                'VERSION': '1.1.0',
+                'LAYERS': 'emap:worldcountries',
+                'CRS': 'EPSG:3857',
+              },
+            })
+          })
+        );
+      }
+      if (brightMode === 'Day') {
+        this.makeSld("worldcountries", "Polygon1_2", "bfbe8f", "bfbe8f");
+      } else if (brightMode === 'Dusk') {
+        this.makeSld("worldcountries", "Polygon1_2", "40402e", "40402e");
+      } else if (brightMode === 'Night') {
+        this.makeSld("worldcountries", "Polygon1_2", "17160e", "17160e");
+      }
+      map.getLayers().getArray()
+        .filter(layer => layer.get('id') === 'worldcountries')
+        .forEach(layer => map.setZIndex(-1));
+
+
     },
     getLayer: function(id) {
       let lyr = null;
@@ -740,6 +777,10 @@ export default {
         })
 
         ais_class_a.forEach((aisClassAData) => {
+          var rotation;
+          if (aisClassAData.heading === null) rotation = aisClassAData.cog;
+          else rotation = aisClassAData.heading;
+
           var pointFeature = new Feature({
             geometry: new Point([Number(aisClassAData.longitude), Number(aisClassAData.latitude)])
           });
@@ -756,7 +797,7 @@ export default {
                 anchor: [0.5, 0.5],
                 opacity: 0.7,
                 rotateWithView: true,
-                rotation: (-90 + aisClassAData.heading) * Math.PI/180
+                rotation: (-90 + rotation) * Math.PI/180
                 ,
               })
             }),
@@ -764,6 +805,10 @@ export default {
           map.addLayer(this.aisClassLayer);
         })
         ais_class_b.forEach((aisClassBData) => {
+          var rotation;
+          if (aisClassBData.heading === null) rotation = aisClassBData.cog;
+          else rotation = aisClassBData.heading;
+
           var pointFeature = new Feature({
             geometry: new Point([Number(aisClassBData.longitude), Number(aisClassBData.latitude)])
           });
@@ -780,13 +825,17 @@ export default {
                 anchor: [0.5, 0.5],
                 opacity: 0.7,
                 rotateWithView: true,
-                rotation: (-90 + aisClassBData.heading) * Math.PI/180
+                rotation: (-90 + rotation) * Math.PI/180
               })
             })
           });
           map.addLayer(this.aisClassLayer);
         })
         vpass_class_b.forEach((vpassClassBData) => {
+          var rotation;
+          if (vpassClassBData.heading === null) rotation = vpassClassBData.cog;
+          else rotation = vpassClassBData.heading;
+
           var pointFeature = new Feature({
             geometry: new Point([Number(vpassClassBData.longitude), Number(vpassClassBData.latitude)])
           });
@@ -803,7 +852,7 @@ export default {
                 anchor: [0.5, 0.5],
                 opacity: 0.7,
                 rotateWithView: true,
-                rotation: (-90 + vpassClassBData.heading) * Math.PI/180
+                rotation: (-90 + rotation) * Math.PI/180
               })
             })
           });
@@ -857,8 +906,8 @@ export default {
       });
       map.addLayer(routeLLayer);
     },
-    
-    routeInteraction: function() { 
+
+    routeInteraction: function() {
       const lyr_p = this.getLayer("route_p");
 
       this.drawInteration_route = new Draw({
@@ -877,10 +926,10 @@ export default {
       var xy = f.feature.getGeometry().transform( 'EPSG:3857',  'EPSG:4326').getCoordinates();
       var y = xy[0];
       var x = xy[1];
-      
+
       routeDetail.value[selectedDIndex.value].lon = y.toFixed(3)
       routeDetail.value[selectedDIndex.value].lat = x.toFixed(3)
-        
+
       f.feature.getGeometry().transform( 'EPSG:4326',  'EPSG:3857');
       this.drawRoute();
       map.removeInteraction(this.drawInteration_route);
@@ -894,7 +943,7 @@ export default {
       let lyr_l = this.getLayer("route_l");
       lyr_p.getSource().clear();
       lyr_l.getSource().clear();
-      
+
       var arr_line = new Array()
       if (routeDetail.value.length > 0) {
         routeDetail.value.forEach(function(item){
@@ -902,7 +951,7 @@ export default {
           var feat_p = new ol.Feature({
             id:"rt_"+item.routeseq,
             geometry:new Point(point)
-          });	
+          });
           feat_p.getGeometry().transform( 'EPSG:4326',  'EPSG:3857');
           lyr_p.getSource().addFeature(feat_p);
           arr_line.push(point);
