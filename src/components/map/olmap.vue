@@ -125,8 +125,7 @@ export default {
   },
   mounted: async function() {
     // 기상정보 API URL 설정
-    // baseUrl = import.meta.env.VITE_WEATHER_API_URL;
-    baseUrl = '/emapMin'
+    baseUrl = import.meta.env.VITE_WEATHER_API_URL;
 
     this.initMap();
     this.setMapType(this.layerBright, this.layerMode);
