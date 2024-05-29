@@ -9,6 +9,7 @@
                :vesselTrack="vesselTrackStatus"
                :startDate="startDate" :endDate="endDate" :isPastVesselTracks="isPastVesselTracks"
                :layerBright="layerBright" :layerMode="layerMode"
+                :checkWind="checkWind" :checkFlow="checkFlow" :checkWave="checkWave" :checkTempair="checkTempair" :checkTempwater="checkTempwater"
         />
     </div>
 
@@ -22,11 +23,11 @@
       <table class="menuTable-0" >
         <tr>
           <td style="display: flex">
-            <input type="radio" id="checkWind" name="weatherOption" class="customRadio">&nbsp; <p>풍향/풍속</p> &nbsp;
-            <input type="radio" id="checkFlow" name="weatherOption" class="customRadio">&nbsp; <p>유향/유속</p> &nbsp;
-            <input type="radio" id="checkWave" name="weatherOption" class="customRadio">&nbsp; <p>파향/파주기</p> &nbsp;
-            <input type="radio" id="checkTempair" name="weatherOption" class="customRadio">&nbsp; <p>기온</p> &nbsp;
-            <input type="radio" id="checkTempwater" name="weatherOption" class="customRadio">&nbsp; <p>수온</p> &nbsp;
+            <input type="radio" id="checkWind" name="weatherOption" class="customRadio" v-model="checkWind">&nbsp; <p>풍향/풍속</p> &nbsp;
+            <input type="radio" id="checkFlow" name="weatherOption" class="customRadio" v-model="checkFlow">&nbsp; <p>유향/유속</p> &nbsp;
+            <input type="radio" id="checkWave" name="weatherOption" class="customRadio" v-model="checkWave">&nbsp; <p>파향/파주기</p> &nbsp;
+            <input type="radio" id="checkTempair" name="weatherOption" class="customRadio" v-model="checkTempair">&nbsp; <p>기온</p> &nbsp;
+            <input type="radio" id="checkTempwater" name="weatherOption" class="customRadio" v-model="checkTempwater">&nbsp; <p>수온</p> &nbsp;
           </td>
           <td width="10px"></td>
           <td>
@@ -136,7 +137,11 @@ const popupRoute = ref(null)
 const isShow = ref(false)
 const isRouteShow = ref(false)
 
-
+const checkWind = ref('off')
+const checkFlow = ref('off')
+const checkWave = ref('off')
+const checkTempair = ref('off')
+const checkTempwater = ref('off')
 
 const openPopup = () => {
   isShow.value = true;
@@ -249,6 +254,9 @@ watch(isPastVesselTracks, (value) => {
 
 watch(checkedShips, displayShipsOnMap)
 
+onMounted(() => {
+})
+
 const getRouteplan = () => {
   openRoutePopup()
   routeplanStore.getRouteList()
@@ -281,11 +289,11 @@ const getRouteplan = () => {
 }
 .menuTable-0 tr {
   display: flex;
-  align-content: center;
+  align-items: center;
 }
 .menuTable-0 td {
   display: flex;
-  align-content: center;
+  align-items: center;
 }
 .menuTable-0 input {
   margin: 0;
@@ -307,11 +315,11 @@ const getRouteplan = () => {
 }
 .menuTable-1 tr {
   display: flex;
-  align-content: center;
+  align-items: center;
 }
 .menuTable-1 td {
   display: flex;
-  align-content: center;
+  align-items: center;
   height: 30px;
 }
 .menuTable-1 button {
@@ -347,14 +355,17 @@ const getRouteplan = () => {
   display: none;
 }
 #selectDate {
-  display: inline-table;
+  display: flex;
+  align-items: center;
   height: 25px;
+  padding: 0 0.5rem;
   background-color: rgba(4,82,137,0.5);
   color: white;
 }
 #weatherTime {
-  display: inline-table;
-  height: 30px;
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem;
   background-color: rgba(4,82,137,0.5);
   color: white;
 }

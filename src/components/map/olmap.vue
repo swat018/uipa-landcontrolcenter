@@ -3,6 +3,8 @@
 </template>
 
 <script>
+import '@/assets/ol.js'
+
 import { Map, View } from "ol";
 import TileLayer from 'ol/layer/Tile'
 import XYZ from 'ol/source/XYZ'
@@ -38,6 +40,7 @@ const urlBefore = import.meta.env.VITE_TILE_MAP_URL + '/';
 const urlAfter = '/{z}/{x}/{-y}.png';
 const geoserverWmsUrl = import.meta.env.VITE_GEOSERVER_WMS_URL;
 
+
 export default {
   name: "olmap",
   data: () => ({
@@ -60,6 +63,7 @@ export default {
     'isShow', 'isRouteShow',
     'vesselTrack', 'startDate', 'endDate', 'isPastVesselTracks',
     'layerMode', 'layerBright',
+    'checkWind', 'checkFlow', 'checkWave', 'checkTempair', 'checkTempwater'
   ],
   watch: {
     propsdata: function() {
@@ -121,6 +125,9 @@ export default {
     }
   },
   mounted: async function() {
+    // 기상정보 API URL 설정
+    baseUrl = import.meta.env.VITE_WEATHER_API_URL;
+
     this.initMap();
     this.setMapType(this.layerBright, this.layerMode);
     this.$emit('init', map);
@@ -216,6 +223,7 @@ export default {
           })
         );
       } else if (mapBright === 'Black') {
+        console.log(this.checkWind, this.checkWave, this.checkFlow, this.checkTempair, this.checkTempwater)
         map.getLayers().clear();
         map.addLayer(
           new TileLayer({
@@ -242,7 +250,7 @@ export default {
             id: 'worldcountries',
             title: 'worldcountries',
             opacity: 1,
-            zIndex: -1,
+            zIndex: 100,
             source: new TileWMS({
               url: geoserverWmsUrl,
               serverType: 'geoserver',
@@ -521,6 +529,7 @@ export default {
                 rotation: (-90 + shipData.course) * Math.PI/180
               })
             }),
+            zIndex: 100
           });
           map.addLayer(this.shipLayer);
         })
@@ -567,7 +576,8 @@ export default {
               source: new VectorSource({
                 features: [lineFeature]
               }),
-              style: this.styleCurrent
+              style: this.styleCurrent,
+              zIndex: 200
             });
 
             map.addLayer(this.shipWakeLayer);
@@ -616,7 +626,7 @@ export default {
                 rotateWithView: true,
                 rotation: -rotation,
               }),
-              zIndex: 100,
+              zIndex: 500,
             }),
           );
         });
@@ -668,7 +678,8 @@ export default {
               source: new VectorSource({
                 features: [lineFeature]
               }),
-              style: this.stylePast
+              style: this.stylePast,
+              zIndex: 300
             });
 
             map.addLayer(this.shipPastWakeLayer);
@@ -771,6 +782,7 @@ export default {
                 radius: 10,
                 angle: Math.PI / 4,
               }),
+              zIndex: 500
             })
           });
           map.addLayer(this.aisBasestationLayer);
@@ -801,6 +813,7 @@ export default {
                 ,
               })
             }),
+            zIndex: 500
           });
           map.addLayer(this.aisClassLayer);
         })
@@ -827,7 +840,8 @@ export default {
                 rotateWithView: true,
                 rotation: (-90 + rotation) * Math.PI/180
               })
-            })
+            }),
+            zIndex: 500
           });
           map.addLayer(this.aisClassLayer);
         })
@@ -854,7 +868,8 @@ export default {
                 rotateWithView: true,
                 rotation: (-90 + rotation) * Math.PI/180
               })
-            })
+            }),
+            zIndex: 500
           });
           map.addLayer(this.aisClassLayer);
         })
