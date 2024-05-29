@@ -38,6 +38,5 @@ app.use(moment)
 
 app.config.globalProperties.echartTheme = 'echartBlackTheme'
 app.config.globalProperties.xlsx = xlsx
-app.config.globalProperties.$baseUrl = 'a'
 
 app.mount('#app')
