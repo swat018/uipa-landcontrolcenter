@@ -63,7 +63,6 @@ export default {
     'isShow', 'isRouteShow',
     'vesselTrack', 'startDate', 'endDate', 'isPastVesselTracks',
     'layerMode', 'layerBright',
-    'checkWind', 'checkFlow', 'checkWave', 'checkTempair', 'checkTempwater'
   ],
   watch: {
     propsdata: function() {
@@ -126,7 +125,8 @@ export default {
   },
   mounted: async function() {
     // 기상정보 API URL 설정
-    baseUrl = import.meta.env.VITE_WEATHER_API_URL;
+    // baseUrl = import.meta.env.VITE_WEATHER_API_URL;
+    baseUrl = '/emapMin'
 
     this.initMap();
     this.setMapType(this.layerBright, this.layerMode);
@@ -210,7 +210,6 @@ export default {
       return map;
     },
     setMapType: function(mapBright, mapMode) {
-
       if (mapBright !== 'Black') {
         map.getLayers().clear();
         map.addLayer(
@@ -223,7 +222,6 @@ export default {
           })
         );
       } else if (mapBright === 'Black') {
-        console.log(this.checkWind, this.checkWave, this.checkFlow, this.checkTempair, this.checkTempwater)
         map.getLayers().clear();
         map.addLayer(
           new TileLayer({

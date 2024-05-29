@@ -9,7 +9,6 @@
                :vesselTrack="vesselTrackStatus"
                :startDate="startDate" :endDate="endDate" :isPastVesselTracks="isPastVesselTracks"
                :layerBright="layerBright" :layerMode="layerMode"
-                :checkWind="checkWind" :checkFlow="checkFlow" :checkWave="checkWave" :checkTempair="checkTempair" :checkTempwater="checkTempwater"
         />
     </div>
 
@@ -136,12 +135,6 @@ const popupMenu = ref(null)
 const popupRoute = ref(null)
 const isShow = ref(false)
 const isRouteShow = ref(false)
-
-const checkWind = ref('off')
-const checkFlow = ref('off')
-const checkWave = ref('off')
-const checkTempair = ref('off')
-const checkTempwater = ref('off')
 
 const openPopup = () => {
   isShow.value = true;
