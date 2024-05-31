@@ -18,7 +18,7 @@
             <colgroup><col width="60%"></col><col width="40%"></col></colgroup>
             <tr>
               <th class="text-center">항로계획명</th>
-              <th class="text-center">편집일자</th>
+              <th class="text-center" style="padding: 0 1rem">편집일자</th>
             </tr>
           </v-table>
           <v-table class="RMList" height="625">
@@ -59,7 +59,7 @@
             <tbody>
               <tr>
                 <th class="text-center">편집자</th><th><p>{{routeMaster.makename}}</p></th>
-                <th class="text-center">편집일자</th><th><p>{{routeMaster.modifydate}}</p></th>
+                <th class="text-center" style="padding: 0 1rem">편집일자</th><th><p>{{routeMaster.modifydate}}</p></th>
               </tr>
             </tbody>
           </v-table>
@@ -127,7 +127,7 @@ const closePopup = () => {
   emit('closePopup')
 }
 
-const selectRowM = (index) => {  
+const selectRowM = (index) => {
   selectedMIndex.value = index;
 }
 
@@ -168,7 +168,7 @@ const saveRouteM = () => {
   routeStore.RouteMSave(routeMaster.value.routeid, routeMaster.value.routename, routeMaster.value.makename)
 }
 
-const selectRowD = (index) => {  
+const selectRowD = (index) => {
   selectedDIndex.value = index
   drawactive.value = true
 }
@@ -202,7 +202,7 @@ const removeRow = () => {
     showResMsg('삭제할 항로계획 순번을 선택해주세요.')
   } else {
     routeStore.routeDetail.splice(selectedDIndex.value, 1);
-    selectedDIndex.value = null    
+    selectedDIndex.value = null
     emitter.emit('draw_route_d1');
   }
 }
