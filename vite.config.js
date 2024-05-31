@@ -7,7 +7,8 @@ const localUrl = 'http://navioncorp.asuscomm.com:49000'
 // const devServerUrl = 'http://192.168.0.58:9000'
 // const devLocalUrl = 'http://192.168.3.92:9000'
 // const mockServerUrl = 'https://f0e9c754-bcb8-4adf-8c95-e9c3197d9ec0.mock.pstmn.io'
-const emapMinUrl = 'http://192.168.219.106:8080'
+// const emapMinUrl = 'http://192.168.219.106:8080'
+const emapMinUrl = 'http://localhost:8080'
 
 
 // https://vitejs.dev/config/
