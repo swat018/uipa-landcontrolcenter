@@ -4,6 +4,7 @@
 
 <script>
 import '@/assets/ol.js'
+// import './cpa_tcpa/cpa_tcpa.js'
 
 import { Map, View } from "ol";
 import TileLayer from 'ol/layer/Tile'
@@ -296,10 +297,12 @@ export default {
           e.selected[0].setStyle(new Style({
             image: new Icon({
               src: selectShipIcon,
-              scale: 0.2,
-              anchor: [0.5, 0.5],
+              // scale: 0.2,
+              // anchor: [0.5, 0.5],
               rotateWithView: true,
-              rotation: e.selected[0].values_.course
+              // rotation: e.selected[0].values_.course
+              rotation: e.selected[0].values_.course * Math.PI/180
+
             })
           }));
           emitter.emit('clickShipName', e.selected[0].values_.name);
@@ -451,40 +454,6 @@ export default {
       //var source = getLayerGroup(lynm).getSource();
       source.updateParams({ 'STYLES': '', 'SLD_BODY': text_SLD });
     },
-    addWorldcountries: function(brightMode) {
-      if (brightMode != 'Black') {
-        map.addLayer(
-          new TileLayer({
-            id: 'worldcountries',
-            title: 'worldcountries',
-            opacity: 1,
-            zIndex: -1,
-            source: new TileWMS({
-              url: geoserverWmsUrl,
-              serverType: 'geoserver',
-              crossOrigin: 'anonymous',
-              params: {
-                'VERSION': '1.1.0',
-                'LAYERS': 'emap:worldcountries',
-                'CRS': 'EPSG:3857',
-              },
-            })
-          })
-        );
-      }
-      if (brightMode === 'Day') {
-        this.makeSld("worldcountries", "Polygon1_2", "bfbe8f", "bfbe8f");
-      } else if (brightMode === 'Dusk') {
-        this.makeSld("worldcountries", "Polygon1_2", "40402e", "40402e");
-      } else if (brightMode === 'Night') {
-        this.makeSld("worldcountries", "Polygon1_2", "17160e", "17160e");
-      }
-      map.getLayers().getArray()
-        .filter(layer => layer.get('id') === 'worldcountries')
-        .forEach(layer => map.setZIndex(-1));
-
-
-    },
     getLayer: function(id) {
       let lyr = null;
       var layers = map.getLayers().getArray();
@@ -520,10 +489,11 @@ export default {
             style: new Style({
               image: new Icon({
                 src: shipIcon,
-                scale: 0.2,
-                anchor: [0.5, 0.5],
+                // scale: 0.2,
+                // anchor: [0.5, 0.5],
                 rotateWithView: true,
-                rotation: (-90 + shipData.course) * Math.PI/180
+                // rotation: (-90 + shipData.course) * Math.PI/180
+                rotation: shipData.course * Math.PI/180
               })
             }),
             zIndex: 100
@@ -601,22 +571,19 @@ export default {
         }),
       ];
 
-      if (resolution < 40) {
+      if (resolution < 20) {
         geometry.forEachSegment(function (start, end) {
           const dx = end[0] - start[0];
           const dy = end[1] - start[1];
+          const dx_2 = (start[0] + end[0]) / 2;
+          const dy_2 = (start[1] + end[1]) / 2;
           const rotation = Math.atan2(dy, dx);
+
+          const center = [dx_2, dy_2];
+
           styles.push(
             new Style({
-              geometry: new Point(end),
-              text: new Text({
-                text: feature.values_.id,
-                offsetX: 80,
-                offsetY: 20,
-                fill: new Fill({color: 'black'}),
-                stroke: new Stroke({color: 'white', width: 2}),
-                font: 'bold 10px sans-serif',
-                }),
+              geometry: new Point(center),
               image: new Icon({
                 src: arrowIcon,
                 anchor: [0.5, 0.5],
@@ -626,10 +593,27 @@ export default {
               zIndex: 500,
             }),
           );
-        });
-      }
-
-
+        styles.push(
+          new Style({
+            geometry: new Point(end),
+            // image: new CircleStyle({
+            //   radius: 3,
+            //   fill: new Fill({color: '#ddae34'}),
+            //   stroke: new Stroke({color: 'white', width: 2}),
+            // }),
+            text: new Text({
+              text: feature.values_.id,
+              offsetX: 80,
+              offsetY: 20,
+              fill: new Fill({color: 'black'}),
+              stroke: new Stroke({color: 'white', width: 2}),
+              font: 'bold 10px sans-serif',
+            }),
+            zIndex: 500,
+          }),
+        );
+      });
+    }
       return styles;
     },
     vesselTrackPast: function() {
@@ -697,35 +681,49 @@ export default {
         }),
       ];
 
-      if (resolution < 40) {
-        geometry.forEachSegment(function (start, end) {
+      if (resolution < 60) {
+        geometry.forEachSegment(function(start, end) {
           const dx = end[0] - start[0];
           const dy = end[1] - start[1];
+          const dx_2 = (start[0] + end[0]) / 2;
+          const dy_2 = (start[1] + end[1]) / 2;
           const rotation = Math.atan2(dy, dx);
+
+          const center = [dx_2, dy_2];
+
           styles.push(
             new Style({
-              geometry: new Point(end),
-              text: new Text({
-                text: feature.values_.id,
-                offsetX: 80,
-                offsetY: 20,
-                fill: new Fill({color: 'black'}),
-                stroke: new Stroke({color: 'white', width: 2}),
-                font: 'bold 10px sans-serif',
-              }),
+              geometry: new Point(center),
               image: new Icon({
-                src: import.meta.env.DEV ? 'src/assets/images/shipicons/arrow.png' : '/assets/images/shipicons/arrow.png',
+                src: arrowIcon,
                 anchor: [0.5, 0.5],
                 rotateWithView: true,
                 rotation: -rotation,
               }),
-              zIndex: 100,
+              zIndex: 500,
+            }),
+          );
+          styles.push(
+            new Style({
+              geometry: new Point(end),
+              image: new CircleStyle({
+                radius: 3,
+                fill: new Fill({ color: '#ddae34' }),
+                stroke: new Stroke({ color: 'white', width: 2 }),
+              }),
+              text: new Text({
+                text: feature.values_.id,
+                offsetX: 80,
+                offsetY: 20,
+                fill: new Fill({ color: 'black' }),
+                stroke: new Stroke({ color: 'white', width: 2 }),
+                font: 'bold 10px sans-serif',
+              }),
+              zIndex: 500,
             }),
           );
         });
       }
-
-
       return styles;
     },
     aisData: function() {
@@ -802,11 +800,12 @@ export default {
             style: new Style({
               image: new Icon({
                 src: import.meta.env.DEV ? 'src/assets/images/shipicons/AIS.png' : '/assets/images/shipicons/AIS.png',
-                scale: 0.2,
-                anchor: [0.5, 0.5],
+                // scale: 0.2,
+                // anchor: [0.5, 0.5],
                 opacity: 0.7,
                 rotateWithView: true,
-                rotation: (-90 + rotation) * Math.PI/180
+                // rotation: (-90 + rotation) * Math.PI/180
+                rotation: rotation * Math.PI/180
                 ,
               })
             }),
@@ -831,11 +830,12 @@ export default {
             style: new Style({
               image: new Icon({
                 src: import.meta.env.DEV ? 'src/assets/images/shipicons/AIS.png' : '/assets/images/shipicons/AIS.png',
-                scale: 0.2,
-                anchor: [0.5, 0.5],
+                // scale: 0.2,
+                // anchor: [0.5, 0.5],
                 opacity: 0.7,
                 rotateWithView: true,
-                rotation: (-90 + rotation) * Math.PI/180
+                // rotation: (-90 + rotation) * Math.PI/180
+                rotation: rotation * Math.PI/180
               })
             }),
             zIndex: 500
@@ -859,11 +859,12 @@ export default {
             style: new Style({
               image: new Icon({
                 src: import.meta.env.DEV ? 'src/assets/images/shipicons/AIS.png' : '/assets/images/shipicons/AIS.png',
-                scale: 0.2,
-                anchor: [0.5, 0.5],
+                // scale: 0.7,
+                // anchor: [0.5, 0.5],
                 opacity: 0.7,
                 rotateWithView: true,
-                rotation: (-90 + rotation) * Math.PI/180
+                // rotation: (-90 + rotation) * Math.PI/180
+                rotation: rotation * Math.PI/180
               })
             }),
             zIndex: 500

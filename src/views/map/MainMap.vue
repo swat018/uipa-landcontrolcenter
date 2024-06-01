@@ -36,7 +36,7 @@
           <td>
             <div>
               <input type="date" id="selectDate" style="appearance: none; border: none;
-              background-color: black; color:white">
+              background-color: rgba(4,82,137,0.3); color:white">
             </div>
           </td>
           <td width="10px"></td>
@@ -45,11 +45,11 @@
               <tr height="2px"><td></td></tr>
               <tr>
                 <td>
-                  <button id="timeMinus12" style="background-color: black; color: white; border-width: 1px; border-style: solid; border-color: white">&nbsp; << &nbsp;</button>
-                  <button id="timeMinus3" style="background-color: black; color: white; border-width: 1px; border-style: solid; border-color: white">&nbsp; < &nbsp;</button>
-                  <button id="timeNow" style="background-color: black; color: white; border-width: 1px; border-style: solid; border-color: white">&nbsp;현재&nbsp;</button>
-                  <button id="timePlus3" style="background-color: black; color: white; border-width: 1px; border-style: solid; border-color: white">&nbsp; > &nbsp;</button>
-                  <button id="timePlus12" style="background-color: black; color: white; border-width: 1px; border-style: solid; border-color: white">&nbsp; >> &nbsp;</button>
+                  <button id="timeMinus12" style="background-color: rgba(4,82,137,0.5); color: white; border-width: 1px; border-style: solid; border-color: white">&nbsp; << &nbsp;</button>
+                  <button id="timeMinus3" style="background-color: rgba(4,82,137,0.5); color: white; border-width: 1px; border-style: solid; border-color: white">&nbsp; < &nbsp;</button>
+                  <button id="timeNow" style="background-color: rgba(4,82,137,0.5); color: white; border-width: 1px; border-style: solid; border-color: white">&nbsp;현재&nbsp;</button>
+                  <button id="timePlus3" style="background-color: rgba(4,82,137,0.5); color: white; border-width: 1px; border-style: solid; border-color: white">&nbsp; > &nbsp;</button>
+                  <button id="timePlus12" style="background-color: rgba(4,82,137,0.5); color: white; border-width: 1px; border-style: solid; border-color: white">&nbsp; >> &nbsp;</button>
                 </td>
               </tr>
             </table>
@@ -60,7 +60,7 @@
       <table class="menuTable-1">
         <tr>
           <td>
-            <button @click="getRouteplan()"> 항로계획 &nbsp;</button>
+            <button @click="getRouteplan()" style="background-color:rgba(4,82,137,0.5);padding: 0.1rem; border-width: 1px; border-style: solid; border-color: white"> 항로계획 </button>
           </td>
         </tr>
       </table>

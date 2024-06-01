@@ -17,7 +17,7 @@ import Point from 'ol/geom/Point.js';
 import { getShipData, getShipWakePast } from '@/api/worldMap'
 import { LineString } from 'ol/geom'
 
-import shipIcon from '@/assets/images/shipicons/shipIcon_green.png'
+import shipIcon from '@/assets/images/shipicons/shipIcon_yellow.png'
 import arrowIcon from '@/assets/images/shipicons/arrow.png'
 
 
