@@ -37,8 +37,8 @@
               <td colspan = "2">항로계획 정보가 없습니다.</td>
             </tr>
           </v-table>
-          <button @click="route_reset()"> 항로 추가  &nbsp;</button>
-          <button @click="route_delete()"> 항로 삭제 </button>
+          <button @click="route_reset()" style="color: white; border-width: 1px; border-style: solid; border-color: white; padding: 0.1rem">항로 추가</button>&nbsp;
+          <button @click="route_delete()" style="color: white; border-width: 1px; border-style: solid; border-color: white; padding: 0.1rem">항로 삭제</button>
         </v-col>
         <v-col cols="7">
           <v-table height="60">
@@ -46,7 +46,7 @@
             <tbody>
               <tr>
                 <th class="text-center" >항로계획명</th><th colspan="3"><input v-model="routeMaster.routename" placeholder="항로계획명을 입력하세요"></th>
-                <th><button @click="saveRouteM()">저장</button></th>
+                <th><button @click="saveRouteM()" style="color: white; border-width: 1px; border-style: solid; border-color: white; padding: 0.1rem; width: 40px">저장</button></th>
               </tr>
               <!--<tr>
                 <th class="text-center">편집자</th><th><input v-model="routeMaster.makename" placeholder="편집자명을 입력하세요"></th>
@@ -89,9 +89,9 @@
               <td class="text-center"><input class="text-center" v-model="rd_item.lon"></td>
             </tr>
           </v-table>
-          <button @click="addRow()"> WP 추가  &nbsp;</button>
-          <button @click="updateRow()"> WP 수정  &nbsp;</button>
-          <button @click="removeRow()"> WP 삭제 </button>
+          <button @click="addRow()" style="color: white; border-width: 1px; border-style: solid; border-color: white; padding: 0.1rem">WP 추가</button>&nbsp;
+          <button @click="updateRow()" style="color: white; border-width: 1px; border-style: solid; border-color: white; padding: 0.1rem">WP 수정</button>&nbsp;
+          <button @click="removeRow()" style="color: white; border-width: 1px; border-style: solid; border-color: white; padding: 0.1rem">WP 삭제</button>
         </v-col>
       </v-row>
     </v-sheet>
