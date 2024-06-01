@@ -3,29 +3,60 @@
     <!-- 필터 -->
     <div class="d-flex justify-end ga-2 my-6">
       <div class="datePicker"><input type="date" v-model="startDate" :max="todayDate" /></div>
-      <div class="datePicker"><input type="date" v-model="endDate" :min="startDate" :disabled="endDateStatus" /></div>
+      <div class="datePicker">
+        <input type="date" v-model="endDate" :min="startDate" :disabled="endDateStatus" />
+      </div>
       <i-btn @click="filterDate()" text="조회" width="90"></i-btn>
     </div>
 
-    <DxDataGrid id="cii-monitoring-grid" ref="ciiMonitoringGrid" class="tabs-date-filter-container"
-      :data-source="ciiList" key-expr="id" :show-borders="true">
+    <DxDataGrid
+      id="cii-monitoring-grid"
+      ref="ciiMonitoringGrid"
+      class="tabs-date-filter-container"
+      :data-source="ciiList"
+      key-expr="id"
+      :show-borders="true"
+    >
       <DxSelection mode="single"></DxSelection>
       <DxColumn data-field="voyage" caption="id" alignment="center" :visible="false"></DxColumn>
-      <DxColumn data-field="departure" caption="Departure" alignment="center" cell-template="departure-template"
-        :allow-editing="false" width="10%"></DxColumn>
+      <DxColumn
+        data-field="departure"
+        caption="Departure"
+        alignment="center"
+        cell-template="departure-template"
+        :allow-editing="false"
+        width="10%"
+      ></DxColumn>
       <template #departure-template="{ data: templateOptions }">
-        <PortInfo :portName="templateOptions.data.departure" :time="templateOptions.data.departureTime"
-          :country="templateOptions.data.departurePortInfo.country">
+        <PortInfo
+          :portName="templateOptions.data.departure"
+          :time="templateOptions.data.departureTime"
+          :country="templateOptions.data.departurePortInfo.country"
+        >
         </PortInfo>
       </template>
-      <DxColumn data-field="arrival" caption="Arrival" alignment="center" cell-template="arrival-template"
-        :allow-editing="false" width="10%"></DxColumn>
+      <DxColumn
+        data-field="arrival"
+        caption="Arrival"
+        alignment="center"
+        cell-template="arrival-template"
+        :allow-editing="false"
+        width="10%"
+      ></DxColumn>
       <template #arrival-template="{ data: templateOptions }">
-        <PortInfo :portName="templateOptions.data.arrivalPortInfo.name" :time="templateOptions.data.arrivalTime"
-          :country="templateOptions.data.arrivalPortInfo.country">
+        <PortInfo
+          :portName="templateOptions.data.arrivalPortInfo.name"
+          :time="templateOptions.data.arrivalTime"
+          :country="templateOptions.data.arrivalPortInfo.country"
+        >
         </PortInfo>
       </template>
-      <DxColumn data-field="underway" caption="UnderWay(h)" alignment="center" header-cell-template="underway-header">
+      <DxColumn
+        data-field="underway"
+        caption="UnderWay(h)"
+        alignment="center"
+        header-cell-template="underway-header"
+      >
       </DxColumn>
       <template #underway-header="{ data }">
         <p>
@@ -33,7 +64,12 @@
           (h)
         </p>
       </template>
-      <DxColumn data-field="distance" caption="Distance(nm)" alignment="center" header-cell-template="distance-header">
+      <DxColumn
+        data-field="distance"
+        caption="Distance(nm)"
+        alignment="center"
+        header-cell-template="distance-header"
+      >
       </DxColumn>
       <template #distance-header="{ data }">
         <p>
@@ -41,7 +77,12 @@
           (nm)
         </p>
       </template>
-      <DxColumn data-field="speed" caption="Avg Speed(kn)" alignment="center" header-cell-template="speed-header">
+      <DxColumn
+        data-field="speed"
+        caption="Avg Speed(kn)"
+        alignment="center"
+        header-cell-template="speed-header"
+      >
       </DxColumn>
       <template #speed-header="{ data }">
         <p>
@@ -51,15 +92,44 @@
         </p>
       </template>
       <DxColumn data-field="focMT" caption="FOC(mt)" alignment="center">
-        <DxColumn data-field="detailFocMap.MDO/MGO" caption="MDO/MGO" alignment="center" :visible="usedMDOMGO" />
-        <DxColumn data-field="detailFocMap.LFO" caption="LFO" alignment="center" :visible="usedLFO" />
-        <DxColumn data-field="detailFocMap.HFO" caption="HFO" alignment="center" :visible="usedHFO" />
-        <DxColumn data-field="detailFocMap.LPG" caption="LPG" alignment="center" :visible="usedLPG" />
-        <DxColumn data-field="detailFocMap.LNG" caption="LNG" alignment="center" :visible="usedLNG" />
+        <DxColumn
+          data-field="detailFocMap.MDO/MGO"
+          caption="MDO/MGO"
+          alignment="center"
+          :visible="usedMDOMGO"
+        />
+        <DxColumn
+          data-field="detailFocMap.LFO"
+          caption="LFO"
+          alignment="center"
+          :visible="usedLFO"
+        />
+        <DxColumn
+          data-field="detailFocMap.HFO"
+          caption="HFO"
+          alignment="center"
+          :visible="usedHFO"
+        />
+        <DxColumn
+          data-field="detailFocMap.LPG"
+          caption="LPG"
+          alignment="center"
+          :visible="usedLPG"
+        />
+        <DxColumn
+          data-field="detailFocMap.LNG"
+          caption="LNG"
+          alignment="center"
+          :visible="usedLNG"
+        />
       </DxColumn>
       <!-- Co2 Emission -->
-      <DxColumn data-field="co2Emission" caption="Total CO₂,Emission(kn)" alignment="center"
-        header-cell-template="totalEmission-header"></DxColumn>
+      <DxColumn
+        data-field="co2Emission"
+        caption="Total CO₂,Emission(kn)"
+        alignment="center"
+        header-cell-template="totalEmission-header"
+      ></DxColumn>
       <template #totalEmission-header="{ data }">
         <p>
           Total <br />
@@ -67,8 +137,12 @@
           (kn)
         </p>
       </template>
-      <DxColumn data-field="requiredCii" caption="Required Cll" alignment="center"
-        header-cell-template="requireCII-header">
+      <DxColumn
+        data-field="requiredCii"
+        caption="Required Cll"
+        alignment="center"
+        header-cell-template="requireCII-header"
+      >
       </DxColumn>
       <template #requireCII-header="{ data }">
         <p>
@@ -76,8 +150,12 @@
           CII
         </p>
       </template>
-      <DxColumn data-field="attainedCii" caption="Attained Cll" alignment="center"
-        header-cell-template="attainedCll-header">
+      <DxColumn
+        data-field="attainedCii"
+        caption="Attained Cll"
+        alignment="center"
+        header-cell-template="attainedCll-header"
+      >
       </DxColumn>
       <template #attainedCll-header="{ data }">
         <p>
@@ -85,7 +163,12 @@
           CII
         </p>
       </template>
-      <DxColumn data-field="ciiRating" caption="Cll Rating" alignment="center" header-cell-template="rating-header">
+      <DxColumn
+        data-field="ciiRating"
+        caption="Cll Rating"
+        alignment="center"
+        header-cell-template="rating-header"
+      >
       </DxColumn>
       <template #rating-header="{ data }">
         <p>
@@ -94,7 +177,12 @@
         </p>
       </template>
 
-      <DxColumn data-field="ciiGrade" caption="Cll Grade" alignment="center" header-cell-template="grade-header">
+      <DxColumn
+        data-field="ciiGrade"
+        caption="Cll Grade"
+        alignment="center"
+        header-cell-template="grade-header"
+      >
       </DxColumn>
       <template #grade-header="{ data }">
         <p>
@@ -128,7 +216,7 @@ const ciiStore = useCiiStore()
 const { ciiList } = storeToRefs(ciiStore)
 
 const shipStore = useShipStore()
-const { usedFuels } = storeToRefs(shipStore)
+const { curSelectedShip, usedFuels } = storeToRefs(shipStore)
 
 const { showResMsg } = useToast()
 
@@ -140,7 +228,6 @@ const usedHFO = ref(false)
 const usedLPG = ref(false)
 const usedLNG = ref(false)
 
-
 const todayDate = ref()
 const endDateStatus = ref(true)
 
@@ -151,7 +238,6 @@ const ciiMonitoringGrid = ref('')
 const ciiMonitoringInstance = ref('')
 onMounted(() => {
   ciiMonitoringInstance.value = getDxGridInstance(ciiMonitoringGrid)
-
 
   let today = new Date()
   todayDate.value = convertDateType(today)
@@ -165,8 +251,8 @@ const getUsedFuelStatus = () => {
   usedLPG.value = usedFuels.value.includes('LPG')
 }
 
-const fetchCiiListByImoNumber = async (imoNumber) => {
-  // alert('test' + imoNumber)
+const fetchCiiListByImoNumber = async () => {
+  let imoNumber = curSelectedShip.value.imoNumber
   await ciiStore.fetchCiiListByImoNumber(imoNumber)
   getUsedFuelStatus()
 }
@@ -174,28 +260,32 @@ const fetchCiiListByImoNumber = async (imoNumber) => {
 const filterDate = () => {
   if (!startDate.value || !endDate.value) {
     ciiMonitoringInstance.value.clearFilter()
-    return;
+    return
   }
   if (!isValidDateRange(startDate.value, endDate.value)) {
     showResMsg('도착시각이 출발시각보다 빠릅니다')
-    return;
+    return
   }
 
-  let addedEndDate = addDay(endDate.value, 1);
+  let addedEndDate = addDay(endDate.value, 1)
   addedEndDate = convertDateType(addedEndDate)
 
-  ciiMonitoringInstance.value.filter(['departureTime', '>=', startDate.value], "and", ['departureTime', '<=', addedEndDate])
+  ciiMonitoringInstance.value.filter(['departureTime', '>=', startDate.value], 'and', [
+    'departureTime',
+    '<=',
+    addedEndDate
+  ])
 }
 
 watch(startDate, () => {
   if (startDate.value) {
-    endDateStatus.value = false;
+    endDateStatus.value = false
   } else {
-    endDateStatus.value = true;
+    endDateStatus.value = true
   }
 })
 
-emitter.on('selectShipOnDetailPage', fetchCiiListByImoNumber)
+watch(curSelectedShip, fetchCiiListByImoNumber)
 </script>
 
 <style scoped>

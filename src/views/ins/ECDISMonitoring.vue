@@ -1,6 +1,6 @@
 <template>
-  <v-sheet class="tabs-content-container h-100 px-3 py-6 rounded-lg">
-    <div class="ecdis">
+  <v-sheet class="ins-content-container rounded-lg">
+    <div class="ecdis pt-3">
       <v-img :src="ecdis" aspect-ratio="16/9" />
     </div>
   </v-sheet>
@@ -21,6 +21,6 @@ import ecdis from '/images/ins/ecdis.png'
 } */
 
 .ecdis .v-img {
-  min-height: 650px;
+  min-height: 600px;
 }
 </style>

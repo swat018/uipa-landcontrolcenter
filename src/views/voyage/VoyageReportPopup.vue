@@ -1,57 +1,130 @@
 <template>
-  <v-dialog model-value="isOpenVoaygeReport" width="600" class="test" :scrim="false">
-    <v-card class="page rounded-lg">
+  <v-dialog
+    model-value="isOpenVoaygeReport"
+    width="793"
+    height="820"
+    class="voyage-report-detail-container"
+    :scrim="false"
+  >
+    <v-card class="page rounded-lg overflow-hidden">
       <slot name="header">
-        <!-- 닫기 버튼 -->
-        <v-btn
-          :color="closeIconColor"
-          class="d-flex justify-end"
-          variant="plain"
-          append-icon="mdi-close"
-          @click="$emit('close')"
-        >
-        </v-btn>
+        <div class="d-flex justify-end">
+          <!-- 닫기 버튼 -->
+          <v-btn
+            :color="closeIconColor"
+            class="d-flex justify-center text-center"
+            variant="plain"
+            append-icon="mdi-close"
+            @click="$emit('close')"
+          >
+          </v-btn>
+        </div>
+        <div class="d-flex justify-end mt-4 pr-4 pb-4">
+          <i-btn text="download" class="px-4" width="120" @click="download"></i-btn>
+        </div>
       </slot>
-      <v-container fluid class="h-100 management-page detail-page">
-        <v-row class="ma-0 h-100">
-          <v-col cols="3"></v-col>
-          <v-col cols="6">Voyage Report</v-col>
-          <v-col cols="3">
-            <div>Issued Date</div>
-            <div>2024.03.24</div>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col cols="12">
-            <v-sheet>
-              <div>Ship Information</div>
-              <v-data-table :headers="shipInfoHeaders" :items="shipInformation"></v-data-table>
-            </v-sheet>
-            <v-sheet class="mt-4">
-              <div>Voyage Route</div>
-              <v-data-table :headers="voyageRouteHeaders" :items="voyageRoute"></v-data-table>
-            </v-sheet>
-            <v-sheet class="mt-4">
-              <div>Performance Summary</div>
-              <v-data-table
-                :headers="performanceSummaryHeaders"
-                :items="performanceSummary"
-                item-key="name"
-              ></v-data-table>
-            </v-sheet>
-            <v-sheet class="mt-4">
-              <div>Engine Performance</div>
-              <v-data-table :headers="enginePerformaceHeader" :items="engineSummary"></v-data-table>
-              <Echart :option="heatmapOption" />
-            </v-sheet>
-            <v-sheet class="mt-4">
-              <div>Engine Performance</div>
-              <v-data-table :headers="machineryStatus" :items="engineSummary"></v-data-table>
-              <Echart :option="heatmapOption" />
-            </v-sheet>
-          </v-col>
-        </v-row>
-      </v-container>
+      <slot name="text">
+        <v-container
+          fluid
+          class="h-100 management-page detail-page voyage-report-detail overflow-auto"
+          id="report"
+        >
+          <v-row class="ma-0 d-flex align-center report-header">
+            <v-col cols="3" class="pl-0">
+              <div class="d-flex justify-start">
+                <v-img :src="reportLogo" />
+              </div>
+            </v-col>
+            <v-col cols="6">
+              <div class="d-flex justify-center" style="font-size: 1.5rem">Voyage Report</div>
+            </v-col>
+            <v-col cols="3">
+              <div class="d-flex flex-column align-end justify-center">
+                <div>Issued Date</div>
+                <div>2024.03.24</div>
+              </div>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="12">
+              <v-sheet>
+                <div class="report-sub-title">Ship Information</div>
+                <v-data-table :headers="shipInfoHeaders" :items="shipInformation"></v-data-table>
+              </v-sheet>
+              <v-sheet class="mt-4">
+                <div class="report-sub-title">Voyage Route</div>
+                <v-data-table :headers="voyageRouteHeaders" :items="voyageRoute"></v-data-table>
+                <div class="voyage-route mt-4">
+                  <v-img :src="voyageRouteImg" style="height: 250px" />
+                </div>
+              </v-sheet>
+              <v-sheet class="mt-4">
+                <div class="report-sub-title">Performance Summary</div>
+                <v-data-table
+                  :headers="performanceSummaryHeaders"
+                  :items="performanceSummary"
+                  item-key="name"
+                ></v-data-table>
+              </v-sheet>
+              <v-sheet class="mt-4">
+                <div class="report-sub-title">Engine Performance</div>
+                <v-data-table
+                  :headers="enginePerformaceHeader"
+                  :items="engineSummary"
+                ></v-data-table>
+                <Echart :option="heatmapOption" class="w-100" style="height: 300px" />
+              </v-sheet>
+              <v-sheet class="mt-4">
+                <div class="report-sub-title">Machinery Status</div>
+                <v-data-table :headers="GEMachineryStatus" :items="GEMachineryData">
+                  <template v-slot:item.ge1="{ item }">
+                    <div :class="getColorByStatus(item.ge1)">●</div>
+                  </template>
+
+                  <template v-slot:item.ge2="{ item }">
+                    <div :class="getColorByStatus(item.ge2)">●</div>
+                  </template>
+                </v-data-table>
+                <div class="d-flex ga-4 mt-4 border px-4 py-2">
+                  <div>※ Legend</div>
+                  <div class="d-flex ga-2">
+                    <div class="normal">●</div>
+                    <div>NORMAL</div>
+                  </div>
+                  <div class="d-flex ga-2">
+                    <div class="caution">●</div>
+                    <div>CAUTION</div>
+                  </div>
+                  <div class="d-flex ga-2">
+                    <div class="warning">●</div>
+                    <div>WARNING</div>
+                  </div>
+                  <div class="d-flex ga-2">
+                    <div>●</div>
+                    <div>NO SIGNAL</div>
+                  </div>
+                </div>
+              </v-sheet>
+
+              <v-sheet class="mt-4">
+                <div class="report-sub-title">Emission</div>
+                <v-data-table :headers="emissionHeader" :items="emissionList">
+                  <template v-slot:item="{ item }">
+                    <tr class="text-center">
+                      <td>{{ item.key }}</td>
+                      <td>{{ item.noxTotal }} t</td>
+                      <td>{{ item.coTotal }} t</td>
+                      <td>{{ item.ch4Total }} t</td>
+                      <td>{{ item.co2Total }} t</td>
+                      <td>{{ item.so2Total }} t</td>
+                    </tr>
+                  </template>
+                </v-data-table>
+              </v-sheet>
+            </v-col>
+          </v-row>
+        </v-container>
+      </slot>
     </v-card>
   </v-dialog>
 </template>
@@ -74,6 +147,9 @@ import PortInfo from '@/components/voyage/PortInfo.vue'
 import AppModal from '@/components/modal/AppModal.vue'
 import Echart from '@/components/echart/Echarts.vue'
 
+import voyageRouteImg from '/images/ins/ecdis.png'
+
+import reportLogo from '/images/logo/report-logo.png'
 import pdfIcon from '@/assets/images/file-pdf-one.png'
 
 const props = defineProps({
@@ -412,12 +488,14 @@ const heatmapOption = ref({
     position: 'top'
   },
   grid: {
-    height: '50%',
-    top: '10%'
+    top: '10%',
+    left: '5%',
+    right: '0'
   },
   xAxis: {
     type: 'category',
-    data: [0, 20, 40, 60, 80, 100],
+    data: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+    interval: 10,
     splitArea: {
       show: true
     }
@@ -435,7 +513,7 @@ const heatmapOption = ref({
     calculable: true,
     orient: 'horizontal',
     left: 'center',
-    bottom: '15%'
+    bottom: '0%'
   },
   series: [
     {
@@ -454,9 +532,126 @@ const heatmapOption = ref({
     }
   ]
 })
+
+let initPage
+
+const printReport = () => {
+  var frame = document.getElementById('report')
+
+  frame.focus()
+  frame.contentWindow.print()
+}
+
+// const beforePrint = () => {
+//   initPage = document.body.innerHTML
+//   document.body.innerHTML = document.querySelector('.report').innerHTML
+// }
+
+// const afterPrint = () => {
+//   document.body.innerHTML = initPage
+// }
+
+// window.onbeforeprint = beforePrint
+// window.onafterprint = afterPrint
+
+const download = () => {
+  printReport()
+}
+
+const GEMachineryStatus = [
+  { title: '', align: 'center', value: 'key' },
+  { title: 'G/E 1', align: 'center', value: 'ge1' },
+  { title: 'G/E 2', align: 'center', value: 'ge2' }
+]
+
+const GEMachineryData = [
+  {
+    key: 'Engine Speed',
+    ge1: 'NORMAL',
+    ge2: 'NORMAL'
+  },
+  {
+    key: 'T/C Speed',
+    ge1: 'NORMAL',
+    ge2: 'NORMAL'
+  },
+  {
+    key: 'Pmax & Pcomp',
+    ge1: 'NO SIGNAL',
+    ge2: 'NO SIGNAL'
+  },
+  {
+    key: 'Cyl Outlet Exh. Gas Temp',
+    ge1: 'NORMAL',
+    ge2: 'CAUTION'
+  },
+  {
+    key: 'T/C inlet Exh. Gas Temp',
+    ge1: 'NORMAL',
+    ge2: 'NORMAL'
+  },
+  {
+    key: 'T/C Outlet Exh. Gas Temp',
+    ge1: 'NORMAL',
+    ge2: 'WARNING'
+  },
+  {
+    key: 'Ovarall Status',
+    ge1: 'NORMAL',
+    ge2: 'NORMAL'
+  }
+]
+
+const emissionHeader = [
+  { title: '', align: 'center', value: 'key' },
+  { title: 'NOx Total', align: 'center', value: 'noxTotal' },
+  { title: 'CO Total', align: 'center', value: 'coTotal' },
+  { title: 'CH4 Total', align: 'center', value: 'ch4Total' },
+  { title: 'CO2 Total', align: 'center', value: 'co2Total' },
+  { title: 'SO2 Total', align: 'center', value: 'so2Total' }
+]
+
+const emissionList = [
+  {
+    key: 'G/E 1',
+    noxTotal: 27.3,
+    coTotal: 0,
+    ch4Total: 0,
+    co2Total: 0,
+    so2Total: 682
+  },
+  {
+    key: 'G/E 2',
+    noxTotal: 27.3,
+    coTotal: 0,
+    ch4Total: 0,
+    co2Total: 0,
+    so2Total: 682
+  }
+]
+
+const getColorByStatus = (status) => {
+  let alarmColor = ''
+  switch (status) {
+    case 'NORMAL':
+      alarmColor = 'normal'
+      break
+    case 'CAUTION':
+      alarmColor = 'caution'
+      break
+    case 'NO SIGNAL':
+      alarmColor = 'gray'
+      break
+
+    case 'WARNING':
+      alarmColor = 'warning'
+      break
+  }
+  return alarmColor
+}
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 input[type='date'] {
   border: 1px solid #49494e;
   padding: 5px;
@@ -503,16 +698,47 @@ input[type='date'] {
   font-size: 20px;
 }
 
-@page {
+.voyage-route {
+  .v-img__img--contain {
+    object-fit: fill;
+  }
+}
+
+.report {
+  page: a4sheet;
+  width: 210mm;
+  min-height: 297mm;
+  padding: 20mm;
+  margin: 10mm auto;
+  border-radius: 5px;
+  /* background: white; */
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+@page a4sheet {
   size: A4;
   margin: 0;
 }
 @media print {
-  html,
-  body {
-    width: 210mm;
-    height: 297mm;
+  .report {
+    margin: 0;
+    border: initial;
+    border-radius: initial;
+    width: initial;
+    min-height: initial;
+    box-shadow: initial;
+    background: initial;
+    page-break-after: always;
   }
-  /* ... the rest of the rules ... */
+}
+
+.report-header {
+  height: 80px;
+  align-content: center;
+}
+
+.report-sub-title {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
 }
 </style>

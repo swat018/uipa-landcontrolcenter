@@ -35,9 +35,8 @@
             :autoExpandAll="true"
             @row-click="selectShip"
             :on-selection-changed="checkShip"
-            height="360"
             class="noStripe map-ship-selector mt-4"
-            style="background-color: #1f1e1e"
+            style="background-color: #1f1e1e; height: 100vh; max-height: calc(100vh - 250px)"
           >
             <DxSelection
               mode="multiple"
@@ -146,9 +145,7 @@ onMounted(async () => {
   fetchFleetAndShipByVocc()
   fleetsInstance = getDxGridInstance(fleetsGrid)
 
-  console.log(checkedShips);
-
-  if (checkedShips.value!= null && checkedShips.value.length != 0) {
+  if (checkedShips.value.length != 0) {
     selectedRowKeys.value = checkedShips.value.map((ship) => ship.id)
   }
   interval = setInterval(fetchShipAlarm, SECOND_IN_ONE_MINUTE)
@@ -231,6 +228,8 @@ const selectShip = async (e) => {
     } = await getShipInfo(selectedShipImoNumber)
     if (isStausOk(status)) {
       curSelectedShip.value = { ...data }
+      await fetchMachineData(data.imoNumber)
+      await shipStore.fetchUsedFuels()
     }
   }
 }

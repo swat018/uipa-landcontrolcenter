@@ -1,7 +1,7 @@
 <template>
-  <v-sheet class="detail-page h-100">
+  <v-sheet class="detail-page tabs-inner-content-container">
     <!-- 엔진, 경보 / 주의, 차트 관련 필터 -->
-    <v-sheet class="rounded-lg px-6 py-6 mt-6" color="#333334">
+    <v-sheet class="rounded-lg px-3 py-3 mt-3" color="#333334">
       <div class="d-flex justify-space-between align-center filter-area ga-2">
         <!-- <div class="align-center">Equipment</div> -->
         <div class="d-flex ga-2">
@@ -33,9 +33,9 @@
           <v-sheet class="rounded-lg py-2 px-4 mr-2" color="#212121">
             <div class="d-flex ga-12 justify-end align-center">
               <div class="alarm-count-container d-flex align-center">
-                <div class="alarm-type warning mr-2">●</div>
+                <div class="alarm-type caution mr-2">●</div>
                 <div>CAUTION</div>
-                <div class="warning alarm-count ml-2">{{ cautionCount }}</div>
+                <div class="caution alarm-count ml-2">{{ cautionCount }}</div>
               </div>
               <div class="alarm-count-container d-flex align-center">
                 <div class="alarm-type danger mr-2">●</div>
@@ -79,11 +79,12 @@
       </div>
     </v-sheet>
     <!-- 경보 / 주의 수 출력 -->
-    <v-sheet class="mt-6 pa-6 rounded-lg" color="#333334">
+    <v-sheet class="mt-3 pa-3 rounded-lg tabs-exclude-filter-container" color="#333334">
       <DxDataGrid
         id="realAlertGrid"
         ref="realAlertGrid"
-        class="tabs-filter-container"
+        class="h-100"
+        style="max-height: 100%"
         :column-auto-width="false"
         key-expr="id"
         @row-click="clickAlert"
@@ -167,7 +168,7 @@
         <template #detailTemplate="{ data: alertDetail }">
           <AlertMonitoringDetail
             :template-data="alertDetail"
-            :imoNumber="selectedShip"
+            :imoNumber="curSelectedShip.imoNumber"
             :chartInterval="chartInterval"
           />
         </template>
@@ -197,7 +198,7 @@ import GroupRegisterForm from '@/views/auth/group/GroupRegisterForm.vue'
 import { convertDateTimeType } from '@/composables/util'
 import { getDxGridInstance, dxGridRefresh, dxGridDeselectAll } from '@/composables/dxGridUtil'
 import emitter from '@/composables/eventbus.js'
-import { getAlertMonitoring } from '@/api/alarmApi.js'
+import { getCurrentAlarmData } from '@/api/alarmApi.js'
 
 import AlertMonitoringDetail from '@/views/alert/AlertMonitoringDetail.vue'
 
@@ -218,7 +219,7 @@ const { voccInfo } = storeToRefs(voccStore)
 const { fleets } = storeToRefs(fleetStore)
 const { realAlarms } = storeToRefs(alarmStore)
 
-const { selectedShip, shipEngines } = storeToRefs(shipStore)
+const { curSelectedShip, shipEngines } = storeToRefs(shipStore)
 
 const activeStatus = ref(true)
 const showFilterRow = ref(true)
@@ -301,7 +302,7 @@ onMounted(() => {
   chartInterval.value = chartIntervals.value[0]
   selectedStatus.value = statuses.value[0]
 
-  if (selectedShip.value) {
+  if (curSelectedShip.value) {
     fetchAlertMonitoring()
   }
 
@@ -328,7 +329,7 @@ const clickAlert = (e) => {
 
 const fetchAlertMonitoring = async () => {
   console.log('알람 패치')
-  const imoNumber = selectedShip.value
+  const imoNumber = curSelectedShip.value.imoNumber
   if (imoNumber) {
     let requestForm = {
       imoNumber,
@@ -337,7 +338,7 @@ const fetchAlertMonitoring = async () => {
     const {
       status,
       data: { data }
-    } = await getAlertMonitoring(requestForm)
+    } = await getCurrentAlarmData(requestForm)
 
     console.log(status / 100)
     if (parseInt(status / 100) == 2) {
@@ -351,10 +352,10 @@ const getColorByAlertType = (alarmType) => {
   let alarmColor = ''
   switch (alarmType) {
     case 'Caution':
-      alarmColor = 'warning'
+      alarmColor = 'caution'
       break
     case 'Warning':
-      alarmColor = 'danger'
+      alarmColor = 'warning'
       break
   }
 
@@ -383,7 +384,7 @@ const filterEngineType = () => {
     realAlertInstance.value.filter((item) => item.equipNo == selectedEngine.value)
   }
 }
-watch(selectedShip, fetchAlertMonitoring)
+watch(curSelectedShip, fetchAlertMonitoring)
 watch(duration, fetchAlertMonitoring)
 watch(selectedStatus, filterAlarmStatus)
 watch(selectedEngine, filterEngineType)

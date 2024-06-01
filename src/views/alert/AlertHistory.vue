@@ -1,7 +1,7 @@
 <template>
-  <v-sheet class="detail-page h-100 py-6">
+  <v-sheet class="detail-page tabs-inner-content-container">
     <!-- 날짜 필터 -->
-    <v-sheet class="px-6 py-6 rounded-lg" color="#333334">
+    <v-sheet class="px-3 py-3 rounded-lg mt-3" color="#333334">
       <div class="d-flex justify-space-between align-center">
         <!-- <div class="align-center">Equipment</div> -->
         <div class="d-flex ga-2">
@@ -41,7 +41,7 @@
           <i-btn
             text="항차조회"
             @click="openVoyagesPopup()"
-            :imoNumber="selectedShip"
+            :imoNumber="curSelectedShip.imoNumber"
             color="#3D3D40"
           ></i-btn>
         </div>
@@ -65,11 +65,12 @@
         </div> -->
       </div>
     </v-sheet>
-    <v-sheet class="mt-6 pa-6 rounded-lg" color="#333334">
+    <v-sheet class="mt-3 pa-3 rounded-lg tabs-exclude-filter-container" color="#333334">
       <DxDataGrid
         id="alarmHistoryGrid"
         ref="alarmHistoryGrid"
-        class="tabs-filter-container"
+        class="h-100"
+        style="max-height: 100%"
         :column-auto-width="false"
         key-expr="id"
         @row-click="clickAlarm"
@@ -163,7 +164,7 @@
   </v-sheet>
   <VoyagesPopup
     v-model="isShowPopupModal"
-    :imoNumber="selectedShip"
+    :imoNumber="curSelectedShip.imoNumber"
     @selectVoyage="updateDate"
     @close="closeVoyagesPopup"
   />
@@ -222,7 +223,7 @@ const { voccInfo } = storeToRefs(voccStore)
 const { fleets } = storeToRefs(fleetStore)
 const { realAlarms } = storeToRefs(alarmStore)
 
-const { selectedShip, shipEngines } = storeToRefs(shipStore)
+const { curSelectedShip, shipEngines } = storeToRefs(shipStore)
 
 const activeStatus = ref(true)
 const showFilterRow = ref(true)
@@ -239,8 +240,6 @@ const selectedEngine = ref()
 onMounted(() => {
   const today = moment()
 
-  fetchAlarmHistory()
-
   if (shipEngines.value) {
     let ShipEngineList = [...shipEngines.value]
     shipEngines.value = ShipEngineList
@@ -252,6 +251,8 @@ onMounted(() => {
 
   endDate.value = today.utc().format('YYYY-MM-DD hh:mm')
   startDate.value = today.utc().subtract(1, 'hours').format('YYYY-MM-DD hh:mm')
+
+  fetchAlarmHistory()
 })
 
 onBeforeUnmount(() => {
@@ -278,7 +279,7 @@ const fetchAlarmHistory = async () => {
     alertEndDate = convertUTCTimezone(alertEndDate)
   }
   let requestForm = {
-    imoNumber: selectedShip.value,
+    imoNumber: curSelectedShip.value.imoNumber,
     startTime: alertStartDate,
     endTime: alertEndDate
   }
@@ -338,7 +339,7 @@ const openVoyagesPopup = async () => {
   isShowPopupModal.value = true
   ;({
     data: { data: voyages.value }
-  } = await getAllVoyageByImoNumber(selectedShip.value))
+  } = await getAllVoyageByImoNumber(curSelectedShip.value.imoNumber))
 }
 
 const closeVoyagesPopup = () => {
@@ -370,7 +371,7 @@ const filterEngineType = () => {
   }
 }
 
-watch(selectedShip, fetchAlarmHistory)
+watch(curSelectedShip, fetchAlarmHistory)
 watch(selectedStatus, filterAlarmHistory)
 watch(selectedEngine, filterEngineType)
 </script>

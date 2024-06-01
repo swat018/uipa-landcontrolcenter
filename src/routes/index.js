@@ -10,11 +10,10 @@ import noticeRoutes from './notice'
 import settingsRoutes from './settings'
 import alertRoutes from './alert'
 import voyageRoutes from './voyage'
-import equipmentRoutes from './equipment'
 import fdsRoutes from './fds'
 import dataRoutes from './data'
-// import insRoutes from './ins'
 import monitoringRoutes from './monitoring'
+import reportRoutes from './report'
 
 /**
  * 페이지 Import
@@ -86,10 +85,9 @@ const routes = [
   ...settingsRoutes,
   ...alertRoutes,
   ...voyageRoutes,
-  ...equipmentRoutes,
   ...fdsRoutes,
   ...dataRoutes,
-  // ...insRoutes,
+  ...reportRoutes,
   ...monitoringRoutes
 ]
 

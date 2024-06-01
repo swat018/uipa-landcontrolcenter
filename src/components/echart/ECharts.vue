@@ -10,7 +10,15 @@ import blackTheme from '@/components/echart/theme/black.json'
 import { useThemeStore } from '@/stores/themeStore.js'
 import VChart, { THEME_KEY } from 'vue-echarts'
 import { CanvasRenderer } from 'echarts/renderers'
-import { BarChart, PieChart, LineChart, GaugeChart, PictorialBarChart, ScatterChart } from 'echarts/charts'
+import {
+  BarChart,
+  PieChart,
+  LineChart,
+  GaugeChart,
+  PictorialBarChart,
+  ScatterChart,
+  HeatmapChart
+} from 'echarts/charts'
 import {
   GridComponent,
   MarkLineComponent,
@@ -43,7 +51,8 @@ use([
   BrushComponent,
   TransformComponent,
   VisualMapComponent,
-  MarkAreaComponent
+  MarkAreaComponent,
+  HeatmapChart
 ])
 
 const store = useThemeStore()

@@ -3,32 +3,33 @@ import { defineStore } from 'pinia'
 import { getShipInfo, getShipAisInfo } from '@/api/shipApi.js'
 import { getVoyageList, getShipData } from '@/api/worldMap.js'
 import { useToast } from '@/composables/useToast'
-import {convertNumberFormat, convertDateType, convertDateTimeType } from '@/composables/util'
+import { convertNumberFormat, convertDateType, convertDateTimeType } from '@/composables/util'
 import { resetObject } from '@/composables/util'
 
-export const useMapStore = defineStore('mapManagement', () => {
+export const useMapStore = defineStore(
+  'mapManagement',
+  () => {
     const clickedShipInfo = ref({
-        beam : 0,
-        callSign : '',
-        grossTonnage : 0,
-        imoNumber : '',
-        length : 0,
-        mmsiNumber : '',
-        name : '',
-        nation : '',
-        shipImage : '',
-        type : '',
-        voccId : null,
-        yearBuilt : ''
-      }
-    )
+      beam: 0,
+      callSign: '',
+      grossTonnage: 0,
+      imoNumber: '',
+      length: 0,
+      mmsiNumber: '',
+      name: '',
+      nation: '',
+      shipImage: '',
+      type: '',
+      voccId: null,
+      yearBuilt: ''
+    })
     const selectedPopMenu = ref(null)
     const aisInfo = ref({
-      startPort: 'NaN',
-      endPort: 'NaN',
-      startTime: 'NaN',
-      endTime: 'NaN',
-      endDateTime: 'NaN',
+      departure: null,
+      departureTime: null,
+      arrival: null,
+      arrivalTime: null,
+      endDateTime: null,
       process: 0,
       latitude: 0,
       longitude: 0,
@@ -38,11 +39,14 @@ export const useMapStore = defineStore('mapManagement', () => {
     })
 
     const voyageList = ref([])
-
     const imoNumberList = ref([])
     const shipDataList = ref([])
 
     const vesselTrackStatus = ref(false)
+
+    const isRemoveTrack = ref(false) // 항적 삭제 여부
+    const isCurrentTrack = ref(false) // 실시간 항차 조회 여부
+    const isPastTrack = ref(false) // 과거 항차 조회 여부
 
     const startDate = ref('')
     const endDate = ref('')
@@ -61,8 +65,6 @@ export const useMapStore = defineStore('mapManagement', () => {
         // ({
         //     data: { data: shipInfo.value }
         //   } = response)
-        console.log('선박 정보')
-        console.dir(response)
         clickedShipInfo.value = response.data.data
         sessionStorage.setItem('clickedShipInfo', JSON.stringify(clickedShipInfo.value))
         console.dir(clickedShipInfo.value)
@@ -71,28 +73,27 @@ export const useMapStore = defineStore('mapManagement', () => {
       }
     }
 
-    const fetchShipAisInfo = async(imoNumber) =>{
-      try{
-        const response = await getShipAisInfo(imoNumber);
-        console.log('AIS 정보')
-        let { data : { data }} = response
+    const fetchShipAisInfo = async (imoNumber) => {
+      try {
+        const response = await getShipAisInfo(imoNumber)
+        let {
+          data: { data }
+        } = response
         console.dir(response)
 
-        data.startPort = data.startPort ? data.startPort : 'NaN'
-        data.endPort = data.endPort ? data.endPort : 'NaN'
-        data.startTime = data.startTime ? convertDateType(data.startTime) : 'NaN'
-        data.endTime = data.endTime ? convertDateType(data.endTime) : 'NaN'
-        data.endDateTime = data.endTime;
+        data.departure = data.departure ? data.departure : '-'
+        data.arrival = data.arrival ? data.arrival : '-'
+        data.departureTime = data.departureTime ? convertDateType(data.departureTime) : '-'
+        data.arrivalTime = data.arrivalTime ? convertDateType(data.arrivalTime) : '-'
+        data.arrivalDateTime = convertDateTimeType(data.arrivalTime) // 팝업창 내 ETA 시간 표시하기 위함
 
         data.course = data.course.toFixed(1)
         data.speed = data.speed.toFixed(1)
         data.draft = data.draft.toFixed(1)
         data.process = data.process.toFixed(1)
 
-        console.log(data.speed)
-
-        aisInfo.value = data;
-      }catch(error){
+        aisInfo.value = data
+      } catch (error) {
         console.error(error)
       }
     }
@@ -117,13 +118,14 @@ export const useMapStore = defineStore('mapManagement', () => {
           data: { data }
         } = response
 
+        console.log(data)
         shipDataList.value = data.data
       } catch (error) {
         console.error(error)
       }
     }
 
-    const $reset = ()=>{
+    const $reset = () => {
       resetObject(clickedShipInfo.value)
       resetObject(selectedPopMenu)
       selectedPopMenu.value = null
@@ -145,6 +147,9 @@ export const useMapStore = defineStore('mapManagement', () => {
       selectedPopMenu,
       layerBright,
       layerMode,
+      isRemoveTrack,
+      isPastTrack,
+      isCurrentTrack,
       fetchShipSummary,
       fetchShipAisInfo,
       fetchVoyageList,
@@ -152,7 +157,7 @@ export const useMapStore = defineStore('mapManagement', () => {
       $reset
     }
   },
-//{
-//   persist : true
-// }
+  {
+    persist: true
+  }
 )

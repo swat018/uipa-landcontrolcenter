@@ -1,8 +1,11 @@
 <template>
-  <v-sheet class="ma-6 mb-5 rounded-lg">
+  <v-sheet class="mx-3 mt-3 rounded-lg">
     <SelectedShipSummary />
   </v-sheet>
-  <v-sheet class="ma-6 px-6 rounded-lg tabs-container ship-summary" style="overflow: hidden">
+  <v-sheet
+    class="mx-3 mt-3 mb-3 px-6 rounded-lg tabs-container ship-summary"
+    style="overflow: hidden"
+  >
     <v-tabs v-model="tab" color="#5789FE" class="tabs-button">
       <v-tab value="ciiList">Voyage CII List</v-tab>
       <v-tab value="simulation">CII Simulation</v-tab>
@@ -16,12 +19,15 @@
       </v-window-item>
 
       <!-- Simulation  -->
-      <v-window-item value="simulation" style="height: calc(100vh - 199px)">
+      <v-window-item
+        value="simulation"
+        style="height: calc(100vh - 65px - 58px - 62px - 24px - 24px)"
+      >
         <CllSimulation />
       </v-window-item>
 
       <!-- Report -->
-      <v-window-item value="annulCii" style="height: calc(100vh - 199px)">
+      <v-window-item value="annulCii" class="tabs-content-container ship-summary">
         <AnualCIIReport />
       </v-window-item>
     </v-window>

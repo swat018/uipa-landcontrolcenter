@@ -30,9 +30,9 @@ export const getShipCondition = (imoNumbers) => {
   })
 }
 
-export const getAlertMonitoring = (alertForm) => {
+export const getCurrentAlarmData = (alertForm) => {
   return instance({
-    url: '/ship/alarm/monitoring/get',
+    url: '/ship/alarm/history/get-current',
     method: 'GET',
     params: alertForm
   })
@@ -46,7 +46,7 @@ export const getAlertDetailInfo = (alertDetailForm) => {
   })
 }
 
-export const getAlertThresold = (imoNumber) => {
+export const getAlertThreshold = (imoNumber) => {
   return instance({
     url: '/ship/alarm/threshold/get-ship',
     method: 'GET',
@@ -54,7 +54,7 @@ export const getAlertThresold = (imoNumber) => {
   })
 }
 
-export const updateAlertThresod = (requestForm) => {
+export const saveAlertThreshold = (requestForm) => {
   return instance({
     url: '/ship/alarm/threshold/save',
     method: 'POST',
@@ -64,7 +64,7 @@ export const updateAlertThresod = (requestForm) => {
 
 export const getAlarmHistory = (requestForm) => {
   return instance({
-    url: '/ship/alarm/history/get',
+    url: '/ship/alarm/history/get-history',
     method: 'POST',
     data: requestForm
   })

@@ -23,7 +23,7 @@ export const useShipStore = defineStore(
     const shipInfo = ref()
     const currentShip = ref(null)
     const shipMachineInfo = ref(null)
-    const shipEngines = ref(null)
+    const shipEngines = ref([])
     const usedFuels = ref([])
     // 사이드바에서 선택한 선박
     const checkedShips = ref()

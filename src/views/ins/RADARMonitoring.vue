@@ -1,5 +1,5 @@
 <template>
-  <v-sheet class="tabs-content-container h-100 px-3 py-6 rounded-lg">
+  <v-sheet class="ins-content-container h-100 px-3 py-6 rounded-lg">
     <div class="radar-image-container">
       <v-img :src="radar" aspect-ratio="16/9" />
     </div>

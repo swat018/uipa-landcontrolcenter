@@ -5,7 +5,9 @@ import BaseLayout from '@/layout/BaseLayout.vue'
 /**
  * 소메뉴 : 알람 모니터링
  */
-import DataManagement from '@/views/data/DataManagement.vue'
+import DataEquipment from '@/views/data/DataEquipment.vue'
+import DataAnalysis from '@/views/data/DataAnalysis.vue'
+import EngineMonitoring from '@/views/data/engine/EngineMonitoring.vue'
 
 const dataRoutes = [
   {
@@ -13,9 +15,19 @@ const dataRoutes = [
     component: BaseLayout,
     children: [
       {
-        name: 'DataManagement',
-        path: 'management',
-        component: DataManagement
+        name: 'EngineMonitoring',
+        path: 'engine',
+        component: EngineMonitoring
+      },
+      {
+        name: 'DataEquipment',
+        path: 'equipment',
+        component: DataEquipment
+      },
+      {
+        name: 'EquipmentManagement',
+        path: 'analysis',
+        component: DataAnalysis
       }
     ]
   }

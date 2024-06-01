@@ -28,7 +28,7 @@ import {
 import EChart from '@/components/echart/Echarts.vue'
 
 const shipStore = useShipStore()
-const { selectedShip } = storeToRefs(shipStore)
+const { curSelectedShip } = storeToRefs(shipStore)
 
 const ciiStore = useCiiStore()
 // const { monthlyCiiData } = storeToRefs(ciiStore)
@@ -41,6 +41,7 @@ const year = ref('2024')
 let series = ref([])
 const test2 = ref([])
 const monthlyCiiData = ref([])
+let curSelectedImoNumber = null
 
 let option = ref({
   grid: {
@@ -186,9 +187,10 @@ let option = ref({
 })
 
 const fetchMonthlyCiiData = async () => {
+  curSelectedImoNumber = curSelectedShip.value.imoNumber
   const {
     data: { data }
-  } = await getMonthlyCiiData(selectedShip.value, year.value)
+  } = await getMonthlyCiiData(curSelectedImoNumber, year.value)
 
   if (data) {
     monthlyCiiData.value = convertFloatFormatObject(data)
@@ -199,7 +201,7 @@ const fetchMonthlyCiiData = async () => {
   }
   let test = []
 
-  // await ciiStore.fetchMonthlyCiiData(selectedShip.value, year.value)
+  // await ciiStore.fetchMonthlyCiiData(curSelectedShip.value, year.value)
 
   console.log('월별 데이터')
   console.dir(monthlyCiiData)
@@ -238,7 +240,7 @@ function findFuelIndex(name) {
   return -1 // MGO not found in the chart
 }
 
-watch(selectedShip, fetchMonthlyCiiData)
+watch(curSelectedShip, fetchMonthlyCiiData)
 // watch(monthlyCiiData, setChartOption, {deep : true})
 </script>
 <style></style>

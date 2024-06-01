@@ -17,7 +17,8 @@ let backgroundApies = [
   '/ship/cii/get-cii-past',
   '/ship/cii/get-cii-future',
   '/ship/cii/get-cii-boundary',
-  '/ship/info/get'
+  '/ship/info/get',
+  '/ship/fire-detection-sensor/deck/get-image'
 ]
 
 instance.interceptors.request.use((config) => {
@@ -40,6 +41,11 @@ instance.interceptors.response.use(
 
     if (!isBackgroudApi) {
       loadingStatus.value = false
+    }
+
+    if (response.status == 204) {
+      response.data = {}
+      response.data.data = []
     }
     return response
   },

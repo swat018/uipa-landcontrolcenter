@@ -1,24 +1,38 @@
 <template>
-  <v-sheet class="h-100 py-3">
+  <v-sheet class="ins-content-container">
     <v-container fluid>
       <v-row>
         <v-col cols="9">
           <v-sheet class="h-100">
-            <video class="w-100 cctv-history-area" controls controlslist="nodownload noplaybackrate"
-              disablepictureinpicture>
+            <video
+              class="w-100 cctv-history-area"
+              controls
+              controlslist="nodownload noplaybackrate"
+              disablepictureinpicture
+            >
               <source :src="videoUrl" />
             </video>
           </v-sheet>
         </v-col>
         <v-col cols="3">
-          <DxDataGrid id="cctvGrid" ref="cctvGrid" class="cctv-history-grid cctv-history-area" :data-source="cctvs"
-            :show-column-headers="false">
+          <DxDataGrid
+            id="cctvGrid"
+            ref="cctvGrid"
+            class="cctv-history-grid cctv-history-area"
+            :data-source="cctvs"
+            :show-column-headers="false"
+          >
             <DxSelection mode="single"></DxSelection>
             <DxScrolling mode="virtual" />
             <!-- row-rendering-mode="virtual" -->
             <DxColumn data-field="cctvName" :allow-editing="false" />
-            <DxColumn data-field="status" :allow-editing="false" :show-column-lines="false"
-              cell-template="cctv-status-template" width="15%" />
+            <DxColumn
+              data-field="status"
+              :allow-editing="false"
+              :show-column-lines="false"
+              cell-template="cctv-status-template"
+              width="15%"
+            />
             <DxColumn data-field="statusText" :allow-editing="false" />
 
             <template #cctv-status-template="{ data: templateOptions }">
@@ -28,14 +42,17 @@
         </v-col>
       </v-row>
       <v-row>
-        <v-col cols="12">
+        <v-col cols="12" class="pt-0">
           <div class="timeline-container d-flex ga-3 pa-3">
-            <div v-for="cctv in formattedFileNames" class="d-flex pa-3 timeline-btn" @click="changeVideo(cctv.url)">
+            <div
+              v-for="cctv in formattedFileNames"
+              class="d-flex pa-3 timeline-btn"
+              @click="changeVideo(cctv.url)"
+            >
               {{ cctv }}
             </div>
           </div>
         </v-col>
-
       </v-row>
     </v-container>
   </v-sheet>
@@ -148,7 +165,7 @@ const cctvs = ref([
   { id: 13, cctvName: 'CCTV 13', status: false, statusText: 'DISCONNECTED' },
   { id: 14, cctvName: 'CCTV 14', status: true, statusText: 'CONNECTED' },
   { id: 15, cctvName: 'CCTV 15', status: true, statusText: 'CONNECTED' },
-  { id: 16, cctvName: 'CCTV 16', status: true, statusText: 'CONNECTED' },
+  { id: 16, cctvName: 'CCTV 16', status: true, statusText: 'CONNECTED' }
 ])
 
 const videoUrl = ref(cctvList.value[0].url)
@@ -160,7 +177,7 @@ const changeVideo = (url) => {
 
 const formattedFileNames = computed(() =>
   cctvList.value.map((cctv) => cctv.fileName.replace(/\s+/g, '\n'))
-);
+)
 
 const getCCTVStatusClass = (status) => {
   let colorClass = ''
@@ -185,7 +202,7 @@ const getCCTVStatusClass = (status) => {
 }
 
 .timeline-btn {
-  background-color: #3B3B3F;
+  background-color: #3b3b3f;
   border-radius: 4px;
   white-space: pre-wrap;
   text-align: center;
@@ -198,14 +215,14 @@ const getCCTVStatusClass = (status) => {
 }
 
 .timeline-container .timeline-btn:nth-child(3) {
-  background: #5789FE;
+  background: #5789fe;
 }
 
 .cctv-list-container thead {
   display: none;
 }
 
-#cctvGrid .dx-datagrid .dx-column-lines>td {
+#cctvGrid .dx-datagrid .dx-column-lines > td {
   border: 0px;
 }
 
@@ -214,7 +231,7 @@ const getCCTVStatusClass = (status) => {
 }
 
 #cctvGrid tr {
-  border-bottom: 1px solid #585A61;
+  border-bottom: 1px solid #585a61;
 }
 
 #cctvGrid {
@@ -235,6 +252,4 @@ video {
   margin-right: 20px; */
   border: 1px solid #585a6187;
 }
-
-
 </style>

@@ -5,11 +5,11 @@ import BaseLayout from '@/layout/BaseLayout.vue'
 /**
  * 소메뉴 : IMO DCS
  */
-import ImoDcs from '@/views/voyage/imodcs/ImoDcs.vue'
+import ImoDcs from '@/views/report/imodcs/ImoDcs.vue'
 
 const reportRoutes = [
   {
-    path: '/voyage',
+    path: '/report',
     component: BaseLayout,
     children: [
       {

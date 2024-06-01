@@ -1,11 +1,11 @@
 <template>
   <v-container fluid class="h-100 management-page detail-page">
-    <v-row class="ma-0">
+    <v-row no-gutters class="ma-0">
       <v-col cols="12">
         <SelectedShipSummary />
       </v-col>
     </v-row>
-    <v-row class="ma-0">
+    <v-row no-gutters class="mt-3 content-container">
       <v-col cols="12">
         <v-card class="h-100" rounded="30">
           <v-card-title class="d-flex justify-space-between align-center">
@@ -39,12 +39,12 @@
             </div>
           </v-card-title>
 
-          <v-card-text>
+          <v-card-text class="ship-summary">
             <!-- 리포트 -->
             <DxDataGrid
               id="voyageGrid"
               ref="voyageGrid"
-              class="ship-summary-container"
+              class="ship-summary-grid-container"
               :data-source="voyages"
               key-expr="id"
               @row-click="clickVoyage"
@@ -238,7 +238,10 @@
                 ></i-btnGroup>
               </template>
             </AppModal>
-            <VoyageReportPopup v-model="isOpenVoaygeReport"></VoyageReportPopup>
+            <VoyageReportPopup
+              v-model="isOpenVoaygeReport"
+              @close="closeVoyageReportPopup"
+            ></VoyageReportPopup>
           </v-card-text>
         </v-card>
       </v-col>
@@ -309,6 +312,11 @@ onMounted(() => {
 
 const clickVoyage = (e) => {
   const isExpanded = e.component.isRowExpanded(e.key)
+
+  console.dir(e)
+  if (e.rowType == 'detail') {
+    e.preventDefault()
+  }
 
   if (isExpanded) {
     e.component.collapseRow(e.key)
@@ -469,6 +477,9 @@ const filterDate = () => {
 
 const openVoyageReportPopup = () => {
   isOpenVoaygeReport.value = true
+}
+const closeVoyageReportPopup = () => {
+  isOpenVoaygeReport.value = false
 }
 
 watch(shipCondition, filterShipCondition)

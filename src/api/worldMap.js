@@ -28,7 +28,7 @@ export const getShipData = (imoNumberList) => {
   return instance({
     url: '/world-map/get-ship-data',
     method: 'GET',
-    params:  { imoNumberList : imoNumberList }
+    params: { imoNumberList: imoNumberList }
   })
 }
 

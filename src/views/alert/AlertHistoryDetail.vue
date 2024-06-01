@@ -78,7 +78,7 @@ import detailData from '@/assets/mockup/alertHistoryDetail.json'
 import { DxEditing } from 'devextreme-vue/tree-list'
 
 const shipStore = useShipStore()
-const { selectedShip, shipEngines } = storeToRefs(shipStore)
+const { curSelectedShip, shipEngines } = storeToRefs(shipStore)
 
 const historyDetailGrid = ref()
 
@@ -230,7 +230,7 @@ const fetchAlertChart = async () => {
   let chartEndTime = convertUTCTimezone(props.endDate)
 
   let requestForm = {
-    imoNumber: selectedShip.value,
+    imoNumber: curSelectedShip.value.imoNumber,
     fieldName: tagId,
     startTime: chartStartTime,
     endTime: chartEndTime,
@@ -317,6 +317,8 @@ const removeChartOption = (deselectedRows) => {
 
     chartSeries.value.series.splice(index, 1)
   }
+
+  console.dir(chartSeries.value)
   // chartSeries.value.series = removedChartOption
 }
 
@@ -327,7 +329,7 @@ const changeChartOption = async (selectedRows) => {
 
   for (let i = 0; i < selectedRows.length; i++) {
     let requestForm = {
-      imoNumber: selectedShip.value,
+      imoNumber: curSelectedShip.value.imoNumber,
       fieldName: selectedRows[i].tagId,
       startTime: chartStartTime,
       endTime: chartEndTime,

@@ -6,11 +6,11 @@
       <v-form @submit.prevent>
         <v-img :src="Logo" :width="200" placeholder="아이디를 입력해주세요" class="mx-auto"></v-img>
         <div class="mb-1">아이디</div>
-        <i-input label="아이디" v-model="loginInfo.username" placeholder="아이디를 입력해주세요" style="width: 354px"></i-input>
+        <i-input label="아이디" v-model="loginInfo.username" placeholder="아이디를 입력해주세요"></i-input>
         <div class="mt-3 mb-1">비밀번호</div>
         <i-input label="비밀번호" v-model="loginInfo.password" @keyup.enter="submit" class="mt-2"
           :type="show ? 'text' : 'password'" :append-inner-icon="show ? 'mdi-eye' : 'mdi-eye-off'"
-          @click:append-inner="show = !show" placeholder="비밀번호를 입력해주세요" style="width: 354px"></i-input>
+          @click:append-inner="show = !show" placeholder="비밀번호를 입력해주세요"></i-input>
         <i-btn block @click="submit" class="w-100 my-8" height="45px" text="로그인"></i-btn>
       </v-form>
 
@@ -85,7 +85,7 @@ const submit = async () => {
 
 /**
  * 팝업창 show 여부
- * name이 password 일 경우,
+ * name이 password 일 경우, 
  */
 const isShowIdFindModal = ref(false)
 const isShowPasswordFindModal = ref(false)

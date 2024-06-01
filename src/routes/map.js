@@ -1,4 +1,4 @@
-import MapLayout from '@/layout/MapLayout.vue'
+import BaseLayout from '@/layout/BaseLayout.vue'
 
 import MainMap from '@/views/map/MainMap.vue'
 
@@ -8,7 +8,7 @@ import MainMap from '@/views/map/MainMap.vue'
 const mapRoutes = [
   {
     path: '/map',
-    component: MapLayout,
+    component: BaseLayout,
     children: [
       /**
        * 현재 지도 이미지 표시되는 화면
@@ -17,7 +17,7 @@ const mapRoutes = [
         name: 'MainMap',
         path: '',
         component: MainMap
-      },
+      }
     ]
   }
 ]

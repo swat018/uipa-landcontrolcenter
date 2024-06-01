@@ -30,7 +30,7 @@ import { useShipStore } from '@/stores/shipStore'
 import { useCiiStore } from '@/stores/ciiStore'
 
 const shipStore = useShipStore()
-const { selectedShip } = storeToRefs(shipStore)
+const { curSelectedShip } = storeToRefs(shipStore)
 
 const ciiStore = useCiiStore()
 // const { monthlyCiiData } = storeToRefs(ciiStore)
@@ -42,6 +42,7 @@ let tableElement = 0
 let ciiTableHeight = ref(0)
 let ciiTableRowHeight = ref(0)
 let ciiTableRowStyle = ref()
+let curSelectedImoNumber = null
 
 onMounted(() => {
   fetchMonthlyCiiData()
@@ -70,9 +71,8 @@ const usedLNG = ref(false)
 let ciiData = ref()
 const fetchMonthlyCiiData = async () => {
   // ciiData.value = ciiData.value.fill('-');
-  console.log('cii')
-  console.dir(ciiData.value)
-  const result = await ciiStore.fetchMonthlyCiiData(selectedShip.value, year.value)
+  curSelectedImoNumber = curSelectedShip.value.imoNumber
+  const result = await ciiStore.fetchMonthlyCiiData(curSelectedImoNumber, year.value)
   usedMDO.value = usedFuels.value.includes('MDO')
   usedMGO.value = usedFuels.value.includes('MGO')
   usedLFO.value = usedFuels.value.includes('LFO')
@@ -155,7 +155,7 @@ const getTableRowHeight = (test2) => {
   }, 1000)
 }
 
-watch(selectedShip, fetchMonthlyCiiData)
+watch(curSelectedShip, fetchMonthlyCiiData)
 const headers = [
   { title: 'Key', align: 'start', value: 'key' },
   { title: 'Jan', value: 'Jan' },

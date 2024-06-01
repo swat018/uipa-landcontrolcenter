@@ -1,130 +1,175 @@
 <template>
-  <v-sheet class="tabs-content-test">
-    <v-sheet class="px-6 py-6 my-6 rounded-lg" color="#333334">
-      <div class="d-flex justify-space-between align-center">
-        <!-- <div class="align-center">Equipment</div> -->
-        <div class="d-flex ga-2">
-          <input class="noticeList-datePicker" type="date" v-model="startDate" />
-          <input class="noticeList-datePicker" type="date" v-model="endDate" />
-
-          <v-autocomplete
-            v-model="equipments[0]"
-            :items="equipments"
-            variant="solo-filled"
-            density="compact"
-            class="equipmentSelector"
-            bg-color="#434348"
-            :hide-details="true"
-            placeholder="장비를 선택해주세요"
-          ></v-autocomplete>
-        </div>
-      </div>
+  <v-sheet
+    class="ma-3 rounded-lg"
+    style="height: 100vh; max-height: calc(100vh - 65px - 24px)"
+    color="#ffffff00"
+  >
+    <v-sheet class="mb-3 rounded-lg">
+      <SelectedShipSummary />
     </v-sheet>
+    <v-sheet class="content-container pa-3 rounded-lg">
+      <v-sheet class="px-3 py-3 rounded-lg" color="#333334">
+        <div class="d-flex justify-space-between align-center">
+          <!-- <div class="align-center">Equipment</div> -->
+          <div class="d-flex ga-2">
+            <input class="noticeList-datePicker" type="date" v-model="startDate" />
+            <input class="noticeList-datePicker" type="date" v-model="endDate" />
+            <i-btn @click="fetchPeriodEngineData()" text="조회" height="43"></i-btn>
+            <i-btn
+              text="항차조회"
+              @click="openVoyagesPopup()"
+              :imoNumber="curSelectedShip.imoNumber"
+              color="#3D3D40"
+            ></i-btn>
 
-    <!-- <div class="chart-analysis-container d-flex flex-wrap">
-      <div class="chart-item">
-        <Echart :option="option"></Echart>
-      </div>
-      <div class="chart-item">
-        <Echart :option="option"></Echart>
-      </div>
-      <div class="chart-item">
-        <Echart :option="option"></Echart>
-      </div>
-      <div class="chart-item">
-        <Echart :option="option"></Echart>
-      </div>
-    </div> -->
-    <!-- Grid -->
-    <!-- <div class="chart-analysis-container">
-      <div class="chart-grid">
-        <div class="chart-item">
-          <Echart :option="option"></Echart>
+            <v-autocomplete
+              v-model="equipments[0]"
+              :items="equipments"
+              variant="solo-filled"
+              density="compact"
+              class="equipmentSelector"
+              bg-color="#434348"
+              :hide-details="true"
+              placeholder="장비를 선택해주세요"
+            ></v-autocomplete>
+          </div>
         </div>
-        <div class="chart-item">
-          <Echart :option="option"></Echart>
-        </div>
-        <div class="chart-item">
-          <Echart :option="option"></Echart>
-        </div>
-        <div class="chart-item">
-          <Echart :option="option"></Echart>
-        </div>
-      </div>
-    </div> -->
+      </v-sheet>
 
-    <!-- <v-sheet class="mt-6 pa-3 rounded-lg test" color="#333334">
-      <v-row class="h-100">
-        <v-col cols="6" lg="6">
-          <Echart :option="option" class="test2"></Echart>
-        </v-col>
-        <v-col cols="6" lg="6">
-          <Echart :option="speedPowerOption" class="test2"></Echart>
-        </v-col>
-
-
-        <v-col cols="6" lg="6">
-          <Echart :option="fuelPowerOption" class="test2"></Echart>
-        </v-col>
-        <v-col cols="6">
-          <Echart :option="powerPropellerOption" class="test2"></Echart>
-        </v-col>
-      </v-row>
-    </v-sheet> -->
-    <v-container class="performance-chart-container" fluid>
-      <v-row class="h-100">
-        <v-col cols="6" class="col pl-0">
-          <v-sheet class="h-100 rounded-lg" color="#333334">
-            <Echart :option="option"></Echart>
-          </v-sheet>
-        </v-col>
-        <v-col cols="6" class="col pr-0">
-          <v-sheet class="h-100 rounded-lg" color="#333334">
-            <Echart :option="speedPowerOption"></Echart> </v-sheet
-        ></v-col>
-        <v-col cols="6" class="col pl-0">
-          <v-sheet class="h-100 rounded-lg" color="#333334">
-            <Echart :option="fuelPowerOption"></Echart>
-          </v-sheet>
-        </v-col>
-        <v-col cols="6" class="col pr-0">
-          <v-sheet class="h-100 rounded-lg" color="#333334">
-            <Echart :option="powerPropellerOption"></Echart> </v-sheet
-        ></v-col>
-      </v-row>
-    </v-container>
+      <v-container class="performance-chart-container mt-3 pa-0" fluid>
+        <v-row class="h-100" no-gutters>
+          <v-col cols="6" class="col">
+            <v-sheet class="h-100 rounded-lg" color="#333334">
+              <Echart :option="fuelConsumptionOption"></Echart>
+            </v-sheet>
+          </v-col>
+          <v-col cols="6" class="col pl-3">
+            <v-sheet class="h-100 rounded-lg" color="#333334">
+              <Echart :option="speedPowerOption"></Echart> </v-sheet
+          ></v-col>
+          <v-col cols="6" class="col pt-3">
+            <v-sheet class="h-100 rounded-lg" color="#333334">
+              <Echart :option="fuelPowerOption"></Echart>
+            </v-sheet>
+          </v-col>
+          <v-col cols="6" class="col pt-3 pl-3">
+            <v-sheet class="h-100 rounded-lg" color="#333334">
+              <Echart :option="powerPropellerOption"></Echart> </v-sheet
+          ></v-col>
+        </v-row>
+      </v-container>
+    </v-sheet>
+    <VoyagesPopup
+      v-model="isShowPopupModal"
+      :imoNumber="curSelectedShip.imoNumber"
+      @selectVoyage="updateDate"
+      @close="closeVoyagesPopup"
+    />
   </v-sheet>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { setLineBar, LineChart, chartOption } from '@/components/echart/basic/linebar.js'
+import { ref, reactive, onMounted, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+
+import { useShipStore } from '@/stores/shipStore'
+import { getAllVoyageByImoNumber } from '@/api/voyage.js'
+import { getAnalysisData } from '@/api/dataApi.js'
+
+import { convertDateTimeType, convertDateType, isStausOk } from '@/composables/util.js'
+
 import Echart from '@/components/echart/Echarts.vue'
+import SelectedShipSummary from '@/components/ship/SelectedShipSummary.vue'
+import VoyagesPopup from '@/components/voyage/VoyagesPopup.vue'
 
-import analysisData from '@/assets/mockup/analysis.json'
-
-import { use } from 'echarts/core'
-import { CanvasRenderer } from 'echarts/renderers'
-import { PieChart } from 'echarts/charts'
-import { TitleComponent, TooltipComponent, LegendComponent } from 'echarts/components'
-import VChart, { THEME_KEY } from 'vue-echarts'
-
-use([CanvasRenderer, PieChart, TitleComponent, TooltipComponent, LegendComponent])
-
-const selected = ref([])
-const selectedTags = []
-const lineChart = ref(null)
-const tags = ref([])
+import moment from 'moment'
+import _ from 'lodash'
 
 const startDate = ref(null)
 const endDate = ref(null)
+const isShowPopupModal = ref(false)
+const voyages = ref(false)
+
+const shipStore = useShipStore()
+const { curSelectedShip } = storeToRefs(shipStore)
 
 const equipments = ref(['ME1', 'ME2', 'GE1'])
 
-// 정적 팩토리 기법 사용해보기
-const lineChartClass = new LineChart()
+let utcStartTime = ''
+let utcEndTime = ''
 
-const option = ref({
+onMounted(() => {
+  initFetchData()
+})
+
+const initFetchData = async () => {
+  const today = moment()
+  let parseEndTimeZone = moment.parseZone(today)
+  let sevenDaysAgo = today.subtract(3, 'days')
+  let parseStartTimeZone = moment.parseZone(sevenDaysAgo)
+  utcStartTime = parseStartTimeZone.toISOString()
+  utcEndTime = parseEndTimeZone.toISOString()
+
+  fetchAnalysisData(utcStartTime, utcEndTime)
+}
+
+const fetchAnalysisData = async (utcStartTime, utcEndTime) => {
+  let currentShipImoNumber = curSelectedShip.value.imoNumber
+  let requestForm = {
+    imoNumber: currentShipImoNumber,
+    startTime: utcStartTime,
+    endTime: utcEndTime
+  }
+
+  const {
+    status,
+    data: { data }
+  } = await getAnalysisData(requestForm)
+
+  if (data.length == 0) {
+    resetChartOption()
+    return
+  }
+
+  let engineFuelConsumption = data['Engine Fuel Consumption']
+  let powerPropeller = data['Power - Propeller RPM Curve']
+  let SpeedPower = data['Speed - Power Curve']
+  let fuelConsumptionPower = data['Foc - Power Curve']
+
+  if (engineFuelConsumption && Object.keys(engineFuelConsumption).length != 0) {
+    await getFuelConsumptionSeries(engineFuelConsumption)
+  } else {
+    fuelConsumptionOption.value.series = []
+  }
+
+  if (powerPropeller) {
+    await getPowerPropellerSeries(powerPropeller)
+  } else {
+    powerPropellerOption.value.series = []
+  }
+
+  if (SpeedPower) {
+    await getSpeedPowerSeries(SpeedPower)
+  } else {
+    speedPowerOption.value.series = []
+  }
+
+  if (fuelConsumptionPower) {
+    await getFuelPowerSeries(fuelConsumptionPower)
+  } else {
+    fuelPowerOption.value.series = []
+  }
+
+  startDate.value = convertDateType(utcStartTime)
+  endDate.value = convertDateType(utcEndTime)
+}
+
+const fuelConsumptionSeries = ref([])
+const powerPropellerSeries = ref([])
+const speedPowerSeries = reactive([])
+// const fuelPowerSeries = ref([])
+
+const fuelConsumptionOption = ref({
   title: {
     text: 'Engine Fuel Consumption',
     left: 'center',
@@ -133,9 +178,16 @@ const option = ref({
     },
     top: '2%'
   },
+
+  legend: {
+    data: [],
+    right: '10%',
+    bottom: '5%'
+  },
   grid: {
     bottom: '20%',
-    top: '15%'
+    top: '12%',
+    right: '3%'
   },
 
   xAxis: {
@@ -158,7 +210,7 @@ const option = ref({
   yAxis: {
     name: 'Fuel Consumption (kg/h)',
     nameLocation: 'middle',
-    nameGap: 30,
+    nameGap: 55,
     nameTextStyle: {
       color: '#fff',
       fontSize: '12px'
@@ -172,67 +224,7 @@ const option = ref({
       }
     }
   },
-  series: [
-    {
-      symbolSize: 10,
-      data: [
-        [1.05, 1.33],
-        [1.05, 3.33],
-        [2, 1.33],
-        [2, 3.33],
-        [2.02, 4.47],
-        [3.03, 4.23],
-        [3, 3.33],
-        [4.05, 4.96],
-        [4.05, 3.96],
-        [4.05, 2.96],
-        [5.02, 5.68],
-        [5.02, 4.8],
-        [5.02, 6.2],
-        [5.02, 4.2],
-        [5.02, 5.2],
-        [6.03, 5.24],
-        [6.03, 6.24],
-        [6.03, 7.24],
-        [7.08, 5.82],
-        [7.08, 4.82],
-        [7.08, 6.82],
-        [8.07, 6.95],
-        [8.07, 5.5],
-        [9.05, 8.81],
-        [9.15, 7.2],
-        [9.15, 5.2],
-        [10.0, 8.04],
-        [10.0, 6.33],
-        [11.0, 8.33],
-        [11.5, 7.2],
-        [12.0, 6.26],
-        [12.0, 8.84],
-        [12.5, 6.82],
-        [12.2, 7.83],
-        [13.4, 6.81],
-        [13.0, 7.58],
-        [14.0, 8.96],
-        [14.0, 8.96],
-        [14.0, 7.66]
-      ],
-      type: 'scatter'
-    },
-    {
-      symbolSize: 5,
-      data: [
-        [0, 0.5],
-        [1, 2],
-        [4, 4.5],
-        [6, 5.5],
-        [8, 6.5],
-        [10, 7.5],
-        [12, 8.5],
-        [15, 10]
-      ],
-      type: 'line'
-    }
-  ]
+  series: fuelConsumptionSeries
 })
 
 const speedPowerOption = ref({
@@ -244,9 +236,15 @@ const speedPowerOption = ref({
     },
     top: '2%'
   },
+  legend: {
+    data: [],
+    right: '10%',
+    bottom: '5%'
+  },
   grid: {
     bottom: '20%',
-    top: '15%'
+    top: '12%',
+    right: '3%'
   },
   xAxis: {
     name: 'Speed (knot)',
@@ -282,47 +280,7 @@ const speedPowerOption = ref({
       }
     }
   },
-  series: [
-    {
-      symbolSize: 0,
-      data: [
-        [0, 50],
-        [10, 50],
-        [40, 80],
-        [60, 150],
-        [70, 200],
-        [100, 300]
-      ],
-      type: 'line',
-      smooth: true
-    },
-    {
-      symbolSize: 0,
-      data: [
-        [0, 80],
-        [10, 150],
-        [20, 200],
-        [40, 250],
-        [60, 300],
-        [100, 350]
-      ],
-      type: 'line',
-      smooth: true
-    },
-    {
-      symbolSize: 0,
-      data: [
-        [0, 60],
-        [10, 100],
-        [40, 150],
-        [60, 200],
-        [80, 300],
-        [100, 400]
-      ],
-      type: 'line',
-      smooth: true
-    }
-  ]
+  series: speedPowerSeries
 })
 
 const fuelPowerOption = ref({
@@ -334,9 +292,15 @@ const fuelPowerOption = ref({
     },
     top: '2%'
   },
+  legend: {
+    data: [],
+    right: '10%',
+    bottom: '5%'
+  },
   grid: {
     bottom: '20%',
-    top: '15%'
+    top: '12%',
+    right: '3%'
   },
   xAxis: {
     name: 'Power (kW)',
@@ -358,7 +322,7 @@ const fuelPowerOption = ref({
   yAxis: {
     name: 'Fuel Consumption (kg/h)',
     nameLocation: 'center',
-    nameGap: 40,
+    nameGap: 55,
     nameTextStyle: {
       color: '#fff',
       fontSize: '12px'
@@ -372,52 +336,7 @@ const fuelPowerOption = ref({
       }
     }
   },
-  series: [
-    {
-      symbol: 'triangle',
-      symbolSize: 10,
-      data: [
-        [0, 50],
-        [10, 50],
-        [40, 80],
-        [60, 150],
-        [70, 200],
-        [100, 300]
-      ],
-      type: 'line',
-      smooth: true
-    },
-    {
-      symbol: 'circle',
-      symbolSize: 8,
-      data: [
-        [0, 70],
-        [10, 30],
-        [40, 22],
-        [50, 20],
-        [70, 20],
-        [80, 20],
-        [90, 20],
-        [100, 20]
-      ],
-      type: 'line',
-      smooth: true
-    },
-    {
-      symbol: 'rect',
-      symbolSize: 8,
-      data: [
-        [0, 60],
-        [10, 100],
-        [40, 200],
-        [60, 290],
-        [70, 330],
-        [100, 400]
-      ],
-      type: 'line',
-      smooth: true
-    }
-  ]
+  series: []
 })
 
 const powerPropellerOption = ref({
@@ -429,14 +348,20 @@ const powerPropellerOption = ref({
     },
     top: '2%'
   },
+  legend: {
+    data: [],
+    right: '3%',
+    bottom: '5%'
+  },
   grid: {
     bottom: '20%',
-    top: '15%'
+    top: '12%',
+    right: '3%'
   },
   xAxis: {
     name: 'Propeller Speed (rpm)',
-    nameLocation: 'center',
-    nameGap: 30,
+    nameLocation: 'start',
+    // nameGap: 30,
     nameTextStyle: {
       color: '#fff',
       fontSize: '12px'
@@ -467,50 +392,213 @@ const powerPropellerOption = ref({
       }
     }
   },
-  series: [
-    {
-      symbolSize: 0,
-      data: [
-        [0, 0],
-        [20, 80],
-        [40, 150],
-        [60, 250],
-        [80, 340],
-        [100, 400]
-      ],
-      type: 'line',
-      smooth: true
-    },
-    {
-      symbolSize: 0,
-      data: [
-        [0, 0],
-        [20, 20],
-        [40, 50],
-        [60, 100],
-        [80, 150],
-        [100, 250]
-      ],
-      type: 'line',
-      smooth: true
-    },
-    {
-      symbolSize: 0,
-      data: [
-        [0, 0],
-        [20, 30],
-        [40, 80],
-        [60, 150],
-        [80, 280],
-        [100, 400]
-      ],
-      type: 'line',
-      smooth: true
-    }
-  ]
+  series: powerPropellerSeries
 })
 
-onMounted(() => {})
+const getFuelConsumptionSeries = (fuelConsumptionData) => {
+  let series = []
+
+  console.dir(fuelConsumptionData)
+  Object.keys(fuelConsumptionData).forEach((el) => {
+    let newData = {
+      name: '',
+      symbolSize: 10,
+      itemStyle: {
+        opacity: 0.5
+      },
+      data: [],
+      type: 'scatter'
+    }
+    newData.name = el
+    newData.data = fuelConsumptionData[el]
+
+    // console.log('key')
+    // console.dir(el)
+
+    // console.log('data')
+    // console.dir(fuelConsumptionData[el])
+
+    let index = fuelConsumptionOption.value.series.findIndex((option) => {
+      console.log(option.name)
+      option.name == el
+    })
+
+    console.log('인덱스')
+    console.log(index)
+
+    if (index == -1) {
+      fuelConsumptionOption.value.series.push(newData)
+    } else {
+      fuelConsumptionOption.value.series[index] = newData
+    }
+  })
+
+  console.log('최종 시리즈')
+  console.dir(fuelConsumptionOption.value.series)
+
+  fuelConsumptionOption.value.legend.data = Object.keys(fuelConsumptionData)
+}
+
+const getPowerPropellerSeries = (powerPropellerData) => {
+  let series = []
+
+  console.dir(powerPropellerData)
+  Object.keys(powerPropellerData).forEach((el) => {
+    let newData = {
+      name: '',
+      symbolSize: 10,
+      itemStyle: {
+        opacity: 0.5
+      },
+      data: [],
+      type: 'scatter'
+    }
+    newData.name = el
+    newData.data = powerPropellerData[el]
+
+    // console.log('key')
+    // console.dir(el)
+
+    // console.log('data')
+    // console.dir(fuelConsumptionData[el])
+
+    let index = powerPropellerOption.value.series.findIndex((option) => {
+      console.log(option.name)
+      option.name == el
+    })
+
+    console.log('인덱스')
+    console.log(index)
+
+    if (index == -1) {
+      powerPropellerOption.value.series.push(newData)
+    } else {
+      powerPropellerOption.value.series[index] = newData
+    }
+  })
+
+  console.log('최종 시리즈')
+  console.dir(powerPropellerOption.value.series)
+
+  powerPropellerOption.value.legend.data = Object.keys(powerPropellerData)
+}
+
+const getSpeedPowerSeries = (speedPowerData) => {
+  let series = []
+
+  console.dir(speedPowerData)
+  Object.keys(speedPowerData).forEach((el) => {
+    let newData = {
+      name: '',
+      symbolSize: 10,
+      itemStyle: {
+        opacity: 0.5
+      },
+      data: [],
+      type: 'scatter'
+    }
+    newData.name = el
+    newData.data = speedPowerData[el]
+
+    // console.log('key')
+    // console.dir(el)
+
+    // console.log('data')
+    // console.dir(fuelConsumptionData[el])
+
+    let index = speedPowerSeries.value.findIndex((option) => {
+      console.log(option.name)
+      option.name == el
+    })
+
+    console.log('인덱스')
+    console.log(index)
+
+    if (index == -1) {
+      speedPowerSeries.value.push(newData)
+    } else {
+      speedPowerSeries[index] = newData
+    }
+  })
+
+  console.log('최종 시리즈')
+  console.dir(speedPowerOption.value.series)
+
+  speedPowerOption.value.legend.data = Object.keys(speedPowerData)
+}
+
+const getFuelPowerSeries = (fuelPowerData) => {
+  let series = []
+
+  console.dir(fuelPowerData)
+  Object.keys(fuelPowerData).forEach((el) => {
+    let newData = {
+      name: '',
+      symbolSize: 10,
+      itemStyle: {
+        opacity: 0.5
+      },
+      data: [],
+      type: 'scatter'
+    }
+    newData.name = el
+    newData.data = fuelPowerData[el]
+
+    // console.log('key')
+    // console.dir(el)
+
+    // console.log('data')
+    // console.dir(fuelConsumptionData[el])
+
+    let index = fuelPowerOption.value.series.findIndex((option) => {
+      console.log(option.name)
+      option.name == el
+    })
+
+    console.log('인덱스')
+    console.log(index)
+
+    if (index == -1) {
+      fuelPowerOption.value.series.push(newData)
+    } else {
+      fuelPowerOption.value.series[index] = newData
+    }
+  })
+
+  console.log('최종 시리즈')
+  console.dir(fuelPowerOption.value.series)
+
+  fuelPowerOption.value.legend.data = Object.keys(fuelPowerData)
+}
+
+const updateDate = (dateInformation) => {
+  let { selectStartDate, selectEndDate } = dateInformation
+
+  startDate.value = convertDateTimeType(selectStartDate)
+  endDate.value = convertDateTimeType(selectEndDate)
+
+  fetchAnalysisData()
+}
+
+const openVoyagesPopup = async () => {
+  isShowPopupModal.value = true
+  ;({
+    data: { data: voyages.value }
+  } = await getAllVoyageByImoNumber(curSelectedShip.value.imoNumber))
+}
+
+const closeVoyagesPopup = () => {
+  isShowPopupModal.value = false
+}
+
+const resetChartOption = () => {
+  fuelConsumptionOption.value.series = []
+  speedPowerSeries.value = []
+  fuelPowerOption.value.series = []
+  powerPropellerOption.value.series = []
+}
+
+watch(curSelectedShip, initFetchData)
 </script>
 
 <style lang="scss" scoped>
@@ -549,7 +637,7 @@ onMounted(() => {})
   height: 100%;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 12px;
   background: orange;
 }
 
@@ -571,34 +659,13 @@ onMounted(() => {})
   }
 }
 
-.test {
-  height: 100vh;
-  max-height: calc(100vh - 65px - 24px - 24px - 44px - 24px - 24px);
-}
-
-.test2 {
-  height: 100vh;
-  max-height: calc((100vh - 65px - 24px - 24px - 44px - 24px - 24px) / 2);
-}
-
-.tabs-content-test {
-  height: 100vh;
-  max-height: calc(100vh - 65px - 24px - 62px - 24px - 24px);
-}
-
 .performance-chart-container {
-  height: 100vh;
-  max-height: calc(100% - 92px - 24px);
+  height: 100%;
+  max-height: calc(100% - 36px - 48px);
   // background: blue;
 }
 
 .col {
   height: calc(100% / 2);
 }
-
-// .col{
-//   background : red;
-//       height: 100vh;
-//     max-height: calc((99vh - 65px - 24px - 62px - 24px - 24px - 40px - 24px - 24px - 24px - 24px) / 2);
-// }
 </style>

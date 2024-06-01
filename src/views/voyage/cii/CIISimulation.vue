@@ -1,7 +1,7 @@
 <template>
   <!-- <div class="d-flex flex-column flex-grow-1 flex-shrink-1 detail-page"> -->
   <v-row no-gutters class="detail-page h-100 cii-simulation-page" style="overflow: visible">
-    <v-sheet class="d-flex w-100 pt-6 ga-4 justify-space-between">
+    <v-sheet class="d-flex w-100 pt-3 ga-4 justify-space-between">
       <!-- 날짜 조회 -->
       <v-sheet class="d-flex">
         <div class="d-flex ga-2">
@@ -19,7 +19,7 @@
       <v-sheet class="d-flex w-50">
         <div class="d-flex ga-2">
           <div class="d-flex align-center">Parameter</div>
-          <div class="datePicker">
+          <div class="parameter-selector d-flex">
             <i-selectbox
               v-model="selectedParameter"
               :items="parameters"
@@ -29,7 +29,6 @@
               bg-color="#434348"
               placeholder="Parameter를 선택해주세요"
               :hide-details="true"
-              width="20%"
             ></i-selectbox>
           </div>
         </div>
@@ -37,7 +36,7 @@
         <v-sheet class="d-flex px-5 flex-grow-1" style="">
           <div class="d-flex ga-2 w-100">
             <div class="d-flex align-center">CII Rating</div>
-            <v-sheet class="align-center" color="#333334" style="flex: 1">
+            <v-sheet class="align-center" style="flex: 1">
               <v-sheet class="cii-slider d-flex flex-column">
                 <div class="d-flex gc-1 align-center" style="position: relative">
                   <!-- 슬라이드 A 너비 -->
@@ -146,7 +145,7 @@
 
     <!-- 테이블  -->
     <v-sheet class="w-100" style="height: 100%; max-height: calc(100% - 40px - 24px)">
-      <v-sheet class="align-center mt-6 mb-6" style="height: 215px">
+      <v-sheet class="align-center mt-3 mb-3" style="height: 215px">
         <v-data-table class="cii-simulation-table" :headers="headers" :items="pastCiiData.first">
           <template v-slot:headers="{ columns }">
             <tr class="text-center">
@@ -254,10 +253,7 @@
 
       <v-sheet
         class="mt-0 w-100 d-flex"
-        style="
-          max-height: calc(100vh - 65px - 24px - 62px - 64px - 213px - 24px - 24px - 24px - 24px);
-          height: 100vh;
-        "
+        style="height: 100%; max-height: calc(100% - 215px - 24px)"
       >
         <!-- style="height: calc(67% - 48px)" -->
         <v-sheet class="h-100 mr-3" style="width: 30%">
@@ -418,7 +414,7 @@ import _ from 'lodash'
  * 상태관리 변수
  */
 const shipStore = useShipStore()
-const { selectedShip, shipMachineInfo, usedFuels } = storeToRefs(shipStore)
+const { curSelectedShip, shipMachineInfo, usedFuels } = storeToRefs(shipStore)
 
 const ciiStore = useCiiStore()
 const { pastCiiData } = storeToRefs(ciiStore)
@@ -620,7 +616,7 @@ const fetchPastCiiData = async () => {
   let utcEndTime = parseEndTimeZone.toISOString()
 
   let form = {
-    imoNumber: selectedShip.value,
+    imoNumber: curSelectedShip.value.imoNumber,
     startTime: utcStartTime,
     endTime: utcEndTime
   }
@@ -770,7 +766,7 @@ function findIndex(name) {
   return -1
 }
 
-watch(selectedShip, fetchPastCiiData)
+watch(curSelectedShip, fetchPastCiiData)
 
 const simulateCiiData = async () => {
   let convertedForm = _.cloneDeep(pastCiiData.value.first)
@@ -779,7 +775,7 @@ const simulateCiiData = async () => {
   delete convertedForm[1].type
 
   let form = {
-    imoNumber: selectedShip.value,
+    imoNumber: curSelectedShip.value.imoNumber,
     pastData: convertedForm[0],
     futureData: convertedForm[1],
     targetCiiRating: ciiRate.value,
@@ -835,7 +831,7 @@ const simulateCiiDataByText = async () => {
   delete convertedForm[1].type
 
   let form = {
-    imoNumber: selectedShip.value,
+    imoNumber: curSelectedShip.value,
     pastData: convertedForm[0],
     futureData: convertedForm[1],
     targetCiiRating: ciiRate.value,
@@ -933,10 +929,11 @@ const changeEditable = () => {
 
 const CII_MINMAX_DIFFERENT = 120
 const updateSliderWidth = async () => {
+  let imoNumber = curSelectedShip.value.imoNumber
   const {
     status,
     data: { data }
-  } = await getCiiBoundary(selectedShip.value)
+  } = await getCiiBoundary(imoNumber)
 
   if (status == 200) {
     console.dir(data)

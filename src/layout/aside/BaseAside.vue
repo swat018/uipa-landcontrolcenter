@@ -31,9 +31,7 @@
             parent-id-expr="parentId"
             :selected-row-keys="selectedRowKeys"
             :autoExpandAll="true"
-            @row-click="rowClick"
             :on-selection-changed="selectShip"
-            height="360"
             class="noStripe mt-4"
             @cell-prepared="hideCheckBox"
           >

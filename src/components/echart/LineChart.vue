@@ -1,8 +1,8 @@
 <template>
   <!-- <v-card class="bg-card cardContainer h-100" min-height="230"> -->
-    <!-- <v-col> -->
-    <Echart :option="option"></Echart>
-    <!-- </v-col> -->
+  <!-- <v-col> -->
+  <Echart :option="option"></Echart>
+  <!-- </v-col> -->
   <!-- </v-card> -->
 </template>
 
@@ -11,21 +11,20 @@ import { onMounted, ref } from 'vue'
 import Echart from '@/components/echart/Echarts.vue'
 
 const props = defineProps({
-  series : {
-    type : Object
+  series: {
+    type: Object
   },
-  title : {
-    type : String
+  title: {
+    type: String
   }
 })
 
 const orient = ref('horizontal')
-onMounted(()=>{
-  if(props.series.length > 3) {
+onMounted(() => {
+  if (props.series.length > 3) {
     orient.value = 'vertical'
   }
 })
-
 
 const option = ref({
   // style: 'height : 200px; width :100%',
@@ -42,9 +41,9 @@ const option = ref({
     trigger: 'axis'
   },
   legend: {
-    orient : orient.value,
+    orient: orient.value,
     data: props.series['name'],
-    right : 10
+    right: 10
   },
   grid: {
     left: '3%',
@@ -72,7 +71,15 @@ const option = ref({
       }
     }
   },
-  series: props.series
+  series: props.series,
+  markLine: {
+    silent: true,
+    lineStyle: {
+      type: 'dashed',
+      color: 'red'
+    },
+    data: [{ xAxis: 'Wed' }]
+  }
 })
 </script>
 

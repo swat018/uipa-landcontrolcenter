@@ -274,5 +274,6 @@ export const fetchMachineData = async (imoNumber) => {
 }
 
 export const isStausOk = (status) => {
-  return status == 200 || status == 204 ? true : false
+  console.log(status / 100)
+  return parseInt(status / 100) == 2 ? true : false
 }
