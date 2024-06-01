@@ -624,7 +624,7 @@ export default {
       console.log(vesselTrackStatus._value, isPastVesselTracks._value)
 
       if(vesselTrackStatus._value === true) {
-        getShipWakePast(clickedShipInfo.value.imoNumber, startDate._value, endDate._value).then((response) => {wn
+        getShipWakePast(clickedShipInfo.value.imoNumber, startDate._value, endDate._value).then((response) => {
           var shipWaskPastList = response.data.data;
           if(response.data.data === null) return;
 
