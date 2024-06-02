@@ -3,8 +3,7 @@
 </template>
 
 <script>
-import '@/assets/ol.js'
-// import './cpa_tcpa/cpa_tcpa.js'
+import './cpa_tcpa/cpa_tcpa.js'
 
 import { Map, View } from "ol";
 import TileLayer from 'ol/layer/Tile'
