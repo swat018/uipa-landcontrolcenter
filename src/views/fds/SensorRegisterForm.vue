@@ -113,7 +113,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useToast } from '@/composables/useToast'
-import { isStausOk } from '@/composables/util'
+import { isStatusOk } from '@/composables/util'
 import { saveFDSSensor } from '@/api/fdsApi'
 import { useShipStore } from '@/stores/shipStore'
 import sensorData from '@/assets/mockup/fdsMonitoring.json'
@@ -191,7 +191,7 @@ const registerFDSSensor = async () => {
 
   const { status } = await saveFDSSensor(requestForm)
 
-  if (isStausOk(status)) {
+  if (isStatusOk(status)) {
     showResMsg('FDS 센서가 등록이 완료되었습니다')
     resetComponent()
   }

@@ -92,12 +92,14 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import moment from 'moment'
 import { useShipStore } from '@/stores/shipStore'
+import { useToast } from '@/composables/useToast'
 
 import { getCollectdSummaries, downloadCollectdSummariesExcel } from '@/api/reportApi'
-import { isStausOk } from '@/composables/util'
+import { isStatusOk } from '@/composables/util'
+import moment from 'moment'
 
+const { showResMsg } = useToast()
 const years = ref([])
 const selectedYear = ref()
 const method = [
@@ -210,6 +212,11 @@ onMounted(() => {
 })
 
 const fetchCollectdDataSummaries = async () => {
+  let curSelectedShipImoNumber = curSelectedShip.value.imoNumber
+  if (!curSelectedShipImoNumber) {
+    showResMsg('선박을 선택해주세요')
+    return
+  }
   const today = moment()
   let currentYear = null
   let lastYear = null
@@ -239,7 +246,7 @@ const fetchCollectdDataSummaries = async () => {
     data: { data }
   } = await getCollectdSummaries(requestForm)
   console.dir(data)
-  if (isStausOk(status)) {
+  if (isStatusOk(status)) {
     data.forEach((collectionData) => {
       for (let key in collectionData) {
         if (collectionData[key] && !isNaN(collectionData[key])) {

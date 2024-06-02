@@ -209,7 +209,7 @@ import { storeToRefs } from 'pinia'
 import { useShipStore } from '@/stores/shipStore'
 import { useFdsStore } from '@/stores/fdsStore'
 import { useToast } from '@/composables/useToast'
-import { isStausOk } from '@/composables/util'
+import { isStatusOk } from '@/composables/util'
 import { getDxGridInstance, dxGridRefresh } from '@/composables/dxGridUtil'
 import {
   registerDeck,
@@ -360,7 +360,7 @@ const registerNewDeck = async () => {
   const { status } = await registerDeck(curSelectedShipImoNumber, deckName)
 
   console.log(status)
-  if (isStausOk(status)) {
+  if (isStatusOk(status)) {
     isShowAddModal.value = false
     newDeckName.value = null
     fetchDeckList()
@@ -377,7 +377,7 @@ const fetchDeckList = async () => {
     data: { data }
   } = await getDeckList(curSelectedShipImoNumber)
 
-  if (isStausOk(status)) {
+  if (isStatusOk(status)) {
     if (status == 204) {
       deckList.value = []
       return
@@ -402,7 +402,7 @@ const clickDeckName = async (e) => {
 
   const status = await fetchFDSSensorList()
   console.log('조회 완')
-  if (isStausOk(status)) {
+  if (isStatusOk(status)) {
     console.log('status ok?')
     selectedDeckName.value = deckName
     deckfloorplan.value = await fetchDeckImage(deckName)
@@ -418,7 +418,7 @@ const fetchFDSSensorList = async () => {
     data: { data }
   } = await getFDSSensorList(curSelectedShipImoNumber, deckName)
 
-  if (isStausOk(status)) {
+  if (isStatusOk(status)) {
     console.log('Status')
     console.log(status)
     sensorList.value = data
@@ -485,7 +485,7 @@ const saveDeckFloorPlan = async (e) => {
         imageHeight
       )
 
-      if (isStausOk(status)) {
+      if (isStatusOk(status)) {
         showResMsg('선택한 Deck의 이미지가 저장되었습니다')
 
         let {
@@ -539,7 +539,7 @@ const removeDeck = async () => {
 
   const { status } = await deleteDeck(curSelectedImoNumber, deckName)
 
-  if (isStausOk(status)) {
+  if (isStatusOk(status)) {
     showResMsg('선택한 Deck 정보가 삭제되었습니다')
     isShowDeleteModal.value = false
     fetchDeckList()
@@ -592,7 +592,7 @@ const removeFDSSensor = async () => {
 
   const { status } = await deleteFDSSensor(requestForm)
 
-  if (isStausOk(status)) {
+  if (isStatusOk(status)) {
     showResMsg('선택한 센서 정보가 삭제되었습니다')
     isShowSensorDeleteModal.value = false
     resetComponent()

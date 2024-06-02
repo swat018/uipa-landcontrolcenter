@@ -178,7 +178,7 @@ import { useShipStore } from '@/stores/shipStore'
 import { getDeckList, getFDSMonitoring, getDeckImage } from '@/api/fdsApi'
 import { useToast } from '@/composables/useToast'
 
-import { isStausOk } from '@/composables/util'
+import { isStatusOk } from '@/composables/util'
 
 // import floorplan from '@/assets/images/ship/floorplan/floorPlan2.png'
 

@@ -264,7 +264,7 @@ import { useShipStore } from '@/stores/shipStore'
 import { getBdnSummaries, downloadBdnSummariesExcel } from '@/api/reportApi'
 
 import { useToast } from '@/composables/useToast'
-import { isStausOk } from '@/composables/util'
+import { isStatusOk } from '@/composables/util'
 
 import _ from 'lodash'
 import moment from 'moment'
@@ -509,7 +509,7 @@ const fetchBenSummaries = async () => {
     data: { data }
   } = await getBdnSummaries(requestForm)
   console.dir(data)
-  if (isStausOk(status)) {
+  if (isStatusOk(status)) {
     data.forEach((bdnData) => {
       for (let key in bdnData) {
         if (bdnData[key] && !isNaN(bdnData[key])) {

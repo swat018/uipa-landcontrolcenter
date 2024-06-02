@@ -1,17 +1,28 @@
 <template>
-  <v-sheet class="pa-3 rounded-lg mt-3 engine-monitoring-page" color="#333334">
-    <i-selectbox
-      v-model="selectedEngineName"
-      :items="engineKeys"
-      item-title="name"
-      item-value="id"
-      variant="solo-filled"
-      density="compact"
-      return-object
-      class="equipmentSelector"
-      bg-color="#434348"
-      :hide-details="true"
-    ></i-selectbox>
+  <v-sheet
+    class="pa-3 rounded-lg mt-3 engine-monitoring-page d-flex justify-space-between"
+    color="#333334"
+  >
+    <div>
+      <i-selectbox
+        v-model="selectedEngineName"
+        :items="engineKeys"
+        item-title="name"
+        item-value="id"
+        variant="solo-filled"
+        density="compact"
+        return-object
+        class="w-100"
+        bg-color="#434348"
+        :hide-details="true"
+      ></i-selectbox>
+    </div>
+    <div class="d-flex flex-grow-1 justify-end">
+      <v-btn
+        @click="openNewPopup(`/popup/monitoring/engine?imoNumber=${curSelectedShip.imoNumber}`)"
+        icon="mdi-fullscreen"
+      ></v-btn>
+    </div>
   </v-sheet>
 
   <v-sheet class="real-time-container mt-3">
@@ -98,124 +109,6 @@
       <EChart :option="cylinderChartOption" autoresize
     /></v-sheet>
   </v-sheet>
-
-  <!-- 
-    <v-sheet>
-      <v-container
-        fluid 
-        style="height: 100vh; max-height: calc(100vh - 65px - 24px - 62px - 24px - 62px - 24px)"
-      >
-        <v-row no-gutters class="mt-4 engine-data-item">
-          <v-col cols="6" class="px-1 h-100">
-            <v-row class="h-100">
-              <v-col cols="3" class="h-100">
-                <v-sheet
-                  height="100%"
-                  class="rounded-lg d-flex flex-column ga-3 justify-center align-center"
-                  color="#333334"
-                >
-                  <div class="text-center">
-                    <div class="rh-title">Running Hour</div>
-                    <div class="rh-value">
-                      {{ selectedEngineData.runningHours }} <span class="unit">h</span>
-                    </div>
-                  </div>
-
-                  <div class="text-center">
-                    <div class="rh-title">Power</div>
-                    <div class="rh-value">
-                      {{ selectedEngineData.power }} <span class="unit">kw</span>
-                    </div>
-                  </div>
-                </v-sheet>
-                  <v-sheet class="h-100 rounded-lg" color="#333334">
-                  <EChart :option="powerBarOption" autoresize />
-                </v-sheet>
-                 <v-sheet class="h-100 rounded-lg" color="#333334">
-                  <EChart :option="rpmGuageChartOption" autoresize />
-                </v-sheet>
-              </v-col>
-          <v-col cols="6" class="px-1 py-2 chart-bg h-100">
-            <v-row class="h-100">
-              <v-col class="h-100">
-                <v-sheet
-                  class="h-100 justify-center rounded-lg ga-4 pa-6 align-center"
-                  color="#333334"
-                  style="display: grid; grid-template-columns: 1fr 1fr"
-                >
-                  <div class="d-flex flex-column align-center justify-center">
-                    <div class="rh-title">Scav.Air Press</div>
-                    <div class="rh-value">
-                      {{ selectedEngineData.scavAirPress }} <span class="unit">bar</span>
-                    </div>
-                  </div>
-                  <div class="d-flex flex-column align-center justify-center">
-                    <div class="rh-title">Scav.Air Temp</div>
-                    <div class="rh-value">
-                      {{ selectedEngineData.scavAirTemp }} <span class="unit">℃</span>
-                    </div>
-                  </div>
-                  <div class="d-flex flex-column align-center justify-center">
-                    <div class="rh-title">L.O Inlet Press</div>
-                    <div class="rh-value">
-                      {{ selectedEngineData.loInletPress }} <span class="unit">bar</span>
-                    </div>
-                  </div>
-                  <div class="d-flex flex-column align-center justify-center">
-                    <div class="rh-title">L.O Inlet Temp</div>
-                    <div class="rh-value">
-                      {{ selectedEngineData.loInletTemp }} <span class="unit">℃</span>
-                    </div>
-                  </div>
-                </v-sheet>
-              </v-col>
-              <v-col>
-                <v-sheet
-                  class="h-100 rounded-lg ga-4 pa-6"
-                  style="display: grid; grid-template-columns: 1fr 1fr"
-                  color="#333334"
-                >
-                  <div class="d-flex flex-column justify-center align-center">
-                    <div class="rh-title">F.G Mass Flow</div>
-                    <div class="rh-value">
-                      {{ selectedEngineData.fgMassFlow }} <span class="unit">kg/h</span>
-                    </div>
-                  </div>
-                  <div class="d-flex flex-column justify-center align-center">
-                    <div class="rh-title">F.O Inlet Press</div>
-                    <div class="rh-value">
-                      {{ selectedEngineData.foInletPress }} <span class="unit">bar</span>
-                    </div>
-                  </div>
-                  <div class="d-flex flex-column justify-center align-center">
-                    <div class="rh-title">F.O Inlet Temp</div>
-                    <div class="rh-value">
-                      {{ selectedEngineData.foInletTemp }} <span class="unit">℃</span>
-                    </div>
-                  </div>
-                  <div class="d-flex flex-column justify-center align-center">
-                    <div class="rh-title">F.O Inlet Viscosity</div>
-                    <div class="rh-value">
-                      {{ selectedEngineData.foInletVelocity }} <span class="unit">Cst</span>
-                    </div>
-                  </div>
-                </v-sheet>
-              </v-col>
-            </v-row>
-          </v-col>
-        </v-row>
-
-        <v-row style="height: 100vh; max-height: calc(100% * 0.6)">
-          <v-col cols="3" class="px-1 py-2 chart-bg">
-            <EChart :option="turboChargerChartOption" autoresize />
-          </v-col>
-          <v-col cols="9" class="px-1 py-2 chart-bg">
-            <EChart :option="cylinderChartOption" autoresize />
-          </v-col>
-        </v-row>
-      </v-container>
-    </v-sheet>
-  </v-sheet> -->
 </template>
 
 <script setup>
@@ -223,7 +116,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import EChart from '@/components/echart/Echarts.vue'
 
-import { convertFloatValueFromObject } from '@/composables/util'
+import { convertFloatValueFromObject, openNewPopup } from '@/composables/util'
 import { useShipStore } from '@/stores/shipStore'
 import { getMonitoring } from '@/api/dataApi'
 
@@ -742,7 +635,7 @@ let cylinderChartOption = ref({
 })
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .item {
   flex: 1 1 40%;
 }

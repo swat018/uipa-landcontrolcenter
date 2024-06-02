@@ -213,7 +213,7 @@ import { useShipStore } from '@/stores/shipStore'
 
 import { getImoData, downloadImoReportExcel } from '@/api/reportApi'
 import { useToast } from '@/composables/useToast'
-import { isStausOk } from '@/composables/util'
+import { isStatusOk } from '@/composables/util'
 
 import moment from 'moment'
 import _ from 'lodash'

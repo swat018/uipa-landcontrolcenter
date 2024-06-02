@@ -2,10 +2,16 @@
   <v-sheet class="mx-3 mt-3 rounded-lg">
     <SelectedShipSummary />
   </v-sheet>
-  <v-sheet class="ma-3 px-3 rounded-lg tabs-container ship-summary">
+  <v-sheet class="ma-3 px-3 rounded-lg tabs-container ship-summary" style="position: relative">
     <v-tabs v-model="tab" class="tabs-button" color="#5789FE">
       <v-tab value="monitoring">Real-time</v-tab>
       <v-tab value="history">Time-based</v-tab>
+      <v-btn
+        icon="mdi-fullscreen"
+        @click="openCCTVMonitoringPopup"
+        class="full-screen-button"
+        v-if="displayFullScreenButton"
+      ></v-btn>
     </v-tabs>
 
     <v-window v-model="tab">
@@ -23,38 +29,49 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useAuthStore } from '@/stores/authStore'
+import { useShipStore } from '@/stores/shipStore'
+
+import { openNewPopup } from '@/composables/util'
 
 import CCTVMonitoring from '@/views/ins/cctv/CCTVMonitoring.vue'
 import CCTVHistory from '@/views/ins/cctv/CCTVHistory.vue'
 import SelectedShipSummary from '@/components/ship/SelectedShipSummary.vue'
 
+const authStore = useAuthStore()
+const { userInfo } = storeToRefs(authStore)
+
+const shipStore = useShipStore()
+const { curSelectedShip } = storeToRefs(shipStore)
+
 const tab = ref(null)
+
+const displayFullScreenButton = computed(() => {
+  let displayStatus = false
+  let tabName = tab.value
+  let role = userInfo.value.role
+
+  if (role == 'ROLE_LCC_ADMIN' && tabName == 'monitoring') {
+    displayStatus = true
+  }
+
+  return displayStatus
+})
+
+const openCCTVMonitoringPopup = () => {
+  let imoNumber = curSelectedShip.value.imoNumber
+  let url = `/popup/monitoring/cctv?imoNumber=${imoNumber}`
+  openNewPopup(url)
+}
 </script>
 
 <style scoped>
-/* .ins-cctv-container {
-  height: calc(100vh - 65px - 32px);
+.full-screen-button {
+  position: absolute;
+  right: 0;
+  top: 5%;
+  background: #333334;
 }
-
-.ins-cctv-tab-container{
-  height: calc(100% - 48px);
-}
-
-.v-window.ins-cctv-tab-container .v-window__container{
-  flex : 1 1 auto;
-}
-
-.ins-cctv-tab-container .v-window-item{
-  display: flex;
-  flex: 1 1 auto;
-  height: calc(100%);
-}
-
-@media screen and (max-height : 800px) {
-  .ins-cctv-container {
-    overflow: auto;
-    height: 100vh;
-  }
-} */
 </style>

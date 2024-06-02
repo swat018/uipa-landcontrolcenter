@@ -273,7 +273,15 @@ export const fetchMachineData = async (imoNumber) => {
   await shipStore.fetchShipMachineInfo(imoNumber)
 }
 
-export const isStausOk = (status) => {
+export const isStatusOk = (status) => {
   console.log(status / 100)
   return parseInt(status / 100) == 2 ? true : false
+}
+
+export const openNewPopup = (url) => {
+  window.open(
+    url,
+    '_blank',
+    'menubar=no, toolbar=no, width=1920, height=1080, scrollbars=0, location=no, width=500, height=300'
+  )
 }

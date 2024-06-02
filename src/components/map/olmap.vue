@@ -33,14 +33,15 @@ import shipIcon from '@/assets/images/shipicons/shipIcon_green.png'
 import selectShipIcon from '@/assets/images/shipicons/shipIcon_yellow.png'
 import arrowIcon from '@/assets/images/shipicons/arrow.png'
 import { getShipInfo } from '@/api/shipApi'
-import { isStausOk } from '@/composables/util'
+import { isStatusOk } from '@/composables/util'
+import { useShipStore } from '@/stores/shipStore'
 
 const drawInteration_route = Draw
+const selectInteraction = Select
 
 const urlBefore = import.meta.env.VITE_TILE_MAP_URL + '/';
 const urlAfter = '/{z}/{x}/{-y}.png';
 const geoserverWmsUrl = import.meta.env.VITE_GEOSERVER_WMS_URL;
-
 
 export default {
   name: "olmap",
@@ -57,7 +58,8 @@ export default {
     routeLLayer: VectorLayer,
     mapTypeId: String,
     imoNumbers: [],
-    isClick: false,
+    curImoNumber: String
+
   }),
   props: [
     'propsdata', 'curSelectedShip',
@@ -89,21 +91,26 @@ export default {
       Object.keys(this.curSelectedShip).forEach((key) => {
         if (key === 'imoNumber') imoNumber = this.curSelectedShip[key];
       });
-      this.propsdata.map((shipData) => {
-        if (shipData.imoNumber === imoNumber) {
-          getShipData(imoNumber).then((response) => {
-            if(response.data.data === null) return;
-            var ship = response.data.data;
-            map.getView().setCenter(fromLonLat([Number(ship[0].longitude), Number(ship[0].latitude)]));
-            map.getView().setZoom(4);
-          });
-        }
-      });
-
+      if (this.propsdata.length === 0) return;
+      else if (this.propsdata.length !== 0) {
+        this.propsdata.map((shipData) => {
+          if (shipData.imoNumber === imoNumber) {
+            getShipData(imoNumber).then((response) => {
+              if(response.data.data === null) return;
+              var ship = response.data.data;
+              map.getView().setCenter(fromLonLat([Number(ship[0].longitude), Number(ship[0].latitude)]));
+              map.getView().setZoom(4);
+            });
+          }
+        });
+      }
     },
     isShow: function() {
       if (this.isShow === false) {
         this.setShipLayer();
+        this.shipSelectEvent();
+      } else {
+        map.removeInteraction(this.selectInteraction);
       }
     },
     isRouteShow: function() {
@@ -287,30 +294,60 @@ export default {
       }
     },
     shipSelectEvent: function() {
-      var select = new Select({
-          condition: singleClick
-      });
-      map.addInteraction(select);
+      const shipStore = useShipStore()
+      const { curSelectedShip } = storeToRefs(shipStore)
 
-      select.on('select', function(e) {
-        if(e.selected[0].values_.layer === 'shipLayer') {
-          e.selected[0].setStyle(new Style({
-            image: new Icon({
-              src: selectShipIcon,
-              // scale: 0.2,
-              // anchor: [0.5, 0.5],
-              rotateWithView: true,
-              // rotation: e.selected[0].values_.course
-              rotation: e.selected[0].values_.course * Math.PI/180
+      if(this.isShow === false) {
+        this.selectInteraction = new Select({
+          condition: singleClick,
+          layers: function(layer) {
+            return layer.get('name') === 'shipLayer';
+          }
+        });
+        map.addInteraction(this.selectInteraction);
+        // this.setShipLayer();
 
-            })
-          }));
-          emitter.emit('clickShipName', e.selected[0].values_.name);
-
-        } else {
-          this.setShipLayer();
-        }
-      });
+        this.selectInteraction.on('select', function(e) {
+          if (e.selected[0] === undefined) return;
+          if (e.selected[0].values_.layer === 'shipLayer') {
+            e.selected[0].setStyle(new Style({
+              image: new Icon({
+                src: selectShipIcon,
+                // scale: 0.2,
+                // anchor: [0.5, 0.5],
+                rotateWithView: true,
+                // rotation: e.selected[0].values_.course
+                rotation: e.selected[0].values_.course * Math.PI / 180
+              })
+            }));
+            let selectedShipImoNumber = e.selected[0].values_.name
+            this.curImoNumber = selectedShipImoNumber;
+            if (selectedShipImoNumber) {
+              getShipInfo(selectedShipImoNumber).then((response) => {
+                const {
+                  status,
+                  data: { data }
+                } = response;
+                if (isStatusOk(status)) {
+                  emitter.emit('clickShipName', selectedShipImoNumber);
+                  curSelectedShip.value = { ...data }
+                }
+              })
+            }
+          } else {
+            e.selected[0].setStyle(new Style({
+              image: new Icon({
+                src: shipIcon,
+                // scale: 0.2,
+                // anchor: [0.5, 0.5],
+                rotateWithView: true,
+                // rotation: e.selected[0].values_.course
+                rotation: e.selected[0].values_.course * Math.PI / 180
+              })
+            }));
+          }
+        });
+      }
     },
     makeSld: function(lynm, type, color1, color2) {
       var text_SLD = "\
@@ -470,36 +507,38 @@ export default {
     },
     shipData: async function(imoNumbers) {
       getShipData(imoNumbers).then((response) => {
-        var shipDataList = response.data.data;
+          const { status, data } = response;
+          if (isStatusOk(status)) {
+            var shipDataList = data.data;
+            shipDataList.forEach((shipData) => {
+              var pointFeature = new Feature({
+                geometry: new Point([Number(shipData.longitude), Number(shipData.latitude)]),
+                name: shipData.imoNumber,
+                layer: 'shipLayer',
+                course: shipData.course
+              });
+              pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
 
-        shipDataList.forEach((shipData) => {
-          var pointFeature = new Feature({
-            geometry: new Point([Number(shipData.longitude), Number(shipData.latitude)]),
-            name: shipData.imoNumber,
-            layer: 'shipLayer',
-            course: shipData.course
-          });
-          pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
-
-          this.shipLayer = new VectorLayer({
-            name: 'shipLayer',
-            source: new VectorSource({
-              features: [pointFeature]
-            }),
-            style: new Style({
-              image: new Icon({
-                src: shipIcon,
-                // scale: 0.2,
-                // anchor: [0.5, 0.5],
-                rotateWithView: true,
-                // rotation: (-90 + shipData.course) * Math.PI/180
-                rotation: shipData.course * Math.PI/180
-              })
-            }),
-            zIndex: 100
-          });
-          map.addLayer(this.shipLayer);
-        })
+              this.shipLayer = new VectorLayer({
+                name: 'shipLayer',
+                source: new VectorSource({
+                  features: [pointFeature]
+                }),
+                style: new Style({
+                  image: new Icon({
+                    src: shipIcon,
+                    // scale: 0.2,
+                    // anchor: [0.5, 0.5],
+                    rotateWithView: true,
+                    // rotation: (-90 + shipData.course) * Math.PI/180
+                    rotation: shipData.course * Math.PI/180
+                  })
+                }),
+                zIndex: 100
+              });
+              map.addLayer(this.shipLayer);
+            })
+          }
       });
     },
     vesselTrackCurrent: function() {

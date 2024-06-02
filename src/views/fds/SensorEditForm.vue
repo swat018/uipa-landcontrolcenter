@@ -115,7 +115,7 @@ import { useShipStore } from '@/stores/shipStore'
 import { useToast } from '@/composables/useToast'
 
 import { getFDSSensorInfo, updateFDSSensor } from '@/api/fdsApi'
-import { isStausOk } from '@/composables/util'
+import { isStatusOk } from '@/composables/util'
 
 const shipStore = useShipStore()
 const { curSelectedShip } = storeToRefs(shipStore)
@@ -195,7 +195,7 @@ const editFDSSensor = async () => {
   const { status } = await updateFDSSensor(requestForm)
 
   console.log('editFDSSensor' + status)
-  if (isStausOk(status)) {
+  if (isStatusOk(status)) {
     console.log('정보 변경 성공')
     showResMsg('선택한 센서의 정보가 수정되었습니다')
     emits('resetComponent')

@@ -18,7 +18,7 @@
           ></i-selectbox>
           <input class="noticeList-datePicker" type="datetime-local" v-model="startDate" />
           <input class="noticeList-datePicker" type="datetime-local" v-model="endDate" />
-          <i-btn @click="fetchPeriodEngineData()" text="조회" height="43"></i-btn>
+          <i-btn @click="fetchPeriodPerformance" text="조회" height="43"></i-btn>
 
           <i-btn
             text="항차조회"
@@ -78,7 +78,7 @@ import EChart from '@/components/echart/Echarts.vue'
 import { getEnginePerformanceData } from '@/api/dataApi'
 import { getAllVoyageByImoNumber } from '@/api/voyage.js'
 
-import { convertDateTimeType, convertDateType } from '@/composables/util.js'
+import { convertDateTimeType, convertUTCTimezone } from '@/composables/util.js'
 
 import VoyagesPopup from '@/components/voyage/VoyagesPopup.vue'
 
@@ -395,6 +395,12 @@ const updateDate = async (dateInformation) => {
   startDate.value = convertDateTimeType(selectStartDate)
   endDate.value = convertDateTimeType(selectEndDate)
   fetchPerformanceData(selectStartDate, selectEndDate)
+}
+
+const fetchPeriodPerformance = () => {
+  utcStartTime = convertUTCTimezone(startDate.value)
+  utcEndTime = convertUTCTimezone(endDate.value)
+  fetchPerformanceData(utcStartTime, utcEndTime)
 }
 
 watch(curSelectedShip, initFetchData)

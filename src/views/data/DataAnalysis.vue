@@ -14,24 +14,13 @@
           <div class="d-flex ga-2">
             <input class="noticeList-datePicker" type="date" v-model="startDate" />
             <input class="noticeList-datePicker" type="date" v-model="endDate" />
-            <i-btn @click="fetchPeriodEngineData()" text="조회" height="43"></i-btn>
+            <i-btn @click="fetchPeriodAnalysis" text="조회" height="43"></i-btn>
             <i-btn
               text="항차조회"
               @click="openVoyagesPopup()"
               :imoNumber="curSelectedShip.imoNumber"
               color="#3D3D40"
             ></i-btn>
-
-            <v-autocomplete
-              v-model="equipments[0]"
-              :items="equipments"
-              variant="solo-filled"
-              density="compact"
-              class="equipmentSelector"
-              bg-color="#434348"
-              :hide-details="true"
-              placeholder="장비를 선택해주세요"
-            ></v-autocomplete>
           </div>
         </div>
       </v-sheet>
@@ -73,15 +62,23 @@ import { ref, reactive, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import { useShipStore } from '@/stores/shipStore'
+import { useLoadingStore } from '@/stores/loadingStore'
+
 import { getAllVoyageByImoNumber } from '@/api/voyage.js'
 import { getAnalysisData } from '@/api/dataApi.js'
 
-import { convertDateTimeType, convertDateType, isStausOk } from '@/composables/util.js'
+import {
+  convertDateTimeType,
+  convertDateType,
+  convertUTCTimezone,
+  isStatusOk
+} from '@/composables/util.js'
 
 import Echart from '@/components/echart/Echarts.vue'
 import SelectedShipSummary from '@/components/ship/SelectedShipSummary.vue'
 import VoyagesPopup from '@/components/voyage/VoyagesPopup.vue'
 
+import { useToast } from '@/composables/useToast'
 import moment from 'moment'
 import _ from 'lodash'
 
@@ -91,82 +88,15 @@ const isShowPopupModal = ref(false)
 const voyages = ref(false)
 
 const shipStore = useShipStore()
-const { curSelectedShip } = storeToRefs(shipStore)
+const { curSelectedShip, shipEngins } = storeToRefs(shipStore)
+const loadingStore = useLoadingStore()
+const { loadingStatus } = storeToRefs(loadingStore)
 
-const equipments = ref(['ME1', 'ME2', 'GE1'])
-
-let utcStartTime = ''
-let utcEndTime = ''
-
-onMounted(() => {
-  initFetchData()
-})
-
-const initFetchData = async () => {
-  const today = moment()
-  let parseEndTimeZone = moment.parseZone(today)
-  let sevenDaysAgo = today.subtract(3, 'days')
-  let parseStartTimeZone = moment.parseZone(sevenDaysAgo)
-  utcStartTime = parseStartTimeZone.toISOString()
-  utcEndTime = parseEndTimeZone.toISOString()
-
-  fetchAnalysisData(utcStartTime, utcEndTime)
-}
-
-const fetchAnalysisData = async (utcStartTime, utcEndTime) => {
-  let currentShipImoNumber = curSelectedShip.value.imoNumber
-  let requestForm = {
-    imoNumber: currentShipImoNumber,
-    startTime: utcStartTime,
-    endTime: utcEndTime
-  }
-
-  const {
-    status,
-    data: { data }
-  } = await getAnalysisData(requestForm)
-
-  if (data.length == 0) {
-    resetChartOption()
-    return
-  }
-
-  let engineFuelConsumption = data['Engine Fuel Consumption']
-  let powerPropeller = data['Power - Propeller RPM Curve']
-  let SpeedPower = data['Speed - Power Curve']
-  let fuelConsumptionPower = data['Foc - Power Curve']
-
-  if (engineFuelConsumption && Object.keys(engineFuelConsumption).length != 0) {
-    await getFuelConsumptionSeries(engineFuelConsumption)
-  } else {
-    fuelConsumptionOption.value.series = []
-  }
-
-  if (powerPropeller) {
-    await getPowerPropellerSeries(powerPropeller)
-  } else {
-    powerPropellerOption.value.series = []
-  }
-
-  if (SpeedPower) {
-    await getSpeedPowerSeries(SpeedPower)
-  } else {
-    speedPowerOption.value.series = []
-  }
-
-  if (fuelConsumptionPower) {
-    await getFuelPowerSeries(fuelConsumptionPower)
-  } else {
-    fuelPowerOption.value.series = []
-  }
-
-  startDate.value = convertDateType(utcStartTime)
-  endDate.value = convertDateType(utcEndTime)
-}
+const { showResMsg } = useToast()
 
 const fuelConsumptionSeries = ref([])
 const powerPropellerSeries = ref([])
-const speedPowerSeries = reactive([])
+const speedPowerSeries = ref([])
 // const fuelPowerSeries = ref([])
 
 const fuelConsumptionOption = ref({
@@ -396,179 +326,294 @@ const powerPropellerOption = ref({
 })
 
 const getFuelConsumptionSeries = (fuelConsumptionData) => {
-  let series = []
+  return new Promise((resolve, reject) => {
+    try {
+      let series = []
 
-  console.dir(fuelConsumptionData)
-  Object.keys(fuelConsumptionData).forEach((el) => {
-    let newData = {
-      name: '',
-      symbolSize: 10,
-      itemStyle: {
-        opacity: 0.5
-      },
-      data: [],
-      type: 'scatter'
-    }
-    newData.name = el
-    newData.data = fuelConsumptionData[el]
+      console.dir(fuelConsumptionData)
+      Object.keys(fuelConsumptionData).forEach((el) => {
+        let newData = {
+          name: '',
+          symbolSize: 10,
+          itemStyle: {
+            opacity: 0.5
+          },
+          data: [],
+          type: 'scatter'
+        }
+        newData.name = el
+        newData.data = fuelConsumptionData[el]
 
-    // console.log('key')
-    // console.dir(el)
+        // console.log('key')
+        // console.dir(el)
 
-    // console.log('data')
-    // console.dir(fuelConsumptionData[el])
+        // console.log('data')
+        // console.dir(fuelConsumptionData[el])
 
-    let index = fuelConsumptionOption.value.series.findIndex((option) => {
-      console.log(option.name)
-      option.name == el
-    })
+        let index = fuelConsumptionOption.value.series.findIndex((option) => {
+          console.log(option.name)
+          option.name == el
+        })
 
-    console.log('인덱스')
-    console.log(index)
+        console.log('인덱스')
+        console.log(index)
 
-    if (index == -1) {
-      fuelConsumptionOption.value.series.push(newData)
-    } else {
-      fuelConsumptionOption.value.series[index] = newData
+        if (index == -1) {
+          fuelConsumptionOption.value.series.push(newData)
+        } else {
+          fuelConsumptionOption.value.series[index] = newData
+        }
+      })
+
+      console.log('최종 시리즈')
+      console.dir(fuelConsumptionOption.value.series)
+
+      fuelConsumptionOption.value.legend.data = Object.keys(fuelConsumptionData)
+      resolve()
+    } catch (error) {
+      reject(error)
     }
   })
+}
 
-  console.log('최종 시리즈')
-  console.dir(fuelConsumptionOption.value.series)
+let utcStartTime = ''
+let utcEndTime = ''
 
-  fuelConsumptionOption.value.legend.data = Object.keys(fuelConsumptionData)
+onMounted(() => {
+  if (!curSelectedShip.value.imoNumber) {
+    showResMsg('선박명을 클릭해주세요')
+    return
+  }
+  initFetchData()
+})
+
+const initFetchData = async () => {
+  const today = moment()
+  let parseEndTimeZone = moment.parseZone(today)
+  let sevenDaysAgo = today.subtract(3, 'days')
+  let parseStartTimeZone = moment.parseZone(sevenDaysAgo)
+  utcStartTime = parseStartTimeZone.toISOString()
+  utcEndTime = parseEndTimeZone.toISOString()
+
+  fetchAnalysisData(utcStartTime, utcEndTime)
+}
+
+const fetchAnalysisData = async (utcStartTime, utcEndTime) => {
+  loadingStatus.value = true
+  const promises = []
+
+  let currentShipImoNumber = curSelectedShip.value.imoNumber
+  let requestForm = {
+    imoNumber: currentShipImoNumber,
+    startTime: utcStartTime,
+    endTime: utcEndTime
+  }
+
+  const {
+    status,
+    data: { data }
+  } = await getAnalysisData(requestForm)
+
+  if (data.length == 0) {
+    resetChartOption()
+    return
+  }
+
+  let engineFuelConsumption = []
+  let powerPropeller = []
+  let SpeedPower = []
+  let fuelConsumptionPower = []
+
+  if ('Engine Fuel Consumption' in data) {
+    engineFuelConsumption = data['Engine Fuel Consumption']
+
+    if (engineFuelConsumption) {
+      promises.push(getFuelConsumptionSeries(engineFuelConsumption))
+    } else {
+      fuelConsumptionOption.value.series = []
+    }
+  }
+
+  if ('Power - Propeller RPM Curve' in data) {
+    powerPropeller = data['Power - Propeller RPM Curve']
+    if (powerPropeller) {
+      promises.push(getPowerPropellerSeries(powerPropeller))
+    } else {
+      powerPropellerOption.value.series = []
+    }
+  }
+
+  if ('Speed - Power Curve' in data) {
+    SpeedPower = data['Speed - Power Curve']
+    if (SpeedPower) {
+      promises.push(getSpeedPowerSeries(SpeedPower))
+    } else {
+      speedPowerOption.value.series = []
+    }
+  }
+
+  if ('Foc - Power Curve' in data) {
+    fuelConsumptionPower = data['Foc - Power Curve']
+    if (fuelConsumptionPower) {
+      promises.push(getFuelPowerSeries(fuelConsumptionPower))
+    } else {
+      fuelPowerOption.value.series = []
+    }
+  }
+
+  await Promise.all(promises)
+    .then(() => {
+      startDate.value = convertDateType(utcStartTime)
+      endDate.value = convertDateType(utcEndTime)
+      loadingStatus.value = false
+    })
+    .catch((error) => {
+      showResMsg(error)
+      loadingStatus.value = false
+    })
+}
+
+const fetchPeriodAnalysis = () => {
+  utcStartTime = convertUTCTimezone(startDate.value)
+  utcEndTime = convertUTCTimezone(endDate.value)
+  fetchAnalysisData(utcStartTime, utcEndTime)
 }
 
 const getPowerPropellerSeries = (powerPropellerData) => {
-  let series = []
+  return new Promise((resolve, reject) => {
+    try {
+      let series = []
 
-  console.dir(powerPropellerData)
-  Object.keys(powerPropellerData).forEach((el) => {
-    let newData = {
-      name: '',
-      symbolSize: 10,
-      itemStyle: {
-        opacity: 0.5
-      },
-      data: [],
-      type: 'scatter'
-    }
-    newData.name = el
-    newData.data = powerPropellerData[el]
+      console.dir(powerPropellerData)
+      Object.keys(powerPropellerData).forEach((el) => {
+        let newData = {
+          name: '',
+          symbolSize: 10,
+          itemStyle: {
+            opacity: 0.5
+          },
+          data: [],
+          type: 'scatter'
+        }
+        newData.name = el
+        newData.data = powerPropellerData[el]
 
-    // console.log('key')
-    // console.dir(el)
+        // console.log('key')
+        // console.dir(el)
 
-    // console.log('data')
-    // console.dir(fuelConsumptionData[el])
+        // console.log('data')
+        // console.dir(fuelConsumptionData[el])
 
-    let index = powerPropellerOption.value.series.findIndex((option) => {
-      console.log(option.name)
-      option.name == el
-    })
+        let index = powerPropellerOption.value.series.findIndex((option) => {
+          console.log(option.name)
+          option.name == el
+        })
 
-    console.log('인덱스')
-    console.log(index)
+        console.log('인덱스')
+        console.log(index)
 
-    if (index == -1) {
-      powerPropellerOption.value.series.push(newData)
-    } else {
-      powerPropellerOption.value.series[index] = newData
+        if (index == -1) {
+          powerPropellerOption.value.series.push(newData)
+        } else {
+          powerPropellerOption.value.series[index] = newData
+        }
+      })
+
+      console.log('최종 시리즈')
+      console.dir(powerPropellerOption.value.series)
+
+      powerPropellerOption.value.legend.data = Object.keys(powerPropellerData)
+      resolve()
+    } catch (error) {
+      reject(error)
     }
   })
-
-  console.log('최종 시리즈')
-  console.dir(powerPropellerOption.value.series)
-
-  powerPropellerOption.value.legend.data = Object.keys(powerPropellerData)
 }
 
 const getSpeedPowerSeries = (speedPowerData) => {
-  let series = []
+  return new Promise((resolve, reject) => {
+    try {
+      let series = []
 
-  console.dir(speedPowerData)
-  Object.keys(speedPowerData).forEach((el) => {
-    let newData = {
-      name: '',
-      symbolSize: 10,
-      itemStyle: {
-        opacity: 0.5
-      },
-      data: [],
-      type: 'scatter'
-    }
-    newData.name = el
-    newData.data = speedPowerData[el]
+      console.log('Speed Power')
+      console.dir(speedPowerData)
+      Object.keys(speedPowerData).forEach((el) => {
+        let newData = {
+          name: '',
+          symbolSize: 10,
+          itemStyle: {
+            opacity: 0.5
+          },
+          data: [],
+          type: 'scatter'
+        }
+        newData.name = el
+        newData.data = speedPowerData[el]
 
-    // console.log('key')
-    // console.dir(el)
+        // console.log('key')
+        // console.dir(el)
 
-    // console.log('data')
-    // console.dir(fuelConsumptionData[el])
+        // console.log('data')
+        // console.dir(fuelConsumptionData[el])
 
-    let index = speedPowerSeries.value.findIndex((option) => {
-      console.log(option.name)
-      option.name == el
-    })
+        console.log('speedPowerSeries')
+        console.dir(speedPowerSeries)
 
-    console.log('인덱스')
-    console.log(index)
+        let index = speedPowerSeries.value.findIndex((option) => option.name == el)
 
-    if (index == -1) {
-      speedPowerSeries.value.push(newData)
-    } else {
-      speedPowerSeries[index] = newData
+        if (index == -1) {
+          speedPowerSeries.value.push(newData)
+        } else {
+          speedPowerSeries[index] = newData
+        }
+      })
+
+      console.log('최종 시리즈')
+      console.dir(speedPowerOption.value.series)
+
+      speedPowerOption.value.legend.data = Object.keys(speedPowerData)
+    } catch (error) {
+      reject(error)
     }
   })
-
-  console.log('최종 시리즈')
-  console.dir(speedPowerOption.value.series)
-
-  speedPowerOption.value.legend.data = Object.keys(speedPowerData)
 }
 
 const getFuelPowerSeries = (fuelPowerData) => {
-  let series = []
+  return new Promise((resolve, reject) => {
+    try {
+      let series = []
 
-  console.dir(fuelPowerData)
-  Object.keys(fuelPowerData).forEach((el) => {
-    let newData = {
-      name: '',
-      symbolSize: 10,
-      itemStyle: {
-        opacity: 0.5
-      },
-      data: [],
-      type: 'scatter'
-    }
-    newData.name = el
-    newData.data = fuelPowerData[el]
+      console.dir(fuelPowerData)
+      Object.keys(fuelPowerData).forEach((el) => {
+        let newData = {
+          name: '',
+          symbolSize: 10,
+          itemStyle: {
+            opacity: 0.5
+          },
+          data: [],
+          type: 'scatter'
+        }
+        newData.name = el
+        newData.data = fuelPowerData[el]
 
-    // console.log('key')
-    // console.dir(el)
+        let index = fuelPowerOption.value.series.findIndex((option) => option.name == el)
 
-    // console.log('data')
-    // console.dir(fuelConsumptionData[el])
+        if (index == -1) {
+          fuelPowerOption.value.series.push(newData)
+        } else {
+          fuelPowerOption.value.series[index] = newData
+        }
+      })
 
-    let index = fuelPowerOption.value.series.findIndex((option) => {
-      console.log(option.name)
-      option.name == el
-    })
+      console.log('최종 시리즈')
+      console.dir(fuelPowerOption.value.series)
 
-    console.log('인덱스')
-    console.log(index)
-
-    if (index == -1) {
-      fuelPowerOption.value.series.push(newData)
-    } else {
-      fuelPowerOption.value.series[index] = newData
+      fuelPowerOption.value.legend.data = Object.keys(fuelPowerData)
+    } catch (error) {
+      reject(error)
     }
   })
-
-  console.log('최종 시리즈')
-  console.dir(fuelPowerOption.value.series)
-
-  fuelPowerOption.value.legend.data = Object.keys(fuelPowerData)
 }
 
 const updateDate = (dateInformation) => {

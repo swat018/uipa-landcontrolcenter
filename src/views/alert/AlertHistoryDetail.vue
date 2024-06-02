@@ -1,7 +1,7 @@
 <template>
   <div class="d-flex ga-4 voyageDetail">
     <div class="charts-container">
-      <Echart :option="chartSeries" ref="test"></Echart>
+      <Echart :option="drawChart" ref="test"></Echart>
     </div>
 
     <div class="equipment-container">
@@ -31,15 +31,17 @@
       <DxDataGrid
         id="alertHistoryDetailGrid"
         ref="historyDetailGrid"
-        key-expr="id"
+        key-expr="tagId"
         @selection-changed="onSelectionChanged"
-        :data-source="detailData"
+        :data-source="equipmentTags"
         :column-auto-width="false"
+        :selected-row-keys="checkedTags"
+        style="height: 300px"
       >
         <DxSelection mode="multiple" :recursive="true" show-check-boxes-mode="always"></DxSelection>
 
         <DxColumn
-          data-field="equipmentNo"
+          data-field="equipNo"
           caption="Equip No"
           alignment="center"
           :allow-edting="false"
@@ -53,7 +55,6 @@
         <DxColumn data-field="tagId" caption="Tag ID" alignment="center" :allow-edting="false" />
 
         <DxScrolling mode="virtual" />
-        <DxPaging :page-size="6" />
       </DxDataGrid>
     </div>
   </div>
@@ -64,11 +65,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, nextTick } from 'vue'
+import { ref, onMounted, watch, nextTick, computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import mapBg from '@/assets/images/mapBg.png'
-import alertDetail from '@/assets/mockup/alertDetail.json'
-import { getAlarmHistoryChart } from '@/api/alarmApi'
 import Echart from '@/components/echart/Echarts.vue'
 
 import { convertDateTimeType, convertUTCTimezone } from '@/composables/util'
@@ -94,89 +92,102 @@ const props = defineProps({
   },
   endDate: {
     type: [String]
+  },
+  equipmentTags: {
+    type: Object
+  },
+  checkedTags: {
+    type: Object
+  },
+  chartHistories: {
+    type: Object,
+    default: null
   }
 })
 
-const chartSeries = ref({
-  title: {
-    text: props.title,
-    left: 'left',
-    textStyle: {
-      color: '#fff',
-      fontSize: 12,
-      fontWeight: 'bolder'
-    }
-  },
-  tooltip: {
-    trigger: 'axis'
-  },
-  toolbox: {
-    show: true,
-    top: '0%',
-    right: '2%',
-    feature: {
-      dataZoom: {
-        show: true,
-        title: {
-          zoom: 'Zoom',
-          back: 'Restore'
-        },
-        yAxisIndex: 'none',
-        iconStyle: {
-          borderColor: '#fff', // Default icon border color
-          emphasis: {
-            borderColor: '#5789FE' // Icon border color when activated
-          }
-        }
-      }
-    }
-  },
-  legend: {
-    show: false,
-    orient: 'vertical',
-    data: null,
-    right: 10
-  },
-  grid: {
-    left: '5%',
-    right: '8%',
-    bottom: '10%',
-    top: '12%'
-    // containLabel: true
-  },
-  xAxis: {
-    type: 'category',
-    data: [],
-    splitLine: {
-      lineStyle: {
-        width: 1,
-        type: 'dashed',
-        color: '#5C5C5E',
-        opacity: 0.5
-      }
-    }
-  },
-  yAxis: {
-    type: 'value',
-    splitLine: {
-      lineStyle: {
-        width: 1,
-        type: 'dashed',
-        color: '#5C5C5E',
-        opacity: 0.5
-      }
-    },
-    boundaryGap: [0, '30%']
-  },
-  series: [
-    {
-      type: 'line',
-      data: [],
-      symbolSize: 0,
-      smooth: true
-    }
-  ]
-})
+const emit = defineEmits(['click'])
+const selctedTagIds = ref('')
+
+// const chartSeries = ref({
+//   title: {
+//     text: props.title,
+//     left: 'left',
+//     textStyle: {
+//       color: '#fff',
+//       fontSize: 12,
+//       fontWeight: 'bolder'
+//     }
+//   },
+//   tooltip: {
+//     trigger: 'axis'
+//   },
+//   toolbox: {
+//     show: true,
+//     top: '0%',
+//     right: '2%',
+//     feature: {
+//       dataZoom: {
+//         show: true,
+//         title: {
+//           zoom: 'Zoom',
+//           back: 'Restore'
+//         },
+//         yAxisIndex: 'none',
+//         iconStyle: {
+//           borderColor: '#fff', // Default icon border color
+//           emphasis: {
+//             borderColor: '#5789FE' // Icon border color when activated
+//           }
+//         }
+//       }
+//     }
+//   },
+//   legend: {
+//     show: false,
+//     orient: 'vertical',
+//     data: null,
+//     right: 10
+//   },
+//   grid: {
+//     left: '5%',
+//     right: '8%',
+//     bottom: '10%',
+//     top: '12%'
+//     // containLabel: true
+//   },
+//   xAxis: {
+//     type: 'category',
+//     data: [],
+//     splitLine: {
+//       lineStyle: {
+//         width: 1,
+//         type: 'dashed',
+//         color: '#5C5C5E',
+//         opacity: 0.5
+//       }
+//     }
+//   },
+//   yAxis: {
+//     type: 'value',
+//     splitLine: {
+//       lineStyle: {
+//         width: 1,
+//         type: 'dashed',
+//         color: '#5C5C5E',
+//         opacity: 0.5
+//       }
+//     },
+//     boundaryGap: [0, '30%']
+//   },
+//   series: [
+//     {
+//       type: 'line',
+//       data: [],
+//       symbolSize: 0,
+//       smooth: true
+//     }
+//   ]
+// })
 
 const detailInfo = ref(null)
 
@@ -208,21 +219,7 @@ const series = [
   }
 ]
 const test = ref()
-const test2 = ref()
 const historyInstance = ref()
-onMounted(() => {
-  // console.dir(props.templateData.key)
-  // let key = props.templateData.key
-  // fetchReportDetail(key)
-  historyInstance.value = historyDetailGrid.value.instance
-  fetchAlertDetail()
-  console.log('이차트')
-  console.dir(test.value)
-})
-
-const fetchAlertDetail = async () => {
-  fetchAlertChart()
-}
 
 const fetchAlertChart = async () => {
   let tagId = props.templateData.data.tagId
@@ -239,16 +236,16 @@ const fetchAlertChart = async () => {
 
   console.dir(requestForm)
 
-  const {
-    status,
-    data: { data }
-  } = await getAlarmHistoryChart(requestForm)
+  // const {
+  //   status,
+  //   data: { data }
+  // } = await getAlarmHistoryChart(requestForm)
 
-  let dataRange = data.first.map((date) => convertDateTimeType(date))
-  chartSeries.value.xAxis.data = dataRange
-  chartSeries.value.series[0].name = props.templateData.data.description
-  chartSeries.value.series[0].data = data.second
-  console.dir(chartSeries.value)
+  // let dataRange = data.first.map((date) => convertDateTimeType(date))
+  // chartSeries.value.xAxis.data = dataRange
+  // chartSeries.value.series[0].name = props.templateData.data.description
+  // chartSeries.value.series[0].data = data.second
+  // console.dir(chartSeries.value)
 }
 
 const getColorByAlarmType = (alarmType) => {
@@ -275,81 +272,167 @@ const getColorByAlarmType = (alarmType) => {
 }
 
 const onSelectionChanged = (e) => {
+  // let seriesLength = chartSeries.value.series.length
+  let curSelectedKey = e.currentSelectedRowKeys
+  let deselctedKey = e.currentDeselectedRowKeys
+
   console.dir(e)
-  let seriesLength = chartSeries.value.series.length
+  // if (e.currentDeselectedRowKeys.length != 0) {
+  //   // removeChartOption(e.currentDeselectedRowKeys)
+  //   return
+  // }
 
-  if (e.currentDeselectedRowKeys.length != 0) {
-    removeChartOption(e.currentDeselectedRowKeys)
-    return
-  }
+  // let description = e.selectedRowsData[seriesLength - 1].description
 
-  let description = e.selectedRowsData[seriesLength - 1].description
+  // let result = isExistChartOption(description)
 
-  let result = isExistChartOption(description)
-
-  if (result == -1) {
-    changeChartOption(e.selectedRowsData)
-  }
-}
-
-const isExistChartOption = (description) => {
-  let seriesLength = chartSeries.value.series.length
-  for (let i = 0; i < seriesLength; i++) {
-    if (chartSeries.value.series[i].name == description) {
-      return i
+  // if (result == -1) {
+  // 체크 했을때
+  let form = null
+  const tagIds = e.selectedRowsData.map((el) => el.tagId)
+  if (curSelectedKey.length <= 0) {
+    form = {
+      type: 'remove',
+      tagIds: tagIds,
+      deselctedKeys: deselctedKey
     }
-  }
-
-  return -1
-}
-
-const removeChartOption = (deselectedRows) => {
-  // historyDetailGrid.value.getRowData(key)
-  for (let i = 0; i < deselectedRows.length; i++) {
-    var visibleRowsData = historyInstance.value.getVisibleRows()
-    var targetRowData = visibleRowsData.find((row) => {
-      return row.key === deselectedRows[i]
-    }) // myTargetKey는 찾고자 하는 키 값
-
-    let index = chartSeries.value.series.findIndex(
-      (option) => option.name == targetRowData.data.description
-    )
-
-    chartSeries.value.series.splice(index, 1)
-  }
-
-  console.dir(chartSeries.value)
-  // chartSeries.value.series = removedChartOption
-}
-
-const changeChartOption = async (selectedRows) => {
-  console.log('차트 생성')
-  let chartStartTime = convertUTCTimezone(props.startDate)
-  let chartEndTime = convertUTCTimezone(props.endDate)
-
-  for (let i = 0; i < selectedRows.length; i++) {
-    let requestForm = {
-      imoNumber: curSelectedShip.value.imoNumber,
-      fieldName: selectedRows[i].tagId,
-      startTime: chartStartTime,
-      endTime: chartEndTime,
-      isTimeContains: false
+  } else {
+    form = {
+      type: 'add',
+      tagIds: tagIds
     }
-
-    const {
-      status,
-      data: { data }
-    } = await getAlarmHistoryChart(requestForm)
-
-    if (status == 200) {
-      chartSeries.value.series.push({
-        name: selectedRows[i].description,
-        type: 'line',
-        data: data
-      })
-    }
+    console.log(e)
+    // changeChartOption(e.selectedRowsData)
+    // }
   }
+  emit('click', form)
 }
+
+// const isExistChartOption = (description) => {
+//   let seriesLength = chartSeries.value.series.length
+//   for (let i = 0; i < seriesLength; i++) {
+//     if (chartSeries.value.series[i].name == description) {
+//       return i
+//     }
+//   }
+
+//   return -1
+// }
+
+// const removeChartOption = (deselectedRows) => {
+//   // historyDetailGrid.value.getRowData(key)
+//   for (let i = 0; i < deselectedRows.length; i++) {
+//     var visibleRowsData = historyInstance.value.getVisibleRows()
+//     var targetRowData = visibleRowsData.find((row) => {
+//       return row.key === deselectedRows[i]
+//     }) // myTargetKey는 찾고자 하는 키 값
+
+//     let index = chartSeries.value.series.findIndex(
+//       (option) => option.name == targetRowData.data.description
+//     )
+
+//     chartSeries.value.series.splice(index, 1)
+//   }
+
+//   console.dir(chartSeries.value)
+//   // chartSeries.value.series = removedChartOption
+// }
+
+// const changeChartOption = async (selectedRows) => {
+//   console.log('차트 생성')
+//   let chartStartTime = convertUTCTimezone(props.startDate)
+//   let chartEndTime = convertUTCTimezone(props.endDate)
+
+//   for (let i = 0; i < selectedRows.length; i++) {
+//     let requestForm = {
+//       imoNumber: curSelectedShip.value.imoNumber,
+//       fieldName: selectedRows[i].tagId,
+//       startTime: chartStartTime,
+//       endTime: chartEndTime,
+//       isTimeContains: false
+//     }
+
+//     const {
+//       status,
+//       data: { data }
+//     } = await getAlarmHistoryChart(requestForm)
+
+//     if (status == 200) {
+//       chartSeries.value.series.push({
+//         name: selectedRows[i].description,
+//         type: 'line',
+//         data: data
+//       })
+//     }
+//   }
+// }
+const test55 = ref({})
+const drawChart = computed(() => {
+  console.log('차트 그리기')
+  console.dir(props.chartHistories)
+
+  // nextTick(()=>{
+  // test55.value = props.chartHistories})
+  return props.chartHistories
+
+  // console.dir(props.checkedTags)
+  // let chartDatas = props.chartHistories
+
+  // console.dir('chartHistories')
+  // console.dir(props.chartHistories)
+
+  // chartSeries.value.series.push(   {
+  //     data: [150, 230, 224, 218, 135, 147, 260],
+  //     type: 'line'
+  //   })
+
+  // let xAxisLength = chartSeries.value.xAxis.data.length
+  // let updatedChartData = []
+
+  // for (let data in chartDatas) {
+  //   if (data == 'Time' && xAxisLength == 0) {
+  //     chartSeries.value.xAxis.data = chartDatas['Time']
+  //     return
+  //   }
+
+  //   let newData = {
+  //     key: '',
+  //     name: '',
+  //     type: 'line',
+  //     data: [],
+  //     smooth: true
+  //   }
+
+  //   newData.key = data
+  //   newData.name = data
+  //   newData.data = chartDatas[data]
+
+  //   updatedChartData.push(newData)
+
+  //   // let index = chartSeries.value.series.findIndex((option) => option.name == data)
+
+  //   // if (index == -1) {
+  //   //   chartSeries.value.series.push(newData)
+  //   //   console.log('차트 그리기')
+  //   //   console.dir(chartSeries)
+  //   // }
+  // }
+  // chartSeries.value.series.data = []
+  // chartSeries.value.series = updatedChartData
+
+  // if('Time' in chartDatas){
+
+  // }
+
+  // chartSeries.value.series.findIndex((item) => item.key == )
+  // chartSeries.value.series
+  // chartSeries.value.series[0].name = props.templateData.data.description
+  // chartSeries.value.series[0].data = data.second
+  // console.dir(chartSeries.value)
+})
+
+// watch(() => props.checkedTags, ㄴdrawChart)
+// watch(() => props.chartHistories, drawChart)
 </script>
 
 <style>

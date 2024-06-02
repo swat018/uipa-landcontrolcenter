@@ -75,6 +75,7 @@
               :hide-details="true"
             ></i-selectbox>
           </div>
+          <v-btn icon="mdi-fullscreen" @click="test"></v-btn>
         </div>
       </div>
     </v-sheet>
@@ -194,17 +195,12 @@ import { useVoccStore } from '@/stores/voccStore'
 import { useFleetStore } from '@/stores/fleetStore'
 import { useShipStore } from '@/stores/shipStore'
 import { useAlarmStore } from '@/stores/alarmStore'
-import GroupRegisterForm from '@/views/auth/group/GroupRegisterForm.vue'
-import { convertDateTimeType } from '@/composables/util'
-import { getDxGridInstance, dxGridRefresh, dxGridDeselectAll } from '@/composables/dxGridUtil'
-import emitter from '@/composables/eventbus.js'
+
 import { getCurrentAlarmData } from '@/api/alarmApi.js'
 
+import { convertDateTimeType, isStatusOk } from '@/composables/util'
+
 import AlertMonitoringDetail from '@/views/alert/AlertMonitoringDetail.vue'
-
-// import alarmData from '@/assets/mockup/alertMonitoring.json'
-
-const { proxy } = getCurrentInstance()
 
 const tagStore = useTagStore()
 const authStore = useAuthStore()
@@ -340,8 +336,7 @@ const fetchAlertMonitoring = async () => {
       data: { data }
     } = await getCurrentAlarmData(requestForm)
 
-    console.log(status / 100)
-    if (parseInt(status / 100) == 2) {
+    if (isStatusOk(status)) {
       alarmData.value = data
       alarmDataCount()
     }
@@ -384,6 +379,17 @@ const filterEngineType = () => {
     realAlertInstance.value.filter((item) => item.equipNo == selectedEngine.value)
   }
 }
+
+const test = () => {
+  let imoNumber = curSelectedShip.value.imoNumber
+  var popup = window.open(
+    `/popup/alert?imoNumber=${imoNumber}`,
+    '_blank',
+    'menubar=no, toolbar=no, width=300, height=400, scrollbars=0, location=no, width=500, height=300'
+  )
+  // popup.opener.postMessage(boatName)
+}
+
 watch(curSelectedShip, fetchAlertMonitoring)
 watch(duration, fetchAlertMonitoring)
 watch(selectedStatus, filterAlarmStatus)

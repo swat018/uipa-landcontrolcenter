@@ -3,12 +3,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, provide } from 'vue'
 import { storeToRefs } from 'pinia'
 import { use, registerTheme, registerTransform } from 'echarts/core'
 import blackTheme from '@/components/echart/theme/black.json'
 import { useThemeStore } from '@/stores/themeStore.js'
-import VChart, { THEME_KEY } from 'vue-echarts'
+import VChart, { THEME_KEY, UPDATE_OPTIONS_KEY } from 'vue-echarts'
 import { CanvasRenderer } from 'echarts/renderers'
 import {
   BarChart,

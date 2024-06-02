@@ -99,9 +99,10 @@ import { getShipInfo } from '@/api/shipApi'
 
 import { getDxGridInstance } from '@/composables/dxGridUtil'
 import emitter from '@/composables/eventbus.js'
-import { fetchMachineData, isStausOk } from '@/composables/util'
+import { fetchMachineData, isStatusOk } from '@/composables/util'
 
 import uipaLogoImgKr from '@/assets/images/uipa_logo_kr.png'
+import { changeShipByImoNumber } from '@/api/worldMap'
 
 const authStore = useAuthStore()
 const { userInfo } = storeToRefs(authStore)
@@ -226,7 +227,9 @@ const selectShip = async (e) => {
       status,
       data: { data }
     } = await getShipInfo(selectedShipImoNumber)
-    if (isStausOk(status)) {
+    if (isStatusOk(status)) {
+      let uuid = userInfo.value.uuid
+      changeShipByImoNumber(uuid, selectedShipImoNumber)
       curSelectedShip.value = { ...data }
       await fetchMachineData(data.imoNumber)
       await shipStore.fetchUsedFuels()

@@ -18,7 +18,9 @@ let backgroundApies = [
   '/ship/cii/get-cii-future',
   '/ship/cii/get-cii-boundary',
   '/ship/info/get',
-  '/ship/fire-detection-sensor/deck/get-image'
+  '/ship/fire-detection-sensor/deck/get-image',
+  '/ship/engine/get-performance',
+  '/ship/data-analysis/get-analysis-chart'
 ]
 
 instance.interceptors.request.use((config) => {

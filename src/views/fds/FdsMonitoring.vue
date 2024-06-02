@@ -51,6 +51,9 @@
           ></i-selectbox>
           <!-- <v-btn icon="mdi-image-outline" @click="displayImage"></v-btn> -->
         </div>
+        <div class="d-flex justify-end">
+          <v-btn icon="mdi-fullscreen" @click="openFDSPopup"></v-btn>
+        </div>
       </div>
     </v-sheet>
 
@@ -172,7 +175,7 @@ import { useShipStore } from '@/stores/shipStore'
 import { getDeckList, getFDSMonitoring, getDeckImage } from '@/api/fdsApi'
 import { useToast } from '@/composables/useToast'
 
-import { isStausOk } from '@/composables/util'
+import { isStatusOk } from '@/composables/util'
 
 // import floorplan from '@/assets/images/ship/floorplan/floorPlan2.png'
 
@@ -260,7 +263,7 @@ const initMonitoring = async () => {
     icons.value = data
     originData = data
 
-    if (isStausOk(status)) {
+    if (isStatusOk(status)) {
       if (selectedDeckName) {
         const response = await getDeckImage(curSelectedShipImoNumber, selectedDeckName)
         let {
@@ -300,7 +303,7 @@ const filterByDeckName = async () => {
 
   icons.value = data
 
-  if (isStausOk(status)) {
+  if (isStatusOk(status)) {
     if (selectedDeckName) {
       const response = await getDeckImage(curSelectedShipImoNumber, selectedDeckName)
       let {
@@ -464,6 +467,14 @@ const filterByAlarmStatus = () => {
   console.log(filters)
 }
 
+const openFDSPopup = () => {
+  let imoNumber = curSelectedShip.value.imoNumber
+  var popup = window.open(
+    `/popup/monitoring/fds?imoNumber=${imoNumber}`,
+    '_blank',
+    'menubar=no, toolbar=no, width=300, height=400, scrollbars=0, location=no, width=500, height=300'
+  )
+}
 watch(curSelectedShip, initMonitoring)
 </script>
 

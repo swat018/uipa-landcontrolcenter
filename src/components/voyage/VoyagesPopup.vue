@@ -123,7 +123,10 @@ const props = defineProps({
 
 const emits = defineEmits(['seletcVoyage', 'close'])
 onMounted(() => {
-  fetchVoyagesByImoNumber()
+  let selectedShipImonumber = props.imoNumber
+  if (selectedShipImonumber) {
+    fetchVoyagesByImoNumber()
+  }
 })
 
 const fetchVoyagesByImoNumber = async () => {

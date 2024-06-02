@@ -69,11 +69,3 @@ export const getAlarmHistory = (requestForm) => {
     data: requestForm
   })
 }
-
-export const getAlarmHistoryChart = (requestForm) => {
-  return instance({
-    url: '/ship/essential-data/get-trend-chart-by-field',
-    method: 'GET',
-    params: requestForm
-  })
-}

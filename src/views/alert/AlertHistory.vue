@@ -153,10 +153,12 @@
 
         <template #detailTemplate="{ data: alertHistory }">
           <AlertHistoryDetail
-            :id="id"
-            :template-data="alertHistory"
+            :equipmentTags="equipmentTags"
+            :checkedTags="checkedTags"
             :startDate="startDate"
             :endDate="endDate"
+            :chartHistories="chartSeries"
+            @click="handleAlertHistoryDetail"
           />
         </template>
       </DxDataGrid>
@@ -171,71 +173,232 @@
 </template>
 
 <script setup>
-import {
-  ref,
-  onMounted,
-  computed,
-  watch,
-  onUnmounted,
-  onBeforeUnmount,
-  getCurrentInstance
-} from 'vue'
+import { ref, onMounted, watch, onBeforeUnmount, nextTick } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useTagStore } from '@/stores/tagStore'
-import { useAuthStore } from '@/stores/authStore.js'
-import { useVoccStore } from '@/stores/voccStore'
-import { useFleetStore } from '@/stores/fleetStore'
 import { useShipStore } from '@/stores/shipStore'
 import { useAlarmStore } from '@/stores/alarmStore'
 import { getAllVoyageByImoNumber } from '@/api/voyage.js'
-import GroupRegisterForm from '@/views/auth/group/GroupRegisterForm.vue'
-import { getDxGridInstance, dxGridRefresh, dxGridDeselectAll } from '@/composables/dxGridUtil'
-import { convertUTCTimezone, convertDateTimeType } from '@/composables/util'
 import { getAlarmHistory } from '@/api/alarmApi'
-import emitter from '@/composables/eventbus.js'
+import { getEquimentTagList, getEquimentChartData } from '@/api/dataApi'
+import { useToast } from '@/composables/useToast'
+import { convertUTCTimezone, convertDateTimeType, isStatusOk } from '@/composables/util'
 
 import AlertHistoryDetail from '@/views/alert/AlertHistoryDetail.vue'
 import VoyagesPopup from '@/components/voyage/VoyagesPopup.vue'
 
-import alarmData from '@/assets/mockup/alertMonitoring.json'
-
 import moment from 'moment'
+import _ from 'lodash'
 
-const { proxy } = getCurrentInstance()
-const alarmHistory = ref([])
-
-const equipments = ref(['ME1', 'ME2', 'GE1'])
-const statuses = ref(['All', 'Caution', 'Warning'])
-const chartInterval = ref(['1 min', '3 min', '5 min', '10 min', '30 min', '1 hour'])
-
-const selectedStatus = ref()
-
-const tagStore = useTagStore()
-const authStore = useAuthStore()
-const voccStore = useVoccStore()
-const fleetStore = useFleetStore()
 const shipStore = useShipStore()
-const alarmStore = useAlarmStore()
-
-const { userInfo } = storeToRefs(authStore)
-const { tagList } = storeToRefs(tagStore)
-const { voccInfo } = storeToRefs(voccStore)
-const { fleets } = storeToRefs(fleetStore)
-const { realAlarms } = storeToRefs(alarmStore)
-
 const { curSelectedShip, shipEngines } = storeToRefs(shipStore)
 
-const activeStatus = ref(true)
-const showFilterRow = ref(true)
-
-const alarmHistoryGrid = ref(null)
-const alarmHistoryInstance = ref(null)
+const alarmStore = useAlarmStore()
+const { showResMsg } = useToast()
 
 let interval = null
+
+/**
+ * 그리드 관련
+ */
+const alarmHistoryGrid = ref(null)
+const alarmHistoryInstance = ref(null)
+const alarmHistory = ref([])
+
+/**
+ * 필터 관련
+ */
 const startDate = ref()
 const endDate = ref()
-
+const statuses = ref(['All', 'Caution', 'Warning'])
+const chartInterval = ref(['1 min', '3 min', '5 min', '10 min', '30 min', '1 hour'])
 const selectedEngine = ref()
+const selectedStatus = ref()
+
+/**
+ * 차트 관련
+ */
+const chartHistories = ref({})
+const chartData = ref([])
+const CHECKED_COUNT_ONE = 1
+const chartSeries = ref({
+  title: {
+    text: '',
+    left: 'left',
+    textStyle: {
+      color: '#fff',
+      fontSize: 12,
+      fontWeight: 'bolder'
+    }
+  },
+  tooltip: {
+    trigger: 'axis'
+  },
+  toolbox: {
+    show: true,
+    top: '0%',
+    right: '2%',
+    feature: {
+      dataZoom: {
+        show: true,
+        title: {
+          zoom: 'Zoom',
+          back: 'Restore'
+        },
+        yAxisIndex: 'none',
+        iconStyle: {
+          borderColor: '#fff', // Default icon border color
+          emphasis: {
+            borderColor: '#5789FE' // Icon border color when activated
+          }
+        }
+      }
+    }
+  },
+  legend: {
+    show: false,
+    orient: 'vertical',
+    data: null,
+    right: 10
+  },
+  grid: {
+    left: '5%',
+    right: '8%',
+    bottom: '10%',
+    top: '12%'
+    // containLabel: true
+  },
+  xAxis: {
+    type: 'category',
+    data: [],
+    splitLine: {
+      lineStyle: {
+        width: 1,
+        type: 'dashed',
+        color: '#5C5C5E',
+        opacity: 0.5
+      }
+    }
+  },
+  yAxis: {
+    type: 'value',
+    splitLine: {
+      lineStyle: {
+        width: 1,
+        type: 'dashed',
+        color: '#5C5C5E',
+        opacity: 0.5
+      }
+    },
+    boundaryGap: [0, '30%']
+  },
+  series: [
+    {
+      type: 'line',
+      data: [],
+      symbolSize: 0,
+      smooth: true
+    }
+  ]
+})
+let test = []
+
+let count = 0
+
+const handleAlertHistoryDetail = async (param) => {
+  let imoNumber = curSelectedShip.value.imoNumber
+  checkedTags.value = param.tagIds
+
+  let chartDatas = []
+  let axisDatas = []
+
+  if (!imoNumber) {
+    showResMsg('선박을 선택해주세요')
+    return
+  }
+
+  if (param.type == 'remove') {
+    let deselctedKey = param.deselctedKeys
+
+    chartDatas = chartSeries.value.series.filter((item) => {
+      console.log(item)
+      console.log(deselctedKey.includes(item.name))
+      return !deselctedKey.includes(item.name)
+    })
+
+    console.dir()
+  } else if (param.type == 'add') {
+    let startDatetime = startDate.value
+    let endDatetime = endDate.value
+    let isTimeContains = false
+    let xAxisLength = chartSeries.value.xAxis.data.length
+
+    if (xAxisLength <= 0) {
+      isTimeContains = true
+    }
+
+    let utcStartTime = convertUTCTimezone(startDatetime)
+    let utcEndTime = convertUTCTimezone(endDatetime)
+
+    console.log('타임 포함 여부')
+    console.log(isTimeContains)
+    let requestform = {
+      imoNumber: imoNumber,
+      fieldNameList: param.tagIds,
+      startTime: utcStartTime,
+      endTime: utcEndTime,
+      timeContains: isTimeContains
+    }
+
+    let {
+      status,
+      data: { data }
+    } = await getEquimentChartData(requestform)
+
+    if ('Time' in data) {
+      console.log('Time 있는지')
+      let dates = data['Time'].map((date) => convertDateTimeType(date))
+      data.Time = dates
+      axisDatas = data['Time']
+      chartSeries.value.xAxis.data = axisDatas
+    }
+    console.log('데이터')
+    console.dir(data)
+
+    let newDatas = []
+
+    Object.keys(data).forEach((key) => {
+      if (key != 'Time') {
+        let newData = {
+          name: key,
+          data: data[key],
+          type: 'line'
+        }
+
+        newDatas.push(newData)
+      }
+    })
+    chartDatas = newDatas
+  }
+
+  nextTick(() => {
+    console.log('DOM 로딩 후')
+    chartSeries.value.series = []
+    chartSeries.value.series = chartDatas
+
+    console.dir(chartSeries.value)
+  })
+
+  // console.dir(data)
+  // if (isStatusOk(status)) {
+
+  // chartHistories.value = data
+
+  // chartData.value = test2
+
+  // console.dir(chartHistories)
+  // }
+  console.log(param)
+}
 
 onMounted(() => {
   const today = moment()
@@ -243,7 +406,7 @@ onMounted(() => {
   if (shipEngines.value) {
     let ShipEngineList = [...shipEngines.value]
     shipEngines.value = ShipEngineList
-    selectedEngine.value = shipEngines.value[0]
+    selectedEngine.value = shipEngines.value[1]
   }
 
   selectedStatus.value = statuses.value[0]
@@ -260,6 +423,8 @@ onBeforeUnmount(() => {
   interval = null
 })
 
+const equipmentTags = ref()
+const checkedTags = ref()
 const fetchAlarmHistory = async () => {
   if (!shipEngines.value.includes('All')) {
     let ShipEngineList = [...shipEngines.value]
@@ -288,18 +453,32 @@ const fetchAlarmHistory = async () => {
     data: { data }
   } = await getAlarmHistory(requestForm)
 
-  if (parseInt(status / 100) == 2) {
+  if (isStatusOk(status)) {
     alarmHistory.value = data
   }
-  if (status == 404) {
-    alarmHistory.value = []
-  }
+
+  fetchEquimentList()
+}
+let originEquipmentTags = []
+const fetchEquimentList = async (requestfomr) => {
+  console.log('Equipment Tags')
+  let engineName = selectedEngine.value
+  console.dir(engineName)
+  const {
+    data: { data }
+  } = await getEquimentTagList(requestfomr)
+  originEquipmentTags = data
+  equipmentTags.value = data.filter((item) => item.equipNo == engineName)
+  console.dir(equipmentTags.value)
 }
 
 const clickAlarm = (e) => {
   const isExpanded = e.component.isRowExpanded(e.key)
+  checkedTags.value = []
 
-  if (e.rowType == 'detail') return
+  if (e.rowType == 'detail') {
+    e.preventDefault()
+  }
 
   if (isExpanded) {
     e.component.collapseRow(e.key)
@@ -310,7 +489,7 @@ const clickAlarm = (e) => {
 }
 
 const fetchRealAlarm = async () => {
-  const imoNumber = currentShip.value.imoNumber
+  const imoNumber = curSelectedShip.value.imoNumber
   if (imoNumber) {
     const result = await alarmStore.fetchRealAlarm(imoNumber)
     if (result == 200 && !interval) {
@@ -368,6 +547,7 @@ const filterEngineType = () => {
     alarmHistoryInstance.value.clearFilter()
   } else {
     alarmHistoryInstance.value.filter((item) => item.equipNo == selectedEngine.value)
+    equipmentTags.value = originEquipmentTags.filter((item) => item.equipNo == selectedEngine.value)
   }
 }
 

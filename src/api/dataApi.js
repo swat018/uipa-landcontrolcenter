@@ -33,10 +33,18 @@ export const getAnalysisData = (requestForm) => {
   })
 }
 
-export const getEquimentList = (requestForm) => {
+export const getEquimentTagList = (requestForm) => {
   return instance({
-    url: '/ship/data-analysis/essential-data/get-all-simple',
+    url: '/ship/essential-data/get-all-simple',
     method: 'GET',
-    params: requestForm
+    data: requestForm
+  })
+}
+
+export const getEquimentChartData = (requestForm) => {
+  return instance({
+    url: '/ship/essential-data/get-trend-chart-by-field',
+    method: 'POST',
+    data: requestForm
   })
 }

@@ -37,7 +37,7 @@
           <tbody>
             <tr>
               <th class="title">Name of Ship</th>
-              <td colspan="3"><i-input v-model="shipParticulars.shipName"></i-input></td>
+              <td colspan="3"><i-input v-model="shipParticulars.nameOfShip"></i-input></td>
             </tr>
             <tr>
               <th class="title">IMO Number</th>
@@ -57,7 +57,7 @@
             </tr>
             <tr>
               <th class="title">Gross Tonnage</th>
-              <td colspan="3"><i-input v-model="shipParticulars.gt"></i-input></td>
+              <td colspan="3"><i-input v-model="shipParticulars.grossTonnage"></i-input></td>
             </tr>
             <tr>
               <th class="title">NT</th>
@@ -91,28 +91,20 @@
               <th class="title">Date of Revison</th>
               <th class="title">Revised Provision</th>
             </tr>
-            <tr>
-              <td><i-input v-model="recordOfRevision[0].dateOfRevision"></i-input></td>
-              <td colspan="3">
-                <i-input v-model="recordOfRevision[0].revisedProvision"></i-input>
+            <tr v-for="(list, index) in recordOfRevisionOfFuelConsumptionDataCollectionPlanList">
+              <td>
+                <i-input
+                  v-model="
+                    recordOfRevisionOfFuelConsumptionDataCollectionPlanList[index].dateOfRevision
+                  "
+                ></i-input>
               </td>
-            </tr>
-            <tr>
-              <td><i-input v-model="recordOfRevision[1].dateOfRevision"></i-input></td>
               <td colspan="3">
-                <i-input v-model="recordOfRevision[1].revisedProvisione"></i-input>
-              </td>
-            </tr>
-            <tr>
-              <td><i-input v-model="recordOfRevision[2].dateOfRevision"></i-input></td>
-              <td colspan="3">
-                <i-input v-model="recordOfRevision[2].revisedProvision"></i-input>
-              </td>
-            </tr>
-            <tr>
-              <td><i-input v-model="recordOfRevision[3].dateOfRevision"></i-input></td>
-              <td colspan="3">
-                <i-input v-model="recordOfRevision[3].revisedProvision"></i-input>
+                <i-input
+                  v-model="
+                    recordOfRevisionOfFuelConsumptionDataCollectionPlanList[index].revisedProvision
+                  "
+                ></i-input>
               </td>
             </tr>
           </tbody>
@@ -141,40 +133,60 @@
               <td class="title">1</td>
               <td class="title">Type/model of main engine</td>
               <td class="d-flex ga-2 align-center">
-                <i-input v-model="fuelTypesUsed[0].power"></i-input> (kW)
+                <i-input
+                  v-model="engineOrOtherFuelOilConsumersPowerAndFuelOilTypeUsedList[0].power"
+                ></i-input>
+                (kW)
               </td>
               <td>
-                <i-input v-model="fuelTypesUsed[0].fuelOilType"></i-input>
+                <i-input
+                  v-model="engineOrOtherFuelOilConsumersPowerAndFuelOilTypeUsedList[0].fuelOilType"
+                ></i-input>
               </td>
             </tr>
             <tr>
               <td class="title">2</td>
               <td class="title">Type/model of auxiliary engine</td>
               <td class="d-flex ga-2 align-center">
-                <i-input v-model="fuelTypesUsed[1].power"></i-input> (kW)
+                <i-input
+                  v-model="engineOrOtherFuelOilConsumersPowerAndFuelOilTypeUsedList[1].power"
+                ></i-input>
+                (kW)
               </td>
               <td>
-                <i-input v-model="fuelTypesUsed[1].fuelOilType"></i-input>
+                <i-input
+                  v-model="engineOrOtherFuelOilConsumersPowerAndFuelOilTypeUsedList[1].fuelOilType"
+                ></i-input>
               </td>
             </tr>
             <tr>
               <td class="title">3</td>
               <td class="title">Boiler</td>
               <td class="d-flex ga-5 align-center">
-                <i-input v-model="fuelTypesUsed[2].power"></i-input> (..)
+                <i-input
+                  v-model="engineOrOtherFuelOilConsumersPowerAndFuelOilTypeUsedList[2].power"
+                ></i-input>
+                (..)
               </td>
               <td>
-                <i-input v-model="fuelTypesUsed[2].fuelOilType"></i-input>
+                <i-input
+                  v-model="engineOrOtherFuelOilConsumersPowerAndFuelOilTypeUsedList[2].fuelOilType"
+                ></i-input>
               </td>
             </tr>
             <tr>
               <td class="title">4</td>
               <td class="title">Inert gas generator</td>
               <td class="d-flex ga-5 align-center">
-                <i-input v-model="fuelTypesUsed[3].power"></i-input> (..)
+                <i-input
+                  v-model="engineOrOtherFuelOilConsumersPowerAndFuelOilTypeUsedList[3].power"
+                ></i-input>
+                (..)
               </td>
               <td>
-                <i-input v-model="fuelTypesUsed[3].fuelOilType"></i-input>
+                <i-input
+                  v-model="engineOrOtherFuelOilConsumersPowerAndFuelOilTypeUsedList[3].fuelOilType"
+                ></i-input>
               </td>
             </tr>
           </tbody>
@@ -258,8 +270,8 @@
               <th class="title">Description</th>
             </tr>
             <tr>
-              <td><i-input v-model="methodToMeasureFuelConsumption.method"></i-input></td>
-              <td><i-input v-model="methodToMeasureFuelConsumption.description"></i-input></td>
+              <td><i-input v-model="methodToMeasureFuelOilConsumption.method"></i-input></td>
+              <td><i-input v-model="methodToMeasureFuelOilConsumption.description"></i-input></td>
             </tr>
           </tbody>
         </table>
@@ -278,7 +290,7 @@
               <th class="title">Description</th>
             </tr>
             <tr>
-              <td><i-input v-model="methodToMeasureDistance.description"></i-input></td>
+              <td><i-input v-model="methodToMeasureDistanceTravelled"></i-input></td>
             </tr>
           </tbody>
         </table>
@@ -297,7 +309,7 @@
               <th class="title">Description</th>
             </tr>
             <tr>
-              <td><i-input v-model="methodToMeasureUnderway.description"></i-input></td>
+              <td><i-input v-model="methodToMeasureHoursUnderway"></i-input></td>
             </tr>
           </tbody>
         </table>
@@ -316,7 +328,11 @@
               <th class="title">Description</th>
             </tr>
             <tr>
-              <td><i-input v-model="processAdministration.description"></i-input></td>
+              <td>
+                <i-input
+                  v-model="processesThatWillBeUsedToReportTheDataToTheAdministration"
+                ></i-input>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -335,7 +351,7 @@
               <th class="title">Description</th>
             </tr>
             <tr>
-              <td><i-input v-model="dataQuality.description"></i-input></td>
+              <td><i-input v-model="dataQuality"></i-input></td>
             </tr>
           </tbody>
         </table>
@@ -345,25 +361,32 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useShipStore } from '@/stores/shipStore'
-import { isStausOk } from '@/composables/util'
+import { isStatusOk } from '@/composables/util'
 import { getEEDIPlanPart, downloadEEDIPlanPartExcel } from '@/api/reportApi'
 
 const shipStore = useShipStore()
 const { curSelectedShip } = storeToRefs(shipStore)
+import { useToast } from '@/composables/useToast'
 
 import moment from 'moment'
 
 const years = ref([])
 const selectedYear = ref()
+const { showResMsg } = useToast()
 
 onMounted(() => {
   fetchEEDIPlanPart()
 })
 
 const fetchEEDIPlanPart = async () => {
+  let curSelectedShipImoNumber = curSelectedShip.value.imoNumber
+  if (!curSelectedShipImoNumber) {
+    showResMsg('선박을 선택해주세요')
+    return
+  }
   const today = moment()
   let currentYear = null
   let lastYear = null
@@ -383,7 +406,7 @@ const fetchEEDIPlanPart = async () => {
   let utcEndTime = parseEndTimeZone.toISOString()
 
   let requestForm = {
-    imoNumber: curSelectedShip.value.imoNumber,
+    imoNumber: curSelectedShipImoNumber,
     startTime: utcStartTime,
     endTime: utcEndTime
   }
@@ -393,23 +416,43 @@ const fetchEEDIPlanPart = async () => {
     data: { data }
   } = await getEEDIPlanPart(requestForm)
 
-  if (isStausOk(status)) {
+  if (isStatusOk(status)) {
     shipParticulars.value = data
+    // console.log('data')
+    // console.dir(data)
   }
 }
 
 const downloadEEDIPlanPart = async () => {
-  // // const { status, data } = await downloadEEDIPlanPartExcel()
+  let requestForm = {
+    shipParticulars: shipParticulars.value,
+    recordOfRevisionOfFuelConsumptionDataCollectionPlanList:
+      recordOfRevisionOfFuelConsumptionDataCollectionPlanList.value,
+    engineOrOtherFuelOilConsumersPowerAndFuelOilTypeUsedList:
+      engineOrOtherFuelOilConsumersPowerAndFuelOilTypeUsedList.value,
+    emissionFactor: emissionFactor.value,
+    methodToMeasureFuelOilConsumption: methodToMeasureFuelOilConsumption.value,
+    methodToMeasureDistanceTravelled: methodToMeasureDistanceTravelled.value,
+    methodToMeasureHoursUnderway: methodToMeasureHoursUnderway.value,
+    processesThatWillBeUsedToReportTheDataToTheAdministration:
+      processesThatWillBeUsedToReportTheDataToTheAdministration.value,
+    dataQuality: dataQuality.value
+  }
 
-  // const url = window.URL.createObjectURL(
-  //   new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-  // )
+  console.dir(requestForm)
+  const { status, data } = await downloadEEDIPlanPartExcel(requestForm)
+
+  console.log(status)
+
+  const url = window.URL.createObjectURL(
+    new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+  )
 
   let imoNumber = curSelectedShip.value.imoNumber
-  let FileName = `IMO_Data_Report_${imoNumber}`
+  let FileName = `Part Ⅱ of the SEEMP_${imoNumber}`
 
   const link = document.createElement('a')
-  // link.href = url
+  link.href = url
   link.setAttribute('download', `${FileName}.xlsx`) // 다운로드 파일 이름 설정
   document.body.appendChild(link)
   link.click()
@@ -429,7 +472,7 @@ const shipParticulars = ref({
   iceClass: ''
 })
 
-const recordOfRevision = ref([
+const recordOfRevisionOfFuelConsumptionDataCollectionPlanList = ref([
   {
     dateOfRevision: '',
     revisedProvision: ''
@@ -448,7 +491,7 @@ const recordOfRevision = ref([
   }
 ])
 
-const fuelTypesUsed = ref([
+const engineOrOtherFuelOilConsumersPowerAndFuelOilTypeUsedList = ref([
   {
     power: 0,
     fuelOilType: ''
@@ -479,26 +522,20 @@ const emissionFactor = ref({
   OtherCf: '0'
 })
 
-const methodToMeasureFuelConsumption = ref({
+const methodToMeasureFuelOilConsumption = ref({
   method: '',
   description: ''
 })
 
-const methodToMeasureDistance = ref({
-  description: ''
-})
+const methodToMeasureDistanceTravelled = ref('')
 
-const methodToMeasureUnderway = ref({
-  description: ''
-})
+const methodToMeasureHoursUnderway = ref('')
 
-const processAdministration = ref({
-  description: ''
-})
+const processesThatWillBeUsedToReportTheDataToTheAdministration = ref('')
 
-const dataQuality = ref({
-  description: ''
-})
+const dataQuality = ref('')
+
+watch(curSelectedShip, fetchEEDIPlanPart)
 </script>
 
 <style scoped>

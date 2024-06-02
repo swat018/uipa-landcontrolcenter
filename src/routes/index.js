@@ -14,6 +14,7 @@ import fdsRoutes from './fds'
 import dataRoutes from './data'
 import monitoringRoutes from './monitoring'
 import reportRoutes from './report'
+import popupRoutes from './popup'
 
 /**
  * 페이지 Import
@@ -88,7 +89,8 @@ const routes = [
   ...fdsRoutes,
   ...dataRoutes,
   ...reportRoutes,
-  ...monitoringRoutes
+  ...monitoringRoutes,
+  ...popupRoutes
 ]
 
 const router = createRouter({
@@ -137,9 +139,6 @@ router.beforeEach((to, from, next) => {
   const isLogin = authAccess()
   const menus = hasAccessMenu()
   const userRole = sessionStorage.getItem('userRole')
-
-  console.log('이름')
-  console.log(to.name)
 
   if (to.name == undefined) {
     // return { name: 'NotFound' }
