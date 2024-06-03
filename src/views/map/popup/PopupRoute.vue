@@ -48,10 +48,10 @@
                 <th class="text-center" >Route Name</th><th colspan="3"><input v-model="routeMaster.routename" placeholder="항로계획명을 입력하세요"></th>
                 <th><button @click="saveRouteM()" style="color: white; border-width: 1px; border-style: solid; border-color: white; padding: 0.3rem; width: 40px">Save</button></th>
               </tr>
-              <!--<tr>
-                <th class="text-center">편집자</th><th><input v-model="routeMaster.makename" placeholder="편집자명을 입력하세요"></th>
-                <th class="text-center">편집일자</th><th><p>{{routeMaster.modifydate}}</p></th>
-              </tr>-->
+<!--              <tr>-->
+<!--                <th class="text-center">편집자</th><th><input v-model="routeMaster.makename" placeholder="편집자명을 입력하세요"></th>-->
+<!--                <th class="text-center">편집일자</th><th><p>{{routeMaster.modifydate}}</p></th>-->
+<!--              </tr>-->
             </tbody>
           </v-table>
           <v-table height="60">
@@ -108,9 +108,12 @@ import { useRouteStore } from '@/stores/routeStore'
 import { useToast } from '@/composables/useToast'
 import emitter from '@/composables/eventbus'
 import axios from 'axios'
+import { useAuthStore } from '@/stores/authStore'
 
 const routeStore = useRouteStore()
 const { routelist, routeMaster, routeDetail, selectedMIndex, selectedDIndex, drawactive } = storeToRefs(routeStore);
+const authStore = useAuthStore()
+const { userInfo } = authStore
 
 const { showResMsg } = useToast()
 
@@ -166,7 +169,7 @@ const route_delete = () => {
 }
 
 const saveRouteM = () => {
-  routeStore.RouteMSave(routeMaster.value.routeid, routeMaster.value.routename, routeMaster.value.makename)
+  routeStore.RouteMSave(routeMaster.value.routeid, routeMaster.value.routename, userInfo.nickname)
 }
 
 const selectRowD = (index) => {
