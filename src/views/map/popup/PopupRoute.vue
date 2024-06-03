@@ -5,7 +5,7 @@
       <div class="d-flex justify-space-between align-center ">
         <div class="d-flex align-center">
           <div class="d-flex align-center ga-4">
-            <div class="align-center boatName" style="line-height: 1;">항로계획</div>
+            <div class="align-center boatName" style="line-height: 1;">Route Plan</div>
           </div>
         </div>
         <v-btn icon="mdi-close" width="" size="small" variant="text" @click="closePopup"></v-btn>
@@ -17,8 +17,8 @@
           <v-table height="25">
             <colgroup><col width="60%"></col><col width="40%"></col></colgroup>
             <tr>
-              <th class="text-center">항로계획명</th>
-              <th class="text-center" style="padding: 0 1rem">편집일자</th>
+              <th class="text-center">Route Name</th>
+              <th class="text-center" style="padding: 0 1rem">Modified</th>
             </tr>
           </v-table>
           <v-table class="RMList" height="625">
@@ -37,16 +37,16 @@
               <td colspan = "2">항로계획 정보가 없습니다.</td>
             </tr>
           </v-table>
-          <button @click="route_reset()" style="color: white; border-width: 1px; border-style: solid; border-color: white; padding: 0.1rem">항로 추가</button>&nbsp;
-          <button @click="route_delete()" style="color: white; border-width: 1px; border-style: solid; border-color: white; padding: 0.1rem">항로 삭제</button>
+          <button @click="route_reset()" style="color: white; border-width: 1px; border-style: solid; border-color: white; padding: 0.3rem">Insert</button>&nbsp;
+          <button @click="route_delete()" style="color: white; border-width: 1px; border-style: solid; border-color: white; padding: 0.3rem">Delete</button>
         </v-col>
         <v-col cols="7">
           <v-table height="60">
             <colgroup><col width="25%"><col width="20%"><col width="20%"><col width="20%"><col width="15%"></colgroup>
             <tbody>
               <tr>
-                <th class="text-center" >항로계획명</th><th colspan="3"><input v-model="routeMaster.routename" placeholder="항로계획명을 입력하세요"></th>
-                <th><button @click="saveRouteM()" style="color: white; border-width: 1px; border-style: solid; border-color: white; padding: 0.1rem; width: 40px">저장</button></th>
+                <th class="text-center" >Route Name</th><th colspan="3"><input v-model="routeMaster.routename" placeholder="항로계획명을 입력하세요"></th>
+                <th><button @click="saveRouteM()" style="color: white; border-width: 1px; border-style: solid; border-color: white; padding: 0.3rem; width: 40px">Save</button></th>
               </tr>
               <!--<tr>
                 <th class="text-center">편집자</th><th><input v-model="routeMaster.makename" placeholder="편집자명을 입력하세요"></th>
@@ -58,8 +58,8 @@
             <colgroup><col width="20%"><col width="30%"><col width="20%"><col width="30%"></colgroup>
             <tbody>
               <tr>
-                <th class="text-center">편집자</th><th><p>{{routeMaster.makename}}</p></th>
-                <th class="text-center" style="padding: 0 1rem">편집일자</th><th><p>{{routeMaster.modifydate}}</p></th>
+                <th class="text-center">Owner</th><th><p>{{routeMaster.makename}}</p></th>
+                <th class="text-center" style="padding: 0 1rem">Modified</th><th><p>{{routeMaster.modifydate}}</p></th>
               </tr>
             </tbody>
           </v-table>
@@ -67,13 +67,13 @@
             <!--<colgroup><col width="25%"><col width="25%"><col width="25%"><col width="25%"></colgroup>-->
             <colgroup><col width="20%"><col width="30%"><col width="30%"></colgroup>
             <tr>
-              <th class="text-center">순번</th>
+              <th class="text-center">WP Num</th>
               <!--<th class="text-center">이탈허용거리(NM)</th>-->
-              <th class="text-center">위도</th>
-              <th class="text-center">경도</th>
+              <th class="text-center">Latitude</th>
+              <th class="text-center">Longitude</th>
             </tr>
           </v-table>
-          <v-table class="RDList" height="450" width="455">
+          <v-table class="RDList" height="500" width="455">
             <!--<colgroup><col width="25%"><col width="25%"><col width="25%"><col width="25%"></colgroup>-->
             <colgroup><col width="20%"><col width="30%"><col width="30%"></colgroup>
             <tr
@@ -89,9 +89,10 @@
               <td class="text-center"><input class="text-center" v-model="rd_item.lon"></td>
             </tr>
           </v-table>
-          <button @click="addRow()" style="color: white; border-width: 1px; border-style: solid; border-color: white; padding: 0.1rem">WP 추가</button>&nbsp;
-          <button @click="updateRow()" style="color: white; border-width: 1px; border-style: solid; border-color: white; padding: 0.1rem">WP 수정</button>&nbsp;
-          <button @click="removeRow()" style="color: white; border-width: 1px; border-style: solid; border-color: white; padding: 0.1rem">WP 삭제</button>
+          &nbsp;
+          <button @click="addRow()" style="color: white; border-width: 1px; border-style: solid; border-color: white; padding: 0.3rem">Add</button>&nbsp;
+          <button @click="updateRow()" style="color: white; border-width: 1px; border-style: solid; border-color: white; padding: 0.3rem">Modify</button>&nbsp;
+          <button @click="removeRow()" style="color: white; border-width: 1px; border-style: solid; border-color: white; padding: 0.3rem">Remove</button>
         </v-col>
       </v-row>
     </v-sheet>
