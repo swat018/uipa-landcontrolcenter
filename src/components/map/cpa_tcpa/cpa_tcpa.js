@@ -1,3 +1,7 @@
+import geodesic from "geographiclib-geodesic";
+// var geodesic = require("geographiclib-geodesic");
+//var DMS = require("geographiclib-dms");
+
 // 단위 : NM
 var CPA_warning = 2;
 var CPA_danger = 1;
@@ -9,10 +13,6 @@ var cnt_warning = 0;
 var cnt_danger = 0;
 //
 var cnt_AIS = 0;
-
-//
-var geodesic = require("geographiclib-geodesic");
-//var DMS = require("geographiclib-dms");
 
 var m_clsGeodesic = geodesic.Geodesic.WGS84;
 // var m_clsRhumb;
