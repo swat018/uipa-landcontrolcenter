@@ -2,13 +2,16 @@ import geodesic from "geographiclib-geodesic";
 // var geodesic = require("geographiclib-geodesic");
 //var DMS = require("geographiclib-dms");
 
+// input
 // 단위 : NM
 var CPA_warning = 2;
 var CPA_danger = 1;
 // 단위 : 분
 var TCPA_warning = 10;
 var TCPA_danger = 5;
-//
+
+// output
+// 위험 선박
 var cnt_warning = 0;
 var cnt_danger = 0;
 //
@@ -17,6 +20,7 @@ var cnt_AIS = 0;
 var m_clsGeodesic = geodesic.Geodesic.WGS84;
 // var m_clsRhumb;
 
+// 관리 선박 정보
 var OwnshipLat;
 var OwnshipLon;
 var OwnshipCrs;
@@ -142,11 +146,6 @@ function json_parser(jsonString) {
     console.log("* danger 선박수 = " + cnt_danger);
     console.log("* 총 위험 선박수 = " + (cnt_warning + cnt_danger));
 }
-
-
-
-
-
 
 
 /// <summary>

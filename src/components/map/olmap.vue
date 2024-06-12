@@ -36,7 +36,7 @@ import { isStatusOk } from '@/composables/util'
 import { useShipStore } from '@/stores/shipStore'
 
 const drawInteration_route = Draw
-const selectInteraction = Select
+// const selectInteraction = Select
 
 const urlBefore = import.meta.env.VITE_TILE_MAP_URL + '/';
 const urlAfter = '/{z}/{x}/{-y}.png';
@@ -57,8 +57,8 @@ export default {
     routeLLayer: VectorLayer,
     mapTypeId: String,
     imoNumbers: [],
-    curImoNumber: String
-
+    curImoNumber: String,
+    selectInteraction: Select,
   }),
   props: [
     'propsdata', 'curSelectedShip',
@@ -104,14 +104,14 @@ export default {
         });
       }
     },
-    isShow: function() {
-      if (this.isShow === false) {
-        this.setShipLayer();
-        this.shipSelectEvent();
-      } else {
-        map.removeInteraction(this.selectInteraction);
-      }
-    },
+    // isShow: function() {
+    //   if (this.isShow === false) {
+    //     this.setShipLayer();
+    //     this.shipSelectEvent();
+    //   } else {
+    //     map.removeInteraction(this.selectInteraction);
+    //   }
+    // },
     isRouteShow: function() {
       if (this.isRouteShow === false) {
         this.setShipLayer();
@@ -187,7 +187,7 @@ export default {
 
     // 기상정보 웹팩 관련 라이브러리 추가
     const bundleScript = document.createElement('script');
-    bundleScript.src = '/src/components/map/canvasLayer/bundle.js';
+    bundleScript.src = '/js/common/bundle.js';
     document.body.appendChild(bundleScript);
 
     emitter.on('draw_route_d2', () => {
@@ -296,57 +296,57 @@ export default {
       const shipStore = useShipStore()
       const { curSelectedShip } = storeToRefs(shipStore)
 
-      if(this.isShow === false) {
-        this.selectInteraction = new Select({
-          condition: singleClick,
-          layers: function(layer) {
-            return layer.get('name') === 'shipLayer';
-          }
-        });
-        map.addInteraction(this.selectInteraction);
-        // this.setShipLayer();
+      map.removeInteraction(this.selectInteraction);
 
-        this.selectInteraction.on('select', function(e) {
-          if (e.selected[0] === undefined) return;
-          if (e.selected[0].values_.layer === 'shipLayer') {
-            e.selected[0].setStyle(new Style({
-              image: new Icon({
-                src: selectShipIcon,
-                // scale: 0.2,
-                // anchor: [0.5, 0.5],
-                rotateWithView: true,
-                // rotation: e.selected[0].values_.course
-                rotation: e.selected[0].values_.course * Math.PI / 180
-              })
-            }));
-            let selectedShipImoNumber = e.selected[0].values_.name
-            this.curImoNumber = selectedShipImoNumber;
-            if (selectedShipImoNumber) {
-              getShipInfo(selectedShipImoNumber).then((response) => {
-                const {
-                  status,
-                  data: { data }
-                } = response;
-                if (isStatusOk(status)) {
-                  emitter.emit('clickShipName', selectedShipImoNumber);
-                  curSelectedShip.value = { ...data }
-                }
-              })
-            }
-          } else {
-            e.selected[0].setStyle(new Style({
-              image: new Icon({
-                src: shipIcon,
-                // scale: 0.2,
-                // anchor: [0.5, 0.5],
-                rotateWithView: true,
-                // rotation: e.selected[0].values_.course
-                rotation: e.selected[0].values_.course * Math.PI / 180
-              })
-            }));
+      this.selectInteraction = new Select({
+        condition: singleClick,
+        layers: function(layer) {
+          return layer.get('name') === 'shipLayer';
+        },
+      });
+      map.addInteraction(this.selectInteraction);
+
+      this.selectInteraction.on('select', function(e) {
+        if (e.selected[0] === undefined) return;
+        if (e.selected[0].values_.layer === 'shipLayer') {
+          e.selected[0].setStyle(new Style({
+            image: new Icon({
+              src: selectShipIcon,
+              // scale: 0.2,
+              // anchor: [0.5, 0.5],
+              rotateWithView: true,
+              // rotation: e.selected[0].values_.course
+              rotation: e.selected[0].values_.course * Math.PI / 180
+            })
+          }));
+          let selectedShipImoNumber = e.selected[0].values_.name
+          this.curImoNumber = selectedShipImoNumber;
+          if (selectedShipImoNumber) {
+            getShipInfo(selectedShipImoNumber).then((response) => {
+              const {
+                status,
+                data: { data }
+              } = response;
+              if (isStatusOk(status)) {
+                emitter.emit('clickShipName', selectedShipImoNumber);
+                curSelectedShip.value = { ...data }
+              }
+            })
           }
-        });
-      }
+        } else {
+          e.selected[0].setStyle(new Style({
+            image: new Icon({
+              src: shipIcon,
+              // scale: 0.2,
+              // anchor: [0.5, 0.5],
+              rotateWithView: true,
+              // rotation: e.selected[0].values_.course
+              rotation: e.selected[0].values_.course * Math.PI / 180
+            })
+          }));
+        }
+      });
+
     },
     makeSld: function(lynm, type, color1, color2) {
       var text_SLD = "\
@@ -520,6 +520,7 @@ export default {
 
               this.shipLayer = new VectorLayer({
                 name: 'shipLayer',
+                id: shipData.imoNumber,
                 source: new VectorSource({
                   features: [pointFeature]
                 }),

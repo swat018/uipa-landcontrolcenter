@@ -55,6 +55,11 @@ export const useMapStore = defineStore(
     const layerBright = ref('Day')
     const layerMode = ref('Base')
 
+    // 지도 레벨 설정
+    const mapLevel = ref(0)
+    const lon = ref(0)
+    const lat = ref(0)
+
     /**
      * 지도 위 클릭한 선박 정보 조회
      * @returns
@@ -147,6 +152,9 @@ export const useMapStore = defineStore(
       selectedPopMenu,
       layerBright,
       layerMode,
+      mapLevel,
+      lon,
+      lat,
       isRemoveTrack,
       isPastTrack,
       isCurrentTrack,
