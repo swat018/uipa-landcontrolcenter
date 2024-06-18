@@ -35,9 +35,6 @@ import { getShipInfo } from '@/api/shipApi'
 import { isStatusOk } from '@/composables/util'
 import { useShipStore } from '@/stores/shipStore'
 
-const drawInteration_route = Draw
-// const selectInteraction = Select
-
 const urlBefore = import.meta.env.VITE_TILE_MAP_URL + '/';
 const urlAfter = '/{z}/{x}/{-y}.png';
 const geoserverWmsUrl = import.meta.env.VITE_GEOSERVER_WMS_URL;
@@ -59,11 +56,14 @@ export default {
     imoNumbers: [],
     curImoNumber: String,
     selectInteraction: Select,
+    isSelect: Boolean,
+    drawInteration_route: Draw,
   }),
   props: [
     'propsdata', 'curSelectedShip',
     'isShow', 'isRouteShow',
     'vesselTrack', 'startDate', 'endDate', 'isPastVesselTracks',
+    'isCurrentTrack', 'isPastTrack', 'isRemoveTrack',
     'layerMode', 'layerBright',
   ],
   watch: {
@@ -117,11 +117,39 @@ export default {
         this.setShipLayer();
       }
     },
-    vesselTrack: function() {
-      this.vesselTrackCurrent();
+    // vesselTrack: function() {
+    //   this.vesselTrackCurrent();
+    // },
+    isCurrentTrack: function() {
+      if (this.isCurrentTrack === true) {
+        this.vesselTrackCurrent();
+      } else {
+        map.getLayers().getArray()
+          .filter(layer => layer.get('name') === 'shipWakeLayer')
+          .forEach(layer => map.removeLayer(layer));
+        map.getLayers().getArray()
+          .filter(layer => layer.get('name') === 'shipPastWakeLayer')
+          .forEach(layer => map.removeLayer(layer));
+      }
     },
-    isPastVesselTracks: function() {
+    // isPastVesselTracks: function() {
+    //   this.vesselTrackPast();
+    // },
+    isPastTrack: function() {
       this.vesselTrackPast();
+    },
+    isRemoveTrack: function() {
+      if (this.isRemoveTrack === true) {
+        map.getLayers().getArray()
+          .filter(layer => layer.get('name') === 'shipWakeLayer')
+          .forEach(layer => map.removeLayer(layer));
+        map.getLayers().getArray()
+          .filter(layer => layer.get('name') === 'shipPastWakeLayer')
+          .forEach(layer => map.removeLayer(layer));
+        const mapStore = useMapStore();
+        const { isRemoveTrack } = storeToRefs(mapStore);
+        isRemoveTrack.value = false;
+      }
     },
     layerMode: function() {
       this.setMapType(this.layerBright, this.layerMode);
@@ -162,7 +190,6 @@ export default {
       if (lonLeft < -180 || lonRight > 540) {
         if (lonLeft < -180) {
           lonLeft = 360 + (lonLeft % 360);
-
           newCenter = transform([lonLeft, 0], 'EPSG:4326', 'EPSG:3857');
           newCenter = [newCenter[0] + dx, currentCenter[1]];
         } else {
@@ -333,18 +360,19 @@ export default {
               }
             })
           }
-        } else {
-          e.selected[0].setStyle(new Style({
-            image: new Icon({
-              src: shipIcon,
-              // scale: 0.2,
-              // anchor: [0.5, 0.5],
-              rotateWithView: true,
-              // rotation: e.selected[0].values_.course
-              rotation: e.selected[0].values_.course * Math.PI / 180
-            })
-          }));
         }
+        // // else {
+        //   e.selected[0].setStyle(new Style({
+        //     image: new Icon({
+        //       src: shipIcon,
+        //       // scale: 0.2,
+        //       // anchor: [0.5, 0.5],
+        //       rotateWithView: true,
+        //       // rotation: e.selected[0].values_.course
+        //       rotation: e.selected[0].values_.course * Math.PI / 180
+        //     })
+        //   }));
+        // }
       });
 
     },
@@ -384,6 +412,7 @@ export default {
 					              <CssParameter name='stroke'>#" + color1 + "</CssParameter>\
 					              <CssParameter name='stroke-width'>1</CssParameter>\
 					            </Stroke>\
+					            \
 					          </PolygonSymbolizer>\
 					"
       } else if (type == "Polygon1_2") { // 경도 경계에 흰색 선 생기는 것 방지 : 테두리를 최소화하고 색상 동일화
@@ -543,60 +572,50 @@ export default {
     },
     vesselTrackCurrent: function() {
       const mapStore = useMapStore();
-      const { clickedShipInfo, vesselTrackStatus } = storeToRefs(mapStore);
+      const { clickedShipInfo, isCurrentTrack } = storeToRefs(mapStore);
 
-      if (vesselTrackStatus._value === true) {
-        getShipWakeCurrent(clickedShipInfo.value.imoNumber).then((response) => {
-          var shipWakeList = response.data.data;
-          if(response.data.data === null) return;
+      getShipWakeCurrent(clickedShipInfo.value.imoNumber).then((response) => {
+        var shipWakeList = response.data.data;
+        if(response.data.data === null) return;
 
-          var currentPointFeatures =[];
+        var currentPointFeatures =[];
 
-          shipWakeList.forEach((shipData) => {
-            if(isNaN(Number(shipData.longitude)) || isNaN(Number(shipData.latitude))) return;
-            var pointFeature = new Feature({
-              geometry: new Point([Number(shipData.longitude), Number(shipData.latitude)]),
-              name: shipData.imoNumber,
-              text: shipData.time
-            });
-            currentPointFeatures.push(pointFeature);
-          })
+        shipWakeList.forEach((shipData) => {
+          if(isNaN(Number(shipData.longitude)) || isNaN(Number(shipData.latitude))) return;
+          var pointFeature = new Feature({
+            geometry: new Point([Number(shipData.longitude), Number(shipData.latitude)]),
+            name: shipData.imoNumber,
+            text: shipData.time
+          });
+          currentPointFeatures.push(pointFeature);
+        })
 
-          currentPointFeatures.map((pointFeature, index) => {
-            if(index === 0) return;
-            if (currentPointFeatures[index] === null) return;
-            var lineFeature = new Feature({
-              geometry: new LineString([currentPointFeatures[index-1].getGeometry().getCoordinates(), currentPointFeatures[index].getGeometry().getCoordinates()]),
-              id: shipWakeList[index].time
-            });
-            lineFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
-            var point = new Feature({
-              geometry: new Point([Number(currentPointFeatures[index].longitude), Number(currentPointFeatures[index].latitude)]),
-              name: shipWakeList[index].imoNumber,
-              label: shipWakeList[index].time
-            });
-            point.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+        currentPointFeatures.map((pointFeature, index) => {
+          if(index === 0) return;
+          if (currentPointFeatures[index] === null) return;
+          var lineFeature = new Feature({
+            geometry: new LineString([currentPointFeatures[index-1].getGeometry().getCoordinates(), currentPointFeatures[index].getGeometry().getCoordinates()]),
+            id: shipWakeList[index].time
+          });
+          lineFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+          var point = new Feature({
+            geometry: new Point([Number(currentPointFeatures[index].longitude), Number(currentPointFeatures[index].latitude)]),
+            name: shipWakeList[index].imoNumber,
+            label: shipWakeList[index].time
+          });
+          point.getGeometry().transform('EPSG:4326', 'EPSG:3857');
 
-            this.shipWakeLayer = new VectorLayer({
-              name: 'shipWakeLayer',
-              source: new VectorSource({
-                features: [lineFeature]
-              }),
-              style: this.styleCurrent,
-              zIndex: 200
-            });
-
-            map.addLayer(this.shipWakeLayer);
-          })
-        });
-      } else if (vesselTrackStatus._value === false){
-        map.getLayers().getArray()
-          .filter(layer => layer.get('name') === 'shipWakeLayer')
-          .forEach(layer => map.removeLayer(layer));
-        map.getLayers().getArray()
-          .filter(layer => layer.get('name') === 'shipPastWakeLayer')
-          .forEach(layer => map.removeLayer(layer));
-      }
+          this.shipWakeLayer = new VectorLayer({
+            name: 'shipWakeLayer',
+            source: new VectorSource({
+              features: [lineFeature]
+            }),
+            style: this.styleCurrent,
+            zIndex: 200
+          });
+          map.addLayer(this.shipWakeLayer);
+        })
+      });
     },
     styleCurrent: function (feature, resolution) {
       const geometry = feature.getGeometry();
@@ -657,12 +676,10 @@ export default {
     },
     vesselTrackPast: function() {
       const mapStore = useMapStore();
-      const { clickedShipInfo, vesselTrackStatus, startDate, endDate,  isPastVesselTracks } = storeToRefs(mapStore);
+      const { clickedShipInfo, vesselTrackStatus, startDate, endDate,  isPastTrack } = storeToRefs(mapStore);
 
-      console.log(startDate._value, endDate._value)
-      console.log(vesselTrackStatus._value, isPastVesselTracks._value)
+      console.log(vesselTrackStatus._value, isPastTrack._value)
 
-      if(vesselTrackStatus._value === true) {
         getShipWakePast(clickedShipInfo.value.imoNumber, startDate._value, endDate._value).then((response) => {
           var shipWaskPastList = response.data.data;
           if(response.data.data === null) return;
@@ -705,8 +722,7 @@ export default {
             map.addLayer(this.shipPastWakeLayer);
           })
         })
-      }
-      isPastVesselTracks._value = false;
+      isPastTrack.value = false;
     },
     stylePast: function (feature, resolution) {
       const geometry = feature.getGeometry();

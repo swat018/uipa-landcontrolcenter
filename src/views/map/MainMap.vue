@@ -8,6 +8,7 @@
                :isRouteShow="isRouteShow"
                :vesselTrack="vesselTrackStatus"
                :startDate="startDate" :endDate="endDate" :isPastVesselTracks="isPastVesselTracks"
+               :isCurrentTrack="isCurrentTrack" :isPastTrack="isPastTrack" :isRemoveTrack="isRemoveTrack"
                :layerBright="layerBright" :layerMode="layerMode"
         />
     </div>
@@ -119,6 +120,9 @@ const {
   startDate,
   endDate,
   isPastVesselTracks,
+  isCurrentTrack,
+  isPastTrack,
+  isRemoveTrack,
   layerBright,
   layerMode
 } = storeToRefs(mapStore)
@@ -171,10 +175,6 @@ emitter.on('selectedShip', (imoNumbers) => {
   }
 })
 
-const test = () => {
-  // alert(checkedShips.value)
-}
-
 emitter.on('clickShipName', (imoNumber) => {
   clickShip(imoNumber)
 })
@@ -198,8 +198,8 @@ const clickShip = async (imoNumber) => {
 }
 
 emitter.on('clickTrackStatus', (status) => {
-  // console.log(status, clickedShipInfo.value.imoNumber);
-  vesselTrackStatus.value = status
+  // vesselTrackStatus.value = status
+  isCurrentTrack.value = status
 })
 
 emitter.on('inputStartDate', (value) => {
@@ -208,11 +208,12 @@ emitter.on('inputStartDate', (value) => {
 
 emitter.on('inputEndDate', (value) => {
   endDate.value = value
+  isPastTrack.value = true
 })
 
-emitter.on('clickPastVesselTracks', (value) => {
-  isPastVesselTracks.value = value
-})
+// emitter.on('clickPastVesselTracks', (value) => {
+//   isPastVesselTracks.value = value
+// })
 
 emitter.on('draw_route_d1', () => {
   draw_route_d()
@@ -234,12 +235,26 @@ watch(vesselTrackStatus, (value) => {
   console.log(value)
 })
 
-watch(startDate, (value) => {
+watch(isCurrentTrack, (value) => {
   console.log(value)
 })
 
-watch(endDate, (value) => {
+watch(isRemoveTrack, (value) => {
   console.log(value)
+})
+
+watch(isPastTrack, (value) => {
+  console.log(value)
+})
+
+watch(startDate, (value) => {
+  // startDate.value = value
+  // isPastTrack.value = true
+})
+
+watch(endDate, (value) => {
+  // endDate.value = value
+  // isPastTrack.value = true
 })
 watch(isPastVesselTracks, (value) => {
   console.log(value)

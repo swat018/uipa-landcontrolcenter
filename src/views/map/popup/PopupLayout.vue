@@ -527,7 +527,7 @@ import emitter from '@/composables/eventbus.js'
 import noShipImage from '/images/ship/no-ship-image.png'
 
 const mapStore = useMapStore()
-const { clickedShipInfo, isPastVesselTracks } = storeToRefs(mapStore)
+const { clickedShipInfo, isPastVesselTracks, isCurrentTrack, isPastTrack } = storeToRefs(mapStore)
 
 const authStore = useAuthStore()
 const { userInfo } = storeToRefs(authStore)
