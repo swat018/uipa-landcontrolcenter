@@ -28,9 +28,9 @@ import { storeToRefs } from 'pinia'
 import { singleClick } from 'ol/events/condition'
 import { LineString } from 'ol/geom'
 
-import shipIcon from '@/assets/images/shipicons/shipIcon_green.png'
-import selectShipIcon from '@/assets/images/shipicons/shipIcon_yellow.png'
-import arrowIcon from '@/assets/images/shipicons/arrow.png'
+import shipIcon from '@/images/shipicons/shipIcon_green.png'
+import selectShipIcon from '@/images/shipicons/shipIcon_yellow.png'
+import arrowIcon from '@/images/shipicons/arrow.png'
 import { getShipInfo } from '@/api/shipApi'
 import { isStatusOk } from '@/composables/util'
 import { useShipStore } from '@/stores/shipStore'
@@ -56,7 +56,6 @@ export default {
     imoNumbers: [],
     curImoNumber: String,
     selectInteraction: Select,
-    isSelect: Boolean,
     drawInteration_route: Draw,
   }),
   props: [
@@ -65,6 +64,7 @@ export default {
     'vesselTrack', 'startDate', 'endDate', 'isPastVesselTracks',
     'isCurrentTrack', 'isPastTrack', 'isRemoveTrack',
     'layerMode', 'layerBright',
+    'isSelect'
   ],
   watch: {
     propsdata: function() {
@@ -122,6 +122,12 @@ export default {
     // },
     isCurrentTrack: function() {
       if (this.isCurrentTrack === true) {
+        map.getLayers().getArray()
+          .filter(layer => layer.get('name') === 'shipWakeLayer')
+          .forEach(layer => map.removeLayer(layer));
+        map.getLayers().getArray()
+          .filter(layer => layer.get('name') === 'shipPastWakeLayer')
+          .forEach(layer => map.removeLayer(layer));
         this.vesselTrackCurrent();
       } else {
         map.getLayers().getArray()
@@ -156,6 +162,14 @@ export default {
     },
     layerBright: function() {
       this.setMapType(this.layerBright, this.layerMode);
+    },
+    isSelect: function() {
+      if (this.isSelect === true) {
+        this.setShipLayer();
+        this.shipSelectEvent();
+      } else {
+        map.removeInteraction(this.selectInteraction);
+      }
     }
   },
   mounted: async function() {
@@ -322,8 +336,9 @@ export default {
     shipSelectEvent: function() {
       const shipStore = useShipStore()
       const { curSelectedShip } = storeToRefs(shipStore)
+      const { isSelect } = storeToRefs(useMapStore())
 
-      map.removeInteraction(this.selectInteraction);
+      isSelect.value = false;
 
       this.selectInteraction = new Select({
         condition: singleClick,
@@ -357,6 +372,7 @@ export default {
               if (isStatusOk(status)) {
                 emitter.emit('clickShipName', selectedShipImoNumber);
                 curSelectedShip.value = { ...data }
+                isSelect.value = true;
               }
             })
           }
@@ -572,7 +588,7 @@ export default {
     },
     vesselTrackCurrent: function() {
       const mapStore = useMapStore();
-      const { clickedShipInfo, isCurrentTrack } = storeToRefs(mapStore);
+      const { clickedShipInfo } = storeToRefs(mapStore);
 
       getShipWakeCurrent(clickedShipInfo.value.imoNumber).then((response) => {
         var shipWakeList = response.data.data;
@@ -676,9 +692,8 @@ export default {
     },
     vesselTrackPast: function() {
       const mapStore = useMapStore();
-      const { clickedShipInfo, vesselTrackStatus, startDate, endDate,  isPastTrack } = storeToRefs(mapStore);
+      const { clickedShipInfo, startDate, endDate,  isPastTrack } = storeToRefs(mapStore);
 
-      console.log(vesselTrackStatus._value, isPastTrack._value)
 
         getShipWakePast(clickedShipInfo.value.imoNumber, startDate._value, endDate._value).then((response) => {
           var shipWaskPastList = response.data.data;

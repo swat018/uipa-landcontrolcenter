@@ -55,6 +55,8 @@ export const useMapStore = defineStore(
     const layerBright = ref('Day')
     const layerMode = ref('Base')
 
+    const isSelect = ref(false)
+
     // 지도 레벨 설정
     const mapLevel = ref(0)
     const lon = ref(0)
@@ -158,6 +160,7 @@ export const useMapStore = defineStore(
       isRemoveTrack,
       isPastTrack,
       isCurrentTrack,
+      isSelect,
       fetchShipSummary,
       fetchShipAisInfo,
       fetchVoyageList,

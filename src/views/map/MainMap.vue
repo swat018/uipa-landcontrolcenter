@@ -10,6 +10,7 @@
                :startDate="startDate" :endDate="endDate" :isPastVesselTracks="isPastVesselTracks"
                :isCurrentTrack="isCurrentTrack" :isPastTrack="isPastTrack" :isRemoveTrack="isRemoveTrack"
                :layerBright="layerBright" :layerMode="layerMode"
+               :isSelect="isSelect"
         />
     </div>
 
@@ -124,7 +125,8 @@ const {
   isPastTrack,
   isRemoveTrack,
   layerBright,
-  layerMode
+  layerMode,
+  isSelect
 } = storeToRefs(mapStore)
 
 const routeplanStore = useRouteStore()
