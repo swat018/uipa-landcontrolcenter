@@ -28,9 +28,9 @@ import { storeToRefs } from 'pinia'
 import { singleClick } from 'ol/events/condition'
 import { LineString } from 'ol/geom'
 
-import shipIcon from '@/images/shipicons/shipIcon_green.png'
-import selectShipIcon from '@/images/shipicons/shipIcon_yellow.png'
-import arrowIcon from '@/images/shipicons/arrow.png'
+import shipIcon from '/images/shipicons/shipIcon_green.png'
+import selectShipIcon from '/images/shipicons/shipIcon_yellow.png'
+import arrowIcon from '/images/shipicons/arrow.png'
 import { getShipInfo } from '@/api/shipApi'
 import { isStatusOk } from '@/composables/util'
 import { useShipStore } from '@/stores/shipStore'
@@ -869,7 +869,7 @@ export default {
             }),
             style: new Style({
               image: new Icon({
-                src: import.meta.env.DEV ? 'src/assets/images/shipicons/AIS.png' : '/assets/images/shipicons/AIS.png',
+                src: '/images/shipicons/AIS.png',
                 // scale: 0.2,
                 // anchor: [0.5, 0.5],
                 opacity: 0.7,
@@ -899,7 +899,7 @@ export default {
             }),
             style: new Style({
               image: new Icon({
-                src: import.meta.env.DEV ? 'src/assets/images/shipicons/AIS.png' : '/assets/images/shipicons/AIS.png',
+                src: '/images/shipicons/AIS.png',
                 // scale: 0.2,
                 // anchor: [0.5, 0.5],
                 opacity: 0.7,
@@ -928,7 +928,7 @@ export default {
             }),
             style: new Style({
               image: new Icon({
-                src: import.meta.env.DEV ? 'src/assets/images/shipicons/AIS.png' : '/assets/images/shipicons/AIS.png',
+                src: '/images/shipicons/AIS.png',
                 // scale: 0.7,
                 // anchor: [0.5, 0.5],
                 opacity: 0.7,
