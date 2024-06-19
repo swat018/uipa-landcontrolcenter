@@ -38,6 +38,7 @@ import { useShipStore } from '@/stores/shipStore'
 const urlBefore = import.meta.env.VITE_TILE_MAP_URL + '/';
 const urlAfter = '/{z}/{x}/{-y}.png';
 const geoserverWmsUrl = import.meta.env.VITE_GEOSERVER_WMS_URL;
+const ONE_MINUTES_TO_SECONDS = 60000;
 
 export default {
   name: "olmap",
@@ -57,6 +58,7 @@ export default {
     curImoNumber: String,
     selectInteraction: Select,
     drawInteration_route: Draw,
+    interval: ''
   }),
   props: [
     'propsdata', 'curSelectedShip',
@@ -165,8 +167,8 @@ export default {
     },
     isSelect: function() {
       if (this.isSelect === true) {
-        this.setShipLayer();
-        this.shipSelectEvent();
+        // this.setShipLayer();
+        // this.shipSelectEvent();
       } else {
         map.removeInteraction(this.selectInteraction);
       }
@@ -222,7 +224,7 @@ export default {
     this.vesselTrackPast();
 
     // ais 정보 시각화
-    this.aisData();
+    this.interval = setInterval(this.aisData, ONE_MINUTES_TO_SECONDS);
 
     this.setRouteLayer();
 
@@ -238,6 +240,9 @@ export default {
     emitter.on('route_Interaction2', () => {
       this.routeInteraction();
     })
+  },
+  unmounted() {
+    clearInterval(this.interval);
   },
   methods: {
     initMap: function() {
@@ -579,7 +584,7 @@ export default {
                     rotation: shipData.course * Math.PI/180
                   })
                 }),
-                zIndex: 100
+                zIndex: 999
               });
               map.addLayer(this.shipLayer);
             })
@@ -797,6 +802,16 @@ export default {
       return styles;
     },
     aisData: function() {
+      map.getLayers().getArray()
+        .filter(layer => layer.get('name') === 'aisAtonLayer')
+        .forEach(layer => map.removeLayer(layer));
+      map.getLayers().getArray()
+        .filter(layer => layer.get('name') === 'aisBasestationLayer')
+        .forEach(layer => map.removeLayer(layer));
+      map.getLayers().getArray()
+        .filter(layer => layer.get('name') === 'aisClassLayer')
+        .forEach(layer => map.removeLayer(layer));
+
       getAisData().then((data) => {
         let aisAton = data.ais_aton[0];
         let ais_basestation = data.ais_basestation[0];
@@ -813,6 +828,7 @@ export default {
           pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
 
           this.aisAtonLayer = new VectorLayer({
+            name: 'aisAtonLayer',
             source: new VectorSource({
               features: [pointFeature]
             }),
@@ -836,6 +852,7 @@ export default {
           pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
 
           this.aisBasestationLayer = new VectorLayer({
+            name: 'aisBasestationLayer',
             source: new VectorSource({
               features: [pointFeature]
             }),
@@ -864,6 +881,7 @@ export default {
           pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
 
           this.aisClassLayer = new VectorLayer({
+            name: 'aisClassLayer',
             source: new VectorSource({
               features: [pointFeature]
             }),
@@ -894,6 +912,7 @@ export default {
           pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
 
           this.aisClassLayer = new VectorLayer({
+            name: 'aisClassLayer',
             source: new VectorSource({
               features: [pointFeature]
             }),
@@ -923,6 +942,7 @@ export default {
           pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
 
           this.aisClassLayer = new VectorLayer({
+            name: 'aisClassLayer',
             source: new VectorSource({
               features: [pointFeature]
             }),
