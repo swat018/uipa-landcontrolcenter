@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import './cpa_tcpa/cpa_tcpa.js'
+import CPATCPA from './cpa_tcpa/cpa_tcpa.js'
 
 import { Map, View } from "ol";
 import TileLayer from 'ol/layer/Tile'
@@ -31,6 +31,8 @@ import { LineString } from 'ol/geom'
 import shipIcon from '/images/shipicons/shipIcon_green.png'
 import selectShipIcon from '/images/shipicons/shipIcon_yellow.png'
 import arrowIcon from '/images/shipicons/arrow.png'
+import aisIcon from '/images/shipicons/AIS.png'
+import aisWarningIcon from '/images/shipicons/AIS_warning.png'
 import { getShipInfo } from '@/api/shipApi'
 import { isStatusOk } from '@/composables/util'
 import { useShipStore } from '@/stores/shipStore'
@@ -39,6 +41,11 @@ const urlBefore = import.meta.env.VITE_TILE_MAP_URL + '/';
 const urlAfter = '/{z}/{x}/{-y}.png';
 const geoserverWmsUrl = import.meta.env.VITE_GEOSERVER_WMS_URL;
 const ONE_MINUTES_TO_SECONDS = 60000;
+
+var OwnshipLat = 0;
+var OwnshipLon = 0;
+var OwnshipCrs = 0;
+var OwnshipSpeed = 0;
 
 export default {
   name: "olmap",
@@ -166,9 +173,9 @@ export default {
       this.setMapType(this.layerBright, this.layerMode);
     },
     isSelect: function() {
-      if (this.isSelect === true) {
-        // this.setShipLayer();
-        // this.shipSelectEvent();
+      if (this.isSelect === false) {
+        this.setShipLayer();
+        this.shipSelectEvent();
       } else {
         map.removeInteraction(this.selectInteraction);
       }
@@ -819,56 +826,56 @@ export default {
         let ais_class_b = data.ais_class_b[0];
         let vpass_class_b = data.vpass_class_a[0];
 
-        let fill = new Fill({color: 'green'});
-        let stroke = new Stroke({color: 'black', width: 2});
-        aisAton.forEach((aisAtonData) => {
-          var pointFeature = new Feature({
-            geometry: new Point([Number(aisAtonData.longitude), Number(aisAtonData.latitude)])
-          });
-          pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+        // let fill = new Fill({color: 'green'});
+        // let stroke = new Stroke({color: 'black', width: 2});
+        // aisAton.forEach((aisAtonData) => {
+        //   var pointFeature = new Feature({
+        //     geometry: new Point([Number(aisAtonData.longitude), Number(aisAtonData.latitude)])
+        //   });
+        //   pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+        //
+        //   this.aisAtonLayer = new VectorLayer({
+        //     name: 'aisAtonLayer',
+        //     source: new VectorSource({
+        //       features: [pointFeature]
+        //     }),
+        //     style: new Style({
+        //       image: new RegularShape({
+        //         fill: fill,
+        //         points: 4,
+        //         radius: 10,
+        //         angle: 0,
+        //       }),
+        //     })
+        //   });
+        //   map.addLayer(this.aisAtonLayer);
+        // })
 
-          this.aisAtonLayer = new VectorLayer({
-            name: 'aisAtonLayer',
-            source: new VectorSource({
-              features: [pointFeature]
-            }),
-            style: new Style({
-              image: new RegularShape({
-                fill: fill,
-                points: 4,
-                radius: 10,
-                angle: 0,
-              }),
-            })
-          });
-          map.addLayer(this.aisAtonLayer);
-        })
-
-        fill = new Fill({color: 'blue'});
-        ais_basestation.forEach((aisBaseData) => {
-          var pointFeature = new Feature({
-            geometry: new Point([Number(aisBaseData.longitude), Number(aisBaseData.latitude)])
-          });
-          pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
-
-          this.aisBasestationLayer = new VectorLayer({
-            name: 'aisBasestationLayer',
-            source: new VectorSource({
-              features: [pointFeature]
-            }),
-            style: new Style({
-              image: new RegularShape({
-                fill: fill,
-                stroke: stroke,
-                points: 4,
-                radius: 10,
-                angle: Math.PI / 4,
-              }),
-              zIndex: 500
-            })
-          });
-          map.addLayer(this.aisBasestationLayer);
-        })
+        // fill = new Fill({color: 'blue'});
+        // ais_basestation.forEach((aisBaseData) => {
+        //   var pointFeature = new Feature({
+        //     geometry: new Point([Number(aisBaseData.longitude), Number(aisBaseData.latitude)])
+        //   });
+        //   pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+        //
+        //   this.aisBasestationLayer = new VectorLayer({
+        //     name: 'aisBasestationLayer',
+        //     source: new VectorSource({
+        //       features: [pointFeature]
+        //     }),
+        //     style: new Style({
+        //       image: new RegularShape({
+        //         fill: fill,
+        //         stroke: stroke,
+        //         points: 4,
+        //         radius: 10,
+        //         angle: Math.PI / 4,
+        //       }),
+        //       zIndex: 500
+        //     })
+        //   });
+        //   map.addLayer(this.aisBasestationLayer);
+        // })
 
         ais_class_a.forEach((aisClassAData) => {
           var rotation;
@@ -880,6 +887,21 @@ export default {
           });
           pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
 
+          var TargetLat = aisClassAData.latitude;
+          var TargetLon = aisClassAData.longitude;
+          var TargetCrs = aisClassAData.cog;
+          var TargetSpeed = aisClassAData.sog;
+          var return_CPATCPA = "";
+          if (!isNaN(TargetLat) && !isNaN(TargetLon) && !isNaN(TargetCrs) && !isNaN(TargetSpeed))
+          {
+            return_CPATCPA = CPATCPA.CalcCPATCPA(OwnshipLat, OwnshipLon, OwnshipCrs, OwnshipSpeed, TargetLat, TargetLon, TargetCrs, TargetSpeed);
+          }
+          var AISpng1 = aisIcon;
+          if (return_CPATCPA == "warning" || return_CPATCPA == "danger") {
+            console.log("return A : " + return_CPATCPA);
+            AISpng1 = aisWarningIcon;
+          }
+
           this.aisClassLayer = new VectorLayer({
             name: 'aisClassLayer',
             source: new VectorSource({
@@ -887,7 +909,7 @@ export default {
             }),
             style: new Style({
               image: new Icon({
-                src: '/images/shipicons/AIS.png',
+                src: AISpng1,
                 // scale: 0.2,
                 // anchor: [0.5, 0.5],
                 opacity: 0.7,
@@ -911,6 +933,21 @@ export default {
           });
           pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
 
+          var TargetLat = aisClassBData.latitude;
+          var TargetLon = aisClassBData.longitude;
+          var TargetCrs = aisClassBData.cog;
+          var TargetSpeed = aisClassBData.sog;
+          var return_CPATCPA = "";
+          if (!isNaN(TargetLat) && !isNaN(TargetLon) && !isNaN(TargetCrs) && !isNaN(TargetSpeed))
+          {
+            return_CPATCPA = CPATCPA.CalcCPATCPA(OwnshipLat, OwnshipLon, OwnshipCrs, OwnshipSpeed, TargetLat, TargetLon, TargetCrs, TargetSpeed);
+          }
+          var AISpng1 = aisIcon;
+          if (return_CPATCPA == "warning" || return_CPATCPA == "danger") {
+            console.log("return A : " + return_CPATCPA);
+            AISpng1 = aisWarningIcon;
+          }
+
           this.aisClassLayer = new VectorLayer({
             name: 'aisClassLayer',
             source: new VectorSource({
@@ -918,7 +955,7 @@ export default {
             }),
             style: new Style({
               image: new Icon({
-                src: '/images/shipicons/AIS.png',
+                src: AISpng1,
                 // scale: 0.2,
                 // anchor: [0.5, 0.5],
                 opacity: 0.7,

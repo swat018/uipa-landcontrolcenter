@@ -2,25 +2,23 @@ import geodesic from "geographiclib-geodesic";
 // var geodesic = require("geographiclib-geodesic");
 //var DMS = require("geographiclib-dms");
 
-// input
 // 단위 : NM
-var CPA_warning = 2;
-var CPA_danger = 1;
+var CPA_warning = 10;
+var CPA_danger = 5;
 // 단위 : 분
 var TCPA_warning = 10;
 var TCPA_danger = 5;
-
-// output
-// 위험 선박
+//
 var cnt_warning = 0;
 var cnt_danger = 0;
+//
+var cnt_wardan = 0;
 //
 var cnt_AIS = 0;
 
 var m_clsGeodesic = geodesic.Geodesic.WGS84;
 // var m_clsRhumb;
 
-// 관리 선박 정보
 var OwnshipLat;
 var OwnshipLon;
 var OwnshipCrs;
@@ -37,17 +35,17 @@ var TargetSpeed;
 var s = start();
 
 function start() {
-    setOwnshipSample1();
-    var visdata = import.meta.env.VITE_AIS_DATA_URL;
+    // setOwnshipSample1();
+    // var visdata = import.meta.env.VITE_AIS_DATA_URL;
 
-    fetch(visdata)
-        .then(response => response.text())
-        .then(html => {
-            json_parser(html);
-        })
-        .catch(error => {
-            console.error('Fail', error);
-        });
+    // fetch(visdata)
+    //     .then(response => response.text())
+    //     .then(html => {
+    //         json_parser(html);
+    //     })
+    //     .catch(error => {
+    //         console.error('Fail', error);
+    //     });
 }
 
 
@@ -58,17 +56,17 @@ function setOwnshipSample1() {
     // OwnshipCrs = 0;
     // OwnshipSpeed = 10.0;
 
-    OwnshipLat = 35.440;
-    OwnshipLon = 129.354;
-    OwnshipCrs = 183.800;
-    OwnshipSpeed = 10.0;
+    // OwnshipLat = 35.440;
+    // OwnshipLon = 129.354;
+    // OwnshipCrs = 183.800;
+    // OwnshipSpeed = 10.0;
 
-    console.log("* Ownship" +
-        " / Lat : " + OwnshipLat.toFixed(3) + "도" +
-        " / Lon : " + OwnshipLon.toFixed(3) + "도" +
-        " / Crs : " + OwnshipCrs.toFixed(3) + "도" +
-        " / Speed : " + OwnshipSpeed.toFixed(3) + "kts"
-    );
+    // console.log("* Ownship" +
+    //     " / Lat : " + OwnshipLat.toFixed(3) + "도" +
+    //     " / Lon : " + OwnshipLon.toFixed(3) + "도" +
+    //     " / Crs : " + OwnshipCrs.toFixed(3) + "도" +
+    //     " / Speed : " + OwnshipSpeed.toFixed(3) + "kts"
+    // );
 }
 
 
@@ -94,15 +92,15 @@ function json_parser(jsonString) {
         // TargetCrs = 270;
         // TargetSpeed = 10.0;
 
-         if (i % 100 == 0)
+        if (i % 100 == 0)
         {
             console.log("CLASS_A 타겟" + (i+1) +
-                 " / Lat : " + TargetLat.toFixed(3) + "도" +
-                 " / Lon : " + TargetLon.toFixed(3) + "도" +
-                 " / Crs : " + TargetCrs.toFixed(3) + "도" +
-                 " / Speed : " + TargetSpeed.toFixed(3) + "kts" +
-                 " / MMSI : " + TargetMMSI
-                );
+              " / Lat : " + TargetLat.toFixed(3) + "도" +
+              " / Lon : " + TargetLon.toFixed(3) + "도" +
+              " / Crs : " + TargetCrs.toFixed(3) + "도" +
+              " / Speed : " + TargetSpeed.toFixed(3) + "kts" +
+              " / MMSI : " + TargetMMSI
+            );
 
             if (!isNaN(TargetLat) && !isNaN(TargetLon) && !isNaN(TargetCrs) && !isNaN(TargetSpeed))
                 CalcCPATCPA(OwnshipLat, OwnshipLon, OwnshipCrs, OwnshipSpeed, TargetLat, TargetLon, TargetCrs, TargetSpeed);
@@ -126,12 +124,12 @@ function json_parser(jsonString) {
         if (i % 100 == 0)
         {
             console.log("CLASS_B 타겟" + (i+1) +
-                 " / Lat : " + TargetLat.toFixed(3) + "도" +
-                 " / Lon : " + TargetLon.toFixed(3) + "도" +
-                 " / Crs : " + TargetCrs.toFixed(3) + "도" +
-                 " / Speed : " + TargetSpeed.toFixed(3) + "kts" +
-                 " / MMSI : " + TargetMMSI
-                );
+              " / Lat : " + TargetLat.toFixed(3) + "도" +
+              " / Lon : " + TargetLon.toFixed(3) + "도" +
+              " / Crs : " + TargetCrs.toFixed(3) + "도" +
+              " / Speed : " + TargetSpeed.toFixed(3) + "kts" +
+              " / MMSI : " + TargetMMSI
+            );
 
             if (!isNaN(TargetLat) && !isNaN(TargetLon) && !isNaN(TargetCrs) && !isNaN(TargetSpeed))
                 CalcCPATCPA(OwnshipLat, OwnshipLon, OwnshipCrs, OwnshipSpeed, TargetLat, TargetLon, TargetCrs, TargetSpeed);
@@ -179,6 +177,8 @@ var dCPA_OwnshipLat = 0.0, dCPA_OwnshipLon = 0.0;
 // [RETURN] : dCPA_TargetLat, dCPA_TargetLon,
 // [RETURN] : dCPA_OwnshipLat, dCPA_OwnshipLon
 function CalcCPATCPA(dOwnshipLat, dOwnshipLon, dOwnshipCrs, dOwnshipSpeed, dTargetLat, dTargetLon, dTargetCrs, dTargetSpeed) {
+    if (dOwnshipLat == 0 && dOwnshipLon == 0 && dOwnshipCrs ==0 && dOwnshipSpeed ==0) return "";
+    // console.log("CalcCPATCPA");
 
     // function toRadians(degrees) {return degrees * (Math.PI / 180);}
     function toRadians(degrees) {return degrees * (3.141592653589793 / 180);}
@@ -235,32 +235,53 @@ function CalcCPATCPA(dOwnshipLat, dOwnshipLon, dOwnshipCrs, dOwnshipSpeed, dTarg
     finalCalcCPATCPA(dCPA_OwnshipLat, dCPA_OwnshipLon, dCPA_TargetLat, dCPA_TargetLon/*, dCPA, dBCPA*/);
     dTCPA *= 60;
 
-    //
-    console.log(
-         "> CPA : " + dCPA.toFixed(3) + "NM" +
-        " / TCPA : " + dTCPA.toFixed(3) + "분" +
-        " / BCPA : " + dBCPA.toFixed(3) + "도" +
-        " / CPA_TargetLat : " + dCPA_TargetLat.toFixed(3) + "도" +
-        " / CPA_TargetLon : " + dCPA_TargetLon.toFixed(3) + "도" +
-        " / CPA_OwnshipLat : " + dCPA_OwnshipLat.toFixed(3) + "도" +
-        " / CPA_OwnshipLon : " + dCPA_OwnshipLon.toFixed(3) + "도");
+
+    var isdanwar = false;
+    if (dCPA >=0 && dCPA < CPA_danger && dTCPA >=0 && dTCPA < TCPA_danger) {
+        isdanwar = true;
+    }
+    else if (dCPA >=0 && dCPA < CPA_warning && dTCPA >=0 && dTCPA < TCPA_warning) {
+        isdanwar = true;
+    }
 
     //
-    if (dCPA >=0 && dCPA < CPA_danger) {
-        console.log("* CPA danger")
+    if (isdanwar == true) {
+        console.log(
+          isdanwar + " / " +
+          cnt_wardan + " " +
+          "> CPA : " + dCPA.toFixed(3) + "NM" +
+          ", TCPA : " + dTCPA.toFixed(3) + "분" +
+          ", BCPA : " + dBCPA.toFixed(3) + "도" +
+          ", CPA_TargetLat : " + dCPA_TargetLat.toFixed(3) + "도" +
+          ", CPA_TargetLon : " + dCPA_TargetLon.toFixed(3) + "도" +
+          ", CPA_OwnshipLat : " + dCPA_OwnshipLat.toFixed(3) + "도" +
+          ", CPA_OwnshipLon : " + dCPA_OwnshipLon.toFixed(3) + "도" +
+          " / CPA_danger = " + CPA_danger +
+          ", TCPA_danger = " + TCPA_danger +
+          ", CPA_warning = " + CPA_warning +
+          " , TCPA_warning = " + TCPA_warning +
+          " / dOwnshipLat = " + dOwnshipLat +
+          ", dOwnshipLon = " + dOwnshipLon +
+          ", dOwnshipCrs = " + dOwnshipCrs +
+          ", dOwnshipSpeed = " + dOwnshipSpeed +
+          " / dTargetLat = " + dTargetLat +
+          ", dTargetLon = " + dTargetLon +
+          ", dTargetCrs = " + dTargetCrs +
+          ", dTargetSpeed = " + dTargetSpeed
+        );
+    }
+
+    if (dCPA >=0 && dCPA < CPA_danger && dTCPA >=0 && dTCPA < TCPA_danger) {
+        console.log("CPA,TCPA danger")
         cnt_danger ++;
+        cnt_wardan ++;
+        return "danger";
     }
-    else if (dTCPA >=0 && dTCPA < TCPA_danger) {
-        console.log("* TCPA danger")
-        cnt_danger ++;
-    }
-    else if (dCPA >=0 && dCPA < CPA_warning) {
-        console.log("* CPA warning")
+    else if (dCPA >=0 && dCPA < CPA_warning && dTCPA >=0 && dTCPA < TCPA_warning) {
+        console.log("CPA, TCPA warning")
         cnt_warning ++;
-    }
-    else if (dTCPA >=0 && dTCPA < TCPA_warning) {
-        console.log("* TCPA warning")
-        cnt_warning ++;
+        cnt_wardan ++;
+        return "warning";
     }
 }
 
@@ -399,3 +420,6 @@ function BrgDistToPos(fOwnshipLat, fOwnshipLon, fDist, fBrg, OwnTarget) {
     }
 
 }
+
+const CPATCPA = {CalcCPATCPA}
+export default CPATCPA
