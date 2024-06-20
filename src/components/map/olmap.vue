@@ -40,7 +40,7 @@ import { useShipStore } from '@/stores/shipStore'
 const urlBefore = import.meta.env.VITE_TILE_MAP_URL + '/';
 const urlAfter = '/{z}/{x}/{-y}.png';
 const geoserverWmsUrl = import.meta.env.VITE_GEOSERVER_WMS_URL;
-const ONE_MINUTES_TO_SECONDS = 60000;
+const ONE_MINUTES_TO_SECONDS = 5000;
 
 var OwnshipLat = 0;
 var OwnshipLon = 0;
@@ -65,7 +65,7 @@ export default {
     curImoNumber: String,
     selectInteraction: Select,
     drawInteration_route: Draw,
-    interval: ''
+    interval: null,
   }),
   props: [
     'propsdata', 'curSelectedShip',
@@ -938,6 +938,7 @@ export default {
           var TargetCrs = aisClassBData.cog;
           var TargetSpeed = aisClassBData.sog;
           var return_CPATCPA = "";
+
           if (!isNaN(TargetLat) && !isNaN(TargetLon) && !isNaN(TargetCrs) && !isNaN(TargetSpeed))
           {
             return_CPATCPA = CPATCPA.CalcCPATCPA(OwnshipLat, OwnshipLon, OwnshipCrs, OwnshipSpeed, TargetLat, TargetLon, TargetCrs, TargetSpeed);
@@ -978,6 +979,21 @@ export default {
           });
           pointFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
 
+          var TargetLat = vpassClassBData.latitude;
+          var TargetLon = vpassClassBData.longitude;
+          var TargetCrs = vpassClassBData.cog;
+          var TargetSpeed = vpassClassBData.sog;
+          var return_CPATCPA = "";
+          if (!isNaN(TargetLat) && !isNaN(TargetLon) && !isNaN(TargetCrs) && !isNaN(TargetSpeed))
+          {
+            return_CPATCPA = CPATCPA.CalcCPATCPA(OwnshipLat, OwnshipLon, OwnshipCrs, OwnshipSpeed, TargetLat, TargetLon, TargetCrs, TargetSpeed);
+          }
+          var AISpng1 = aisIcon;
+          if (return_CPATCPA == "warning" || return_CPATCPA == "danger") {
+            console.log("return A : " + return_CPATCPA);
+            AISpng1 = aisWarningIcon;
+          }
+
           this.aisClassLayer = new VectorLayer({
             name: 'aisClassLayer',
             source: new VectorSource({
@@ -985,7 +1001,7 @@ export default {
             }),
             style: new Style({
               image: new Icon({
-                src: '/images/shipicons/AIS.png',
+                src: AISpng1,
                 // scale: 0.7,
                 // anchor: [0.5, 0.5],
                 opacity: 0.7,
