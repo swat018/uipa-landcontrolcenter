@@ -42,10 +42,10 @@ const urlAfter = '/{z}/{x}/{-y}.png';
 const geoserverWmsUrl = import.meta.env.VITE_GEOSERVER_WMS_URL;
 const ONE_MINUTES_TO_SECONDS = 5000;
 
-var OwnshipLat = 0;
-var OwnshipLon = 0;
-var OwnshipCrs = 0;
-var OwnshipSpeed = 0;
+let OwnshipLat = 0;
+let OwnshipLon = 0;
+let OwnshipCrs = 0;
+let OwnshipSpeed = 0;
 
 export default {
   name: "olmap",

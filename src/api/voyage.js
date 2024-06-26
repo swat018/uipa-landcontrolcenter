@@ -55,3 +55,19 @@ export const getVoyageTrack = (voyageId) => {
     params: { id: voyageId }
   })
 }
+
+export const getVoyageReport = (requestForm) => {
+  return instance({
+    url: '/ship/voyage/get-voyage-report',
+    method: 'GET',
+    params: requestForm
+  })
+}
+
+export const getCurrentVoyage = (imoNumber) => {
+  return instance({
+    url: '/ship/voyage/get-cur-voyage-time',
+    method: 'GET',
+    params: { imoNumber }
+  })
+}

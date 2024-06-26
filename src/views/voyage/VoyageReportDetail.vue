@@ -92,7 +92,7 @@ onMounted(() => {
 
   console.dir(props.templateData)
 
-  fetchReportDetail(key)
+   fetchReportDetail(key)
 })
 
 const fetchReportDetail = async (voyageId) => {

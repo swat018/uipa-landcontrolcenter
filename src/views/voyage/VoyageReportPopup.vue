@@ -1,7 +1,7 @@
 <template>
   <v-dialog
     model-value="isOpenVoaygeReport"
-    width="793"
+    width="900"
     height="820"
     class="voyage-report-detail-container"
     :scrim="false"
@@ -28,6 +28,7 @@
           fluid
           class="h-100 management-page detail-page voyage-report-detail overflow-auto"
           id="report"
+          ref="voyageReport"
         >
           <v-row class="ma-0 d-flex align-center report-header">
             <v-col cols="3" class="pl-0">
@@ -55,7 +56,11 @@
                 <div class="report-sub-title">Voyage Route</div>
                 <v-data-table :headers="voyageRouteHeaders" :items="voyageRoute"></v-data-table>
                 <div class="voyage-route mt-4">
-                  <v-img :src="voyageRouteImg" style="height: 250px" />
+<!--                  <v-img :src="voyageRouteImg" style="height: 250px" />-->
+                  <VoyageOlmap
+                    style="min-width: 250px"
+                    :imoNumber="imoNumber"
+                  ></VoyageOlmap>
                 </div>
               </v-sheet>
               <v-sheet class="mt-4">
@@ -64,7 +69,42 @@
                   :headers="performanceSummaryHeaders"
                   :items="performanceSummary"
                   item-key="name"
-                ></v-data-table>
+                >
+                  <template v-slot:headers="{ columns }">
+                    <tr class="text-center">
+                      <th class="text-center" :rowspan="2">
+                        Hour <br />
+                        (hours)
+                      </th>
+                      <th class="text-center" :rowspan="2">
+                        Distance <br />
+                        (nm)
+                      </th>
+                      <th class="text-center" :rowspan="2">
+                        Avg.Speed <br />
+                        (kn)
+                      </th>
+                      <th
+                        class="text-center"
+                        :colspan="usedFuels.length"
+                        style="border-bottom: 1px solid #4d4d4d"
+                      >
+                        FOC (mt)
+                      </th>
+                      <th class="text-center">
+                        EEOI <br />
+                        (10<sup>-6</sup>)
+                      </th>
+                    </tr>
+                    <tr class="text-center">
+                      <th class="text-center" v-if="isHFOVisible">HFO</th>
+                      <th class="text-center" v-if="isLFOVisible">LFO</th>
+                      <th class="text-center" v-if="isMDOMGOVisible">MDO/MGO</th>
+                      <th class="text-center" v-if="isLPGVisible">LPG</th>
+                      <th class="text-center" v-if="isLNGVisible">LNG</th>
+                    </tr>
+                  </template>
+                </v-data-table>
               </v-sheet>
               <v-sheet class="mt-4">
                 <div class="report-sub-title">Engine Performance</div>
@@ -136,9 +176,11 @@ import { getDxGridInstance } from '@/composables/dxGridUtil.js'
 import { convertDateType, isValidDateRange, addDay } from '@/composables/util.js'
 import emitter from '@/composables/eventbus.js'
 import { useToast } from '@/composables/useToast'
+import { useShipStore } from '@/stores/shipStore'
 import { useVoyageStore } from '@/stores/voyageStore'
-import { insertVoyage, updateVoyage, updateVoyageInfo } from '@/api/voyage'
+import { insertVoyage, updateVoyage, updateVoyageInfo, getVoyageReport } from '@/api/voyage'
 import { jsPDF } from 'jspdf'
+import html2canvas from 'html2canvas'
 
 import VoyageReportDetail from '@/views/voyage/VoyageReportDetail.vue'
 import VoyageRegisterForm from '@/views/voyage/form/VoyageRegisterForm.vue'
@@ -147,18 +189,115 @@ import PortInfo from '@/components/voyage/PortInfo.vue'
 import AppModal from '@/components/modal/AppModal.vue'
 import Echart from '@/components/echart/Echarts.vue'
 
-import voyageRouteImg from '/images/ins/ecdis.png'
+// import voyageRouteImg from '/images/ins/ecdis.png'
 
 import reportLogo from '/images/logo/report-logo.png'
 import pdfIcon from '@/assets/images/file-pdf-one.png'
 
+import VoyageOlmap from '@/components/voyage/VoyageOlmap.vue'
+
+const shipStore = useShipStore()
+const { usedFuels } = storeToRefs(shipStore)
+
 const props = defineProps({
   isOpenVoaygeReport: {
     type: Boolean
+  },
+  voyageId: {
+    type: [Number, String],
+    default: null
+  },
+  imoNumber: {
+    type: [String]
   }
 })
 
-const voyageReport = ref('all')
+/**
+ * 사용 연료별 보이기 여부를 결정하는 변수
+ */
+const isFocVisible = ref(false)
+const isHFOVisible = ref(false)
+const isLFOVisible = ref(false)
+const isMDOMGOVisible = ref(false)
+const isLPGVisible = ref(false)
+const isLNGVisible = ref(false)
+
+const fetchVoyageReport = async () => {
+  let imoNumber = props.imoNumber
+  let id = props.voyageId
+
+  const requestform = {
+    imoNumber,
+    id
+  }
+
+  console.log('imoNumber , id')
+  console.log(imoNumber, id)
+
+  const {
+    data: { data }
+  } = await getVoyageReport(requestform)
+
+  console.log('Voyage Report')
+  console.dir(data)
+
+  if ('shipInformation' in data) {
+    console.log('선박 정보')
+    console.dir(data.shipInformation)
+    shipInformation.value = [{ ...data.shipInformation }]
+  }
+
+  if ('voyageRoute' in data) {
+    voyageRoute.value = [{ ...data.voyageRoute }]
+  }
+
+  if ('performanceSummary' in data) {
+    performanceSummary.value['MDO_MGO'] = data.performanceSummary.focMap['MDO/MGO']
+
+    console.dir(performanceSummary.value['MDO_MGO'])
+    // let focResult = Object.entries(data['focMap'])
+    // focResult.filter((el)=> el[0] == usedFuels.)
+
+    // let result = [
+    //   {
+    //     MDO_MGO: performanceSummary.value['MDO_MGO'],
+    //     ...data.performanceSummary['focMap'],
+    //     ...data.performanceSummary
+    //   }
+    // ]
+    // performanceSummary.value = result
+
+    console.log('퍼포먼스 요약정보')
+    console.dir(performanceSummary.value)
+  }
+
+  if ('engineSummary' in data) {
+    engineSummary.value = data.engineSummary
+  }
+  displayColumn()
+}
+
+const displayColumn = () => {
+  if (usedFuels.value.length == 0) {
+    return
+  } else {
+    console.dir(usedFuels)
+    isFocVisible.value = true
+    isHFOVisible.value = usedFuels.value.includes('HFO')
+    console.log('HFO')
+    console.log(isHFOVisible.value)
+    isLFOVisible.value = usedFuels.value.includes('LFO')
+    console.log('LFO')
+    console.log(isHFOVisible.value)
+    isMDOMGOVisible.value = usedFuels.value.includes('MDO/MGO')
+    console.log('MDO/MGO')
+    console.log(isHFOVisible.value)
+    isLPGVisible.value = usedFuels.value.includes('LPG')
+    isLNGVisible.value = usedFuels.value.includes('LNG')
+  }
+}
+
+const voyageReport = ref()
 
 const shipInfoHeaders = [
   {
@@ -171,11 +310,11 @@ const shipInfoHeaders = [
   },
   {
     title: 'Ship Type',
-    key: 'ShipType'
+    key: 'shipType'
   },
   {
-    title: 'Class',
-    key: 'class'
+    title: 'Flag',
+    key: 'flag'
   },
   {
     title: 'GRT',
@@ -191,30 +330,30 @@ const voyageRouteHeaders = [
   { title: '', key: 'location' },
   {
     title: 'From',
-    key: 'from'
+    key: 'locationFrom'
   },
   {
     title: 'To',
-    key: 'to'
+    key: 'locationTo'
   }
 ]
 
 const shipInformation = ref([
   {
-    shipName: 'ULSAN TAEWHA',
-    imoNumber: '9917505',
-    ShipType: 'Passenger Ship',
-    class: 'KR',
-    grt: 2676,
-    dwt: 442
+    shipName: '',
+    imoNumber: '',
+    shipType: '',
+    flag: '',
+    grt: 0,
+    dwt: 0
   }
 ])
 
 const voyageRoute = ref([
   {
     location: 'Location',
-    from: "37˚25.095'N (date : 11.01 UTC)",
-    to: "126˚30.717'E (date : 11.30 UTC)"
+    locationFrom: '',
+    locationTo: ''
   }
 ])
 
@@ -226,9 +365,11 @@ const performanceSummaryHeaders = [
     title: 'FOC (M/T)',
     align: 'center',
     children: [
-      { title: 'MDO', key: 'mdo' },
-      { title: 'MGO', key: 'mgo' },
-      { title: 'LNG', key: 'lng' }
+      { title: 'HFO', key: 'HFO' },
+      { title: 'LPG', key: 'LPG' },
+      { title: 'LFO', key: 'LFO' },
+      { title: 'LNG', key: 'LNG' },
+      { title: 'MDO/MGO', key: 'MDO_MGO' }
     ]
   },
   { title: 'EEOI', key: 'eeoi' }
@@ -236,36 +377,43 @@ const performanceSummaryHeaders = [
 
 const performanceSummary = ref([
   {
-    hours: 5,
-    distance: 45,
-    avgSpeed: 50,
-    mdo: 230.4,
-    mgo: 300,
-    lng: 500,
-    eeoi: 20.76
+    hour: 0,
+    distance: 0,
+    avgSpeed: 0,
+    HFO: 0,
+    LPG: 0,
+    LFO: 0,
+    LNG: 0,
+    MDO_MGO: 0,
+    eeoi: 0
   }
 ])
 
 const enginePerformaceHeader = [
   {
     title: 'Equipment',
-    key: 'equipment'
+    key: 'equipment',
+    align: 'center'
   },
   {
     title: 'Running Hour',
-    key: 'runningHour'
+    key: 'runningHour',
+    align: 'center'
   },
   {
     title: 'Power (kW)',
-    key: 'power'
+    key: 'power',
+    align: 'center'
   },
   {
     title: 'Avg.RPM (rpm)',
-    key: 'avgRpm'
+    key: 'avgRpm',
+    align: 'center'
   },
   {
     title: 'Avg.Load(%)',
-    key: 'avgLoad'
+    key: 'avgLoad',
+    align: 'center'
   }
 ]
 
@@ -302,10 +450,10 @@ const machineryStatus = [
 
 const engineSummary = ref([
   {
-    equipment: 5,
-    runningHour: 45,
-    power: 45,
-    avgRpm: 55,
+    equipment: 0,
+    runningHour: 0,
+    power: 0,
+    avgRpm: 0,
     avgLoad: 50
   }
 ])
@@ -542,6 +690,26 @@ const printReport = () => {
   frame.contentWindow.print()
 }
 
+const download = async () => {
+  // printReport()
+  const doc = new jsPDF()
+
+  console.log('레포트')
+  console.dir(voyageReport.value)
+  const html2 = document.querySelector('#report')
+
+  const canvas = await html2canvas(html2, {
+    // document.body.appendChild(canvas);
+    scale: 1
+  })
+
+  const img = canvas.toDataURL('image/jpeg')
+
+  doc.addImage(img, 'JPEG', 0, 0)
+  window.open(doc.output('bloburl'))
+  // doc.save('test.pdf')
+}
+
 // const beforePrint = () => {
 //   initPage = document.body.innerHTML
 //   document.body.innerHTML = document.querySelector('.report').innerHTML
@@ -553,10 +721,6 @@ const printReport = () => {
 
 // window.onbeforeprint = beforePrint
 // window.onafterprint = afterPrint
-
-const download = () => {
-  printReport()
-}
 
 const GEMachineryStatus = [
   { title: '', align: 'center', value: 'key' },
@@ -649,6 +813,8 @@ const getColorByStatus = (status) => {
   }
   return alarmColor
 }
+
+watch(() => props.voyageId, fetchVoyageReport)
 </script>
 
 <style lang="scss" scoped>
