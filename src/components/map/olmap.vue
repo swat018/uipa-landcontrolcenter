@@ -174,8 +174,8 @@ export default {
     },
     isSelect: function() {
       if (this.isSelect === false) {
-        this.setShipLayer();
-        this.shipSelectEvent();
+        // this.setShipLayer();
+        // this.shipSelectEvent();
       } else {
         map.removeInteraction(this.selectInteraction);
       }

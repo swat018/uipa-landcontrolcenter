@@ -66,6 +66,9 @@
           </td>
         </tr>
       </table>
+      <table class="menuTable-3">
+        <p id="weatherStatus"></p>
+      </table>
       <table class="menuTable-2">
         <tr>
           <td>
@@ -356,6 +359,14 @@ const getRouteplan = () => {
   background-color: rgba(4,82,137,0.5);
   color: white;
 }
+.menuTable-3 {
+  display: inline-block;
+}
+.menuTable-3 p {
+  padding-left: 1em;
+  display: inline-table;
+}
+
 #selectDate::-webkit-inner-spin-button,
 #selectDate::-webkit-calendar-picker-indicator {
   display: inline-block;
