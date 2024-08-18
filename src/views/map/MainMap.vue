@@ -11,6 +11,7 @@
                :isCurrentTrack="isCurrentTrack" :isPastTrack="isPastTrack" :isRemoveTrack="isRemoveTrack"
                :layerBright="layerBright" :layerMode="layerMode"
                :isSelect="isSelect"
+               :selWeather="selWeather"
         />
     </div>
 
@@ -24,11 +25,11 @@
       <table class="menuTable-0" >
         <tr>
           <td style="display: flex">
-            <input type="radio" id="checkWind" name="weatherOption" class="customRadio" v-model="checkWind">&nbsp; <p>풍향/풍속</p> &nbsp;
-            <input type="radio" id="checkFlow" name="weatherOption" class="customRadio" v-model="checkFlow">&nbsp; <p>유향/유속</p> &nbsp;
-            <input type="radio" id="checkWave" name="weatherOption" class="customRadio" v-model="checkWave">&nbsp; <p>파향/파주기</p> &nbsp;
-            <input type="radio" id="checkTempair" name="weatherOption" class="customRadio" v-model="checkTempair">&nbsp; <p>기온</p> &nbsp;
-            <input type="radio" id="checkTempwater" name="weatherOption" class="customRadio" v-model="checkTempwater">&nbsp; <p>수온</p> &nbsp;
+            <input type="radio" id="checkWind" name="weatherOption" class="customRadio" v-model="selWeather" >&nbsp; <p>풍향/풍속</p> &nbsp;
+            <input type="radio" id="checkFlow" name="weatherOption" class="customRadio" v-model="selWeather">&nbsp; <p>유향/유속</p> &nbsp;
+            <input type="radio" id="checkWave" name="weatherOption" class="customRadio" v-model="selWeather">&nbsp; <p>파향/파주기</p> &nbsp;
+            <input type="radio" id="checkTempair" name="weatherOption" class="customRadio" v-model="selWeather">&nbsp; <p>기온</p> &nbsp;
+            <input type="radio" id="checkTempwater" name="weatherOption" class="customRadio" v-model="selWeather" checked="none">&nbsp; <p>수온</p> &nbsp;
           </td>
           <td width="10px"></td>
           <td>
@@ -129,7 +130,7 @@ const {
   isRemoveTrack,
   layerBright,
   layerMode,
-  isSelect
+  isSelect,
 } = storeToRefs(mapStore)
 
 const routeplanStore = useRouteStore()

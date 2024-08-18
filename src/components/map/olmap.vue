@@ -39,7 +39,6 @@ import { useShipStore } from '@/stores/shipStore'
 
 const urlBefore = import.meta.env.VITE_TILE_MAP_URL + '/';
 const urlAfter = '/{z}/{x}/{-y}.png';
-const geoserverWmsUrl = import.meta.env.VITE_GEOSERVER_WMS_URL;
 const ONE_MINUTES_TO_SECONDS = 5000;
 
 let OwnshipLat = 0;
@@ -73,7 +72,8 @@ export default {
     'vesselTrack', 'startDate', 'endDate', 'isPastVesselTracks',
     'isCurrentTrack', 'isPastTrack', 'isRemoveTrack',
     'layerMode', 'layerBright',
-    'isSelect'
+    'isSelect',
+    'selWeather',
   ],
   watch: {
     propsdata: function() {
@@ -179,11 +179,19 @@ export default {
       } else {
         map.removeInteraction(this.selectInteraction);
       }
+    },
+    selWeather: function() {
+      console.log(this.selWeather.value);
+      if (this.tempAir) {
+        console.log("tempAir");
+      }
     }
   },
+
   mounted: async function() {
     // 기상정보 API URL 설정
     baseUrl = import.meta.env.VITE_WEATHER_API_URL;
+    geoserverWmsUrl = import.meta.env.VITE_GEOSERVER_WMS_URL;
 
     this.initMap();
     this.setMapType(this.layerBright, this.layerMode);
@@ -547,6 +555,85 @@ export default {
       //var source = getLayerGroup(lynm).getSource();
       source.updateParams({ 'STYLES': '', 'SLD_BODY': text_SLD });
     },
+
+    makeSldTemp: function(lynm, radius) {
+      var text_SLD = "\
+        <?xml version='1.0' encoding='ISO-8859-1'?>\
+        <StyledLayerDescriptor version='1.0.0'\
+					xsi:schemaLocation='http://www.opengis.net/sld StyledLayerDescriptor.xsd'\
+					xmlns='http://www.opengis.net/sld' \
+					xmlns:ogc='http://www.opengis.net/ogc'\
+					xmlns:xlink='http://www.w3.org/1999/xlink'\
+					xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>\
+         <NamedLayer>\
+          <Name>emap:" + lynm + "</Name>\
+          <UserStyle>\
+            <Title>Heatmap</Title>\
+            <Abstract>A heatmap surface showing population density</Abstract>\
+            <FeatureTypeStyle>\
+              <Transformation>\
+                <ogc:Function name='vec:Heatmap'>\
+                  <ogc:Function name='parameter'>\
+                    <ogc:Literal>data</ogc:Literal>\
+                  </ogc:Function>\
+                  <ogc:Function name='parameter'>\
+                    <ogc:Literal>weightAttr</ogc:Literal>\
+                    <ogc:Literal>temp</ogc:Literal>\
+                  </ogc:Function>\
+                  <ogc:Function name='parameter'>\
+                    <ogc:Literal>radiusPixels</ogc:Literal>\
+                    <ogc:Function name='env'>\
+                      <ogc:Literal>radius</ogc:Literal>\
+                      <ogc:Literal>" + radius + "</ogc:Literal>\
+                    </ogc:Function>\
+                  </ogc:Function>\
+                  <ogc:Function name='parameter'>\
+                    <ogc:Literal>pixelsPerCell</ogc:Literal>\
+                    <ogc:Literal>20</ogc:Literal>\
+                  </ogc:Function>\
+                  <ogc:Function name='parameter'>\
+                    <ogc:Literal>outputBBOX</ogc:Literal>\
+                    <ogc:Function name='env'>\
+                      <ogc:Literal>wms_bbox</ogc:Literal>\
+                    </ogc:Function>\
+                  </ogc:Function>\
+                  <ogc:Function name='parameter'>\
+                    <ogc:Literal>outputWidth</ogc:Literal>\
+                    <ogc:Function name='env'>\
+                      <ogc:Literal>wms_width</ogc:Literal>\
+                    </ogc:Function>\
+                  </ogc:Function>\
+                  <ogc:Function name='parameter'>\
+                    <ogc:Literal>outputHeight</ogc:Literal>\
+                    <ogc:Function name='env'>\
+                      <ogc:Literal>wms_height</ogc:Literal>\
+                    </ogc:Function>\
+                  </ogc:Function>\
+                </ogc:Function>\
+              </Transformation>\
+              <Rule>\
+                <RasterSymbolizer>\
+                  <Geometry>\
+                    <ogc:PropertyName>the_geom</ogc:PropertyName></Geometry>\
+                  <Opacity>0.3</Opacity>\
+                  <ColorMap type='ramp'>\
+                    <ColorMapEntry color='#bbebf4' quantity='0'/>\
+                    <ColorMapEntry color='#9fefb7' quantity='0.33'/>\
+                    <ColorMapEntry color='#e4ef97' quantity='0.66'/>\
+                    <ColorMapEntry color='#ec6767' quantity='1'/>\
+                  </ColorMap>\
+                </RasterSymbolizer>\
+              </Rule>\
+            </FeatureTypeStyle>\
+          </UserStyle>\
+        </NamedLayer>\
+        </StyledLayerDescriptor>\
+				"
+
+      var source = this.getLayer(lynm).getSource();
+      source.updateParams({ 'STYLES': '', 'SLD_BODY': text_SLD });
+    },
+
     getLayer: function(id) {
       let lyr = null;
       var layers = map.getLayers().getArray();
@@ -561,6 +648,7 @@ export default {
       }
       return lyr;
     },
+
     shipData: async function(imoNumbers) {
       getShipData(imoNumbers).then((response) => {
           const { status, data } = response;
